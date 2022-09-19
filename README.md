@@ -1,2 +1,1 @@
-# solana-indexer-library
-Solana indexer examples
+# Aleph Indexer Library

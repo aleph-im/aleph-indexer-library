@@ -1,0 +1,6 @@
+{
+  "packages": [
+    "packages/spl-lending"
+  ],
+  "version": "1.0.0"
+}
