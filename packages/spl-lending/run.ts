@@ -13,25 +13,29 @@ async function main() {
 
   const instances = Number(config.INDEXER_INSTANCES || 2)
   const apiPort = Number(config.INDEXER_API_PORT || 8080)
-  const tcpPort = Number(config.INDEXER_TCP_PORT) || undefined
   const tcpUrls = config.INDEXER_TCP_URLS || undefined
+  const natsUrl = config.INDEXER_NATS_URL || undefined
 
   const projectId = config.INDEXER_NAMESPACE || config.LENDING_ID
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const transport =
     (config.INDEXER_TRANSPORT as TransportType) || TransportType.LocalNet
 
+  const transportConfig: any =
+    tcpUrls || natsUrl ? { tcpUrls, natsUrl } : undefined
+
   if (!projectId)
-    throw new Error('INDEXER_NAMESPACE or LENDING_ID env var must be provided ')
+    throw new Error(
+      'INDEXER_NAMESPACE or LENDING_ID env var must be provided {port|solend|larix}',
+    )
 
   await SDK.init({
     projectId,
     transport,
+    transportConfig,
     apiPort,
     indexer: {
       dataPath,
-      tcpPort,
-      tcpUrls,
       main: {
         apiSchemaPath,
         domainPath: mainDomainPath,
@@ -41,12 +45,6 @@ async function main() {
         domainPath: workerDomainPath,
       },
     },
-    // parser: {
-    //   instances: 1,
-    // },
-    // fetcher: {
-    //   instances: 1,
-    // },
   })
 }
 

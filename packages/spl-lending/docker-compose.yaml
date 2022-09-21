@@ -17,10 +17,6 @@ services:
       - VIRTUAL_HOST=port.api.aleph.cloud
       - VIRTUAL_PORT=8080
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
-      # - INDEXER_TCP_PORT=7900
-      # ports:
-      #   - 7900:7900
-      #   - 7901:7901
     network_mode: bridge
 
   solend-indexer:
@@ -39,10 +35,6 @@ services:
       - VIRTUAL_HOST=solend.api.aleph.cloud
       - VIRTUAL_PORT=8080
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7717/
-      # - INDEXER_TCP_PORT=7902
-      # ports:
-      #   - 7902:7902
-      #   - 7903:7903
     network_mode: bridge
 
   larix-indexer:
@@ -61,8 +53,4 @@ services:
       - VIRTUAL_HOST=larix.api.aleph.cloud
       - VIRTUAL_PORT=8080
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7719/
-      # - INDEXER_TCP_PORT=7904
-      # ports:
-      #   - 7904:7904
-      #   - 7905:7905
     network_mode: bridge
