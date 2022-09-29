@@ -1,0 +1,22 @@
+{
+  "name": "@aleph-indexer/pyth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "up": "docker-compose up -d"
+  },
+  "author": "ALEPH.im",
+  "license": "ISC",
+  "dependencies": {
+    "@aleph-indexer/core": "file:../../../solana-indexer-framework/packages/core",
+    "@aleph-indexer/framework": "file:../../../solana-indexer-framework/packages/framework",
+    "@aleph-indexer/layout": "file:../../../solana-indexer-framework/packages/layout",
+    "@pythnetwork/client": "^2.8.0",
+    "graphql-scalars": "^1.18.0"
+  }
+}
