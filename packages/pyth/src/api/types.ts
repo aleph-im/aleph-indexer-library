@@ -95,6 +95,7 @@ export const DataFeedInfo = new GraphQLObjectType({
 export const DataFeedStats = new GraphQLObjectType({
   name: 'DataFeedStats',
   fields: {
+    address: { type: GraphQLNonNull(GraphQLString) },
     last1h: { type: GraphQLNonNull(Candle) },
     last24h: { type: GraphQLNonNull(Candle) },
     last7d: { type: GraphQLNonNull(Candle) },
@@ -116,3 +117,14 @@ export const GlobalStats = new GraphQLObjectType({
     totalMetalDataFeeds: { type: GraphQLNonNull(GraphQLBigNumber) },
   },
 })
+
+export const types = [
+  CandleInterval,
+  PriceStatus,
+  AssetType,
+  Price,
+  Candle,
+  DataFeedInfo,
+  DataFeedStats,
+  GlobalStats,
+]

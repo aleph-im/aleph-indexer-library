@@ -186,6 +186,10 @@ export type DataFeedStats = {
   confidence: number
 }
 
+export type DataFeedStatsWithAddress = DataFeedStats & {
+  address: string
+}
+
 export type Candle = {
   openPrice: number
   highPrice: number

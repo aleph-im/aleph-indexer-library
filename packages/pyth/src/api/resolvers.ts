@@ -2,20 +2,14 @@ import {
   Candle,
   CandleInterval,
   DataFeedData,
-  DataFeedStats, GlobalPythStats,
+  DataFeedStatsWithAddress,
+  GlobalPythStats,
   Price,
 } from '../types'
 import MainDomain from '../domain/main.js'
 
-export type ReservesFilters = {
-  lendingMarket: string
-  reserves?: string[]
-  includeStats?: boolean
-}
-
 export type PricesFilters = {
   address: string
-  types?: string[]
   startDate?: number
   endDate?: number
   limit?: number
@@ -25,8 +19,6 @@ export type PricesFilters = {
 
 export type CandlesFilters = PricesFilters & { candleInterval: CandleInterval }
 
-export type GlobalStatsFilters = ReservesFilters
-
 export class APIResolver {
   constructor(protected domain: MainDomain) {}
 
@@ -35,11 +27,15 @@ export class APIResolver {
     return Object.values(result)
   }
 
-  async getDataFeedStats(): Promise<Record<string, DataFeedStats>> {
+  async getDataFeedStats(): Promise<DataFeedStatsWithAddress[]> {
     const result = await this.domain.getDataFeeds(true)
-    return Object.fromEntries(
-      Object.entries(result).map(([k, v]) => [k, v.stats!]),
-    )
+    return Object.entries(result).map(([k, v]) => {
+      return {
+        address: k,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        ...v.stats!,
+      }
+    })
   }
 
   async getPrices({
@@ -55,7 +51,7 @@ export class APIResolver {
 
     const result: Price[] = []
 
-    const events = await this.domain.getHistoricalPrices(
+    const prices = await this.domain.getHistoricalPrices(
       address,
       startDate,
       endDate,
@@ -64,7 +60,7 @@ export class APIResolver {
         limit: limit + skip,
       },
     )
-    for await (const { value } of events) {
+    for await (const { value } of prices) {
       // @note: Skip first N events
       if (--skip >= 0) continue
 
@@ -91,7 +87,7 @@ export class APIResolver {
 
     const result: Candle[] = []
 
-    const events = await this.domain.getCandles(
+    const { series } = await this.domain.getCandles(
       address,
       candleInterval,
       startDate,
@@ -101,7 +97,7 @@ export class APIResolver {
         limit: limit + skip,
       },
     )
-    for await (const { value } of events) {
+    for await (const { value } of series) {
       // @note: Skip first N events
       if (--skip >= 0) continue
 
@@ -114,31 +110,7 @@ export class APIResolver {
     return result
   }
 
-  async getGlobalStats(args: GlobalStatsFilters): Promise<GlobalPythStats> {
+  async getGlobalStats(): Promise<GlobalPythStats> {
     return this.domain.getGlobalStats()
-  }
-
-  protected async filterReserves({
-    lendingMarket,
-    reserves,
-    includeStats,
-  }: ReservesFilters): Promise<ReserveData[]> {
-    const domReserves = await this.domain.getReserves(includeStats)
-
-    reserves =
-      reserves ||
-      Object.values(domReserves).map((reserve: any) => reserve.info.address)
-
-    let result = reserves
-      .map((address) => domReserves[address])
-      .filter((reserve) => !!reserve)
-
-    if (lendingMarket) {
-      result = result.filter(
-        ({ info }) => info.lendingMarketAddress === lendingMarket,
-      )
-    }
-
-    return result
   }
 }

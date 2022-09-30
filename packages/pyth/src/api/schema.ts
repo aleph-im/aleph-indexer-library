@@ -9,12 +9,7 @@ import {
 } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
-import {
-  APIResolver,
-  GlobalStatsFilters,
-  PricesFilters,
-  ReservesFilters,
-} from './resolvers.js'
+import { APIResolver, PricesFilters } from './resolvers.js'
 import MainDomain from '../domain/main.js'
 
 export default class APISchema extends IndexerAPISchema {
@@ -25,58 +20,43 @@ export default class APISchema extends IndexerAPISchema {
     super(domain, {
       types: Types.types,
 
-      customTimeSeriesTypesMap: { lending: Types.LendingInfo },
-      customStatsType: Types.ReserveStats,
+      customTimeSeriesTypesMap: { lending: Types.Candle },
+      customStatsType: Types.DataFeedStats,
 
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
-          lendingMarkets: {
-            type: Types.LendingMarkets,
+          dataFeeds: {
+            type: Types.DataFeedInfo,
             args: {},
-            resolve: () => this.resolver.getLendingMarkets(),
+            resolve: () => this.resolver.getDataFeeds(),
           },
 
-          reserves: {
-            type: Types.Reserves,
+          dataFeedStats: {
+            type: Types.DataFeedStats,
             args: {
-              lendingMarket: { type: GraphQLString },
-              reserves: { type: new GraphQLList(GraphQLString) },
+              dataFeeds: { type: new GraphQLList(GraphQLString) },
             },
-            resolve: (_, ctx, __, info) => {
-              ctx.includeStats =
-                !!info.fieldNodes[0].selectionSet?.selections.find(
-                  (item) =>
-                    item.kind === 'Field' && item.name.value === 'stats',
-                )
-
-              return this.resolver.getReserves(ctx as ReservesFilters)
-            },
+            resolve: () => this.resolver.getDataFeedStats(),
           },
 
-          events: {
-            type: Types.Events,
+          prices: {
+            type: Types.Price,
             args: {
-              reserve: { type: new GraphQLNonNull(GraphQLString) },
-              account: { type: GraphQLString },
-              types: { type: new GraphQLList(Types.EventType) },
+              address: { type: new GraphQLNonNull(GraphQLString) },
               startDate: { type: GraphQLFloat },
               endDate: { type: GraphQLFloat },
               limit: { type: GraphQLInt },
               skip: { type: GraphQLInt },
               reverse: { type: GraphQLBoolean },
             },
-            resolve: (_, ctx) => this.resolver.getEvents(ctx as PricesFilters),
+            resolve: (_, ctx) => this.resolver.getPrices(ctx as PricesFilters),
           },
 
           globalStats: {
-            type: Types.GlobalStatsInfo,
-            args: {
-              lendingMarket: { type: GraphQLString },
-              reserves: { type: new GraphQLList(GraphQLString) },
-            },
-            resolve: (_, ctx) =>
-              resolver.getGlobalStats(ctx as GlobalStatsFilters),
+            type: Types.GlobalStats,
+            args: {},
+            resolve: () => this.resolver.getGlobalStats(),
           },
         },
       }),
