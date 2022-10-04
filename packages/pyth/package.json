@@ -16,7 +16,6 @@
     "@aleph-indexer/core": "file:../../../solana-indexer-framework/packages/core",
     "@aleph-indexer/framework": "file:../../../solana-indexer-framework/packages/framework",
     "@aleph-indexer/layout": "file:../../../solana-indexer-framework/packages/layout",
-    "@pythnetwork/client": "^2.8.0",
-    "graphql-scalars": "^1.18.0"
+    "@pythnetwork/client": "^2.8.0"
   }
 }

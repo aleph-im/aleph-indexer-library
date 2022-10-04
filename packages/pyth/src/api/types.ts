@@ -1,36 +1,17 @@
 import {
   GraphQLEnumType,
   GraphQLFloat,
+  GraphQLInt,
   GraphQLNonNull,
   GraphQLObjectType,
   GraphQLString,
 } from 'graphql'
-import { GraphQLBigNumber } from '@aleph-indexer/core'
 import { GraphQLDateTime } from 'graphql-scalars'
+import { TIME_FRAMES } from '../constants.js'
 
 export const CandleInterval = new GraphQLEnumType({
   name: 'CandleInterval',
-  values: {
-    Min1: { value: '1min' },
-    Min5: { value: '5min' },
-    Min10: { value: '10min' },
-    Min15: { value: '15min' },
-    Min30: { value: '30min' },
-    Hour1: { value: '1h' },
-    Hour2: { value: '2h' },
-    Hour3: { value: '3h' },
-    Hour4: { value: '4h' },
-    Hour6: { value: '6h' },
-    Hour8: { value: '8h' },
-    Hour12: { value: '12h' },
-    Day1: { value: '1d' },
-    Week1: { value: '1w' },
-    Week2: { value: '2w' },
-    Month1: { value: '1m' },
-    Month3: { value: '3m' },
-    Year1: { value: '1y' },
-    All: { value: 'all' },
-  },
+  values: Object.fromEntries(TIME_FRAMES.map((value) => [value, { value }])),
 })
 
 export const PriceStatus = new GraphQLEnumType({
@@ -56,28 +37,28 @@ export const AssetType = new GraphQLEnumType({
 export const Price = new GraphQLObjectType({
   name: 'Price',
   fields: {
-    timestamp: { type: GraphQLNonNull(GraphQLBigNumber) },
-    price: { type: GraphQLNonNull(GraphQLFloat) },
-    confidence: { type: GraphQLNonNull(GraphQLFloat) },
-    status: { type: GraphQLNonNull(PriceStatus) },
+    timestamp: { type: new GraphQLNonNull(GraphQLDateTime) },
+    price: { type: new GraphQLNonNull(GraphQLFloat) },
+    confidence: { type: new GraphQLNonNull(GraphQLFloat) },
+    status: { type: new GraphQLNonNull(PriceStatus) },
   },
 })
 
 export const Candle = new GraphQLObjectType({
   name: 'Candle',
   fields: {
-    openPrice: { type: GraphQLNonNull(GraphQLFloat) },
-    highPrice: { type: GraphQLNonNull(GraphQLFloat) },
-    lowPrice: { type: GraphQLNonNull(GraphQLFloat) },
-    closePrice: { type: GraphQLNonNull(GraphQLFloat) },
-    openConfidence: { type: GraphQLNonNull(GraphQLFloat) },
-    highConfidence: { type: GraphQLNonNull(GraphQLFloat) },
-    lowConfidence: { type: GraphQLNonNull(GraphQLFloat) },
-    closeConfidence: { type: GraphQLNonNull(GraphQLFloat) },
-    openTimestamp: { type: GraphQLNonNull(GraphQLDateTime) },
-    highTimestamp: { type: GraphQLNonNull(GraphQLDateTime) },
-    lowTimestamp: { type: GraphQLNonNull(GraphQLDateTime) },
-    closeTimestamp: { type: GraphQLNonNull(GraphQLDateTime) },
+    openPrice: { type: new GraphQLNonNull(GraphQLFloat) },
+    highPrice: { type: new GraphQLNonNull(GraphQLFloat) },
+    lowPrice: { type: new GraphQLNonNull(GraphQLFloat) },
+    closePrice: { type: new GraphQLNonNull(GraphQLFloat) },
+    openConfidence: { type: new GraphQLNonNull(GraphQLFloat) },
+    highConfidence: { type: new GraphQLNonNull(GraphQLFloat) },
+    lowConfidence: { type: new GraphQLNonNull(GraphQLFloat) },
+    closeConfidence: { type: new GraphQLNonNull(GraphQLFloat) },
+    openTimestamp: { type: new GraphQLNonNull(GraphQLDateTime) },
+    highTimestamp: { type: new GraphQLNonNull(GraphQLDateTime) },
+    lowTimestamp: { type: new GraphQLNonNull(GraphQLDateTime) },
+    closeTimestamp: { type: new GraphQLNonNull(GraphQLDateTime) },
   },
 })
 
@@ -110,21 +91,10 @@ export const DataFeedStats = new GraphQLObjectType({
 export const GlobalStats = new GraphQLObjectType({
   name: 'GlobalStats',
   fields: {
-    totalDataFeeds: { type: GraphQLNonNull(GraphQLBigNumber) },
-    totalCryptoDataFeeds: { type: GraphQLNonNull(GraphQLBigNumber) },
-    totalEquityDataFeeds: { type: GraphQLNonNull(GraphQLBigNumber) },
-    totalFXDataFeeds: { type: GraphQLNonNull(GraphQLBigNumber) },
-    totalMetalDataFeeds: { type: GraphQLNonNull(GraphQLBigNumber) },
+    totalDataFeeds: { type: GraphQLNonNull(GraphQLInt) },
+    totalCryptoDataFeeds: { type: GraphQLNonNull(GraphQLInt) },
+    totalEquityDataFeeds: { type: GraphQLNonNull(GraphQLInt) },
+    totalFXDataFeeds: { type: GraphQLNonNull(GraphQLInt) },
+    totalMetalDataFeeds: { type: GraphQLNonNull(GraphQLInt) },
   },
 })
-
-export const types = [
-  CandleInterval,
-  PriceStatus,
-  AssetType,
-  Price,
-  Candle,
-  DataFeedInfo,
-  DataFeedStats,
-  GlobalStats,
-]

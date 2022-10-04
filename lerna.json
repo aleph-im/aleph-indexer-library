@@ -1,6 +1,7 @@
 {
   "packages": [
-    "packages/spl-lending"
+    "packages/spl-lending",
+    "packages/pyth"
   ],
   "version": "1.0.0"
 }

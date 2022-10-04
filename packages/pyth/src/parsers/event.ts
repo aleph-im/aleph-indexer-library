@@ -12,7 +12,6 @@ export class EventParser {
     const { ix, parentIx, parentTx } = ixCtx
     const parsed = (ix as AlephParsedEvent<PythEventType, UpdPriceInstruction>)
       .parsed
-
     const id = `${parentTx.signature}${
       parentIx ? `:${parentIx.index.toString().padStart(2, '0')}` : ''
     }:${ix.index.toString().padStart(2, '0')}`
@@ -20,7 +19,6 @@ export class EventParser {
     const timestamp = parentTx.blockTime
       ? parentTx.blockTime * 1000
       : parentTx.slot
-
     return {
       id,
       timestamp,

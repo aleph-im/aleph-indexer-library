@@ -9,7 +9,7 @@ import {
 } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
-import { APIResolver, PricesFilters } from './resolvers.js'
+import { APIResolver, CandlesFilters, PricesFilters } from './resolvers.js'
 import MainDomain from '../domain/main.js'
 
 export default class APISchema extends IndexerAPISchema {
@@ -18,9 +18,7 @@ export default class APISchema extends IndexerAPISchema {
     protected resolver: APIResolver = new APIResolver(domain),
   ) {
     super(domain, {
-      types: Types.types,
-
-      customTimeSeriesTypesMap: { lending: Types.Candle },
+      customTimeSeriesTypesMap: { candle: Types.Candle },
       customStatsType: Types.DataFeedStats,
 
       query: new GraphQLObjectType({
@@ -51,6 +49,23 @@ export default class APISchema extends IndexerAPISchema {
               reverse: { type: GraphQLBoolean },
             },
             resolve: (_, ctx) => this.resolver.getPrices(ctx as PricesFilters),
+          },
+
+          candles: {
+            type: Types.Candle,
+            args: {
+              address: { type: new GraphQLNonNull(GraphQLString) },
+              candleInterval: {
+                type: new GraphQLNonNull(Types.CandleInterval),
+              },
+              startDate: { type: GraphQLFloat },
+              endDate: { type: GraphQLFloat },
+              limit: { type: GraphQLInt },
+              skip: { type: GraphQLInt },
+              reverse: { type: GraphQLBoolean },
+            },
+            resolve: (_, ctx) =>
+              this.resolver.getCandles(ctx as CandlesFilters),
           },
 
           globalStats: {

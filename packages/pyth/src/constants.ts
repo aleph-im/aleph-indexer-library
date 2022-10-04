@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 import { constants } from '@aleph-indexer/core'
 import { getPythProgramKeyForCluster } from '@pythnetwork/client'
-import { TimeFrame } from '@aleph-indexer/framework'
+import { CandleInterval } from './types'
 
 export enum ProgramName {
   Pyth = 'pyth',
@@ -10,22 +10,26 @@ export enum ProgramName {
 export const PYTH_PROGRAM_ID_PK = getPythProgramKeyForCluster('mainnet-beta')
 export const PYTH_PROGRAM_ID = PYTH_PROGRAM_ID_PK.toBase58()
 
-export const timeFrames = [
-  TimeFrame.Minute,
-  TimeFrame.Minute5,
-  TimeFrame.Minute15,
-  TimeFrame.Minute30,
-  TimeFrame.Hour,
-  TimeFrame.Hour2,
-  TimeFrame.Hour4,
-  TimeFrame.Hour8,
-  TimeFrame.Day,
-  TimeFrame.Week,
-  TimeFrame.Month,
-  TimeFrame.Month3,
-  TimeFrame.Month6,
-  TimeFrame.Year,
-  TimeFrame.All,
+export const TIME_FRAMES: CandleInterval[] = [
+  '1minute',
+  '5minute',
+  '10minute',
+  '15minute',
+  '30minute',
+  '1hour',
+  '2hour',
+  '3hour',
+  '4hour',
+  '6hour',
+  '8hour',
+  '12hour',
+  '1day',
+  '1week',
+  '2week',
+  '1month',
+  '3month',
+  '1year',
+  'all',
 ]
 
 // WADS

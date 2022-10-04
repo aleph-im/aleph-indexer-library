@@ -1,17 +1,16 @@
 import { StorageStream, Utils } from '@aleph-indexer/core'
 import {
+  IndexerDomainContext,
   AccountIndexerConfigWithMeta,
-  AccountStats,
-  AccountStatsFilters,
-  AccountTimeSeriesStats,
+  InstructionContextV1,
+  IndexerWorkerDomain,
+  IndexerWorkerDomainWithStats,
   createStatsStateDAL,
   createStatsTimeSeriesDAL,
-  getTimeFrame,
-  IndexerDomain as IndexerDomainI,
-  IndexerDomainBase,
-  IndexerDomainContext,
-  IndexerDomainWithStats,
-  InstructionContextV1,
+  candleIntervalToDuration,
+  AccountTimeSeriesStats,
+  AccountStatsFilters,
+  AccountStats,
 } from '@aleph-indexer/framework'
 import { eventParser as eParser } from '../parsers/event.js'
 import { priceParser as pParser } from '../parsers/price.js'
@@ -27,12 +26,13 @@ import {
 import { DataFeed } from './data-feed.js'
 import { createCandles } from './stats/timeSeries.js'
 import { PYTH_PROGRAM_ID } from '../constants.js'
+import { DateTime } from 'luxon'
 
 const { isParsedIx, listGroupBy } = Utils
 
-export default class IndexerDomain
-  extends IndexerDomainBase
-  implements IndexerDomainI, IndexerDomainWithStats
+export default class WorkerDomain
+  extends IndexerWorkerDomain
+  implements IndexerWorkerDomainWithStats
 {
   protected dataFeedsByAccount: Record<string, DataFeed> = {}
   protected dataFeedsBySymbol: Record<string, DataFeed> = {}
@@ -60,7 +60,7 @@ export default class IndexerDomain
 
     const accountTimeSeries = createCandles(
       account,
-      this.context.indexerApi,
+      this.context.apiClient,
       this.priceDAL,
       this.statsStateDAL,
       this.statsTimeSeriesDAL,
@@ -117,8 +117,8 @@ export default class IndexerDomain
   async getCandles(
     dataFeed: string,
     candleSize: CandleInterval,
-    startDate: number,
-    endDate: number,
+    startDate: DateTime,
+    endDate: DateTime,
     opts: any,
   ): Promise<AccountTimeSeriesStats<Candle>> {
     const { limit, reverse } = opts
@@ -128,7 +128,7 @@ export default class IndexerDomain
       endDate,
       limit,
       reverse,
-      timeFrame: getTimeFrame(candleSize),
+      timeFrame: candleIntervalToDuration(candleSize),
     })
   }
 
