@@ -14,9 +14,9 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.9",
-    "@aleph-indexer/framework": "^1.0.9",
-    "@aleph-indexer/layout": "^1.0.7",
+    "@aleph-indexer/core": "^1.0.10",
+    "@aleph-indexer/framework": "^1.0.10",
+    "@aleph-indexer/layout": "^1.0.10",
     "@port.finance/port-sdk": "^0.2.67",
     "@solendprotocol/solend-sdk": "^0.5.6"
   }
