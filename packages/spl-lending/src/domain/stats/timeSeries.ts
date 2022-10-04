@@ -37,7 +37,7 @@ export async function createAccountStats(
       getInputStream: ({ account, startDate, endDate }) => {
         return eventDAL
           .useIndex(EventDALIndex.ReserveTimestamp)
-          .getAllFromTo([account, startDate], [account, endDate])
+          .getAllValuesFromTo([account, startDate], [account, endDate])
       },
       aggregate: ({ input, prevValue }): LendingInfo => {
         return lendingEventAggregator.aggregate(input, prevValue)

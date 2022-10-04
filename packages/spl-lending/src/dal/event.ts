@@ -44,7 +44,7 @@ export function createEventDAL(path: string): EventStorage {
   return new EntityStorage<LendingEvent>({
     name: 'event',
     path,
-    primaryKey: [idKey],
+    key: [idKey],
     indexes: [
       {
         name: EventDALIndex.ReserveTimestamp,
