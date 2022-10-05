@@ -1,7 +1,3 @@
-import { GraphQLFloat } from 'graphql'
-
-export const TimeInfo = GraphQLString
-
 import {
   GraphQLObjectType,
   GraphQLString,
@@ -9,9 +5,9 @@ import {
   GraphQLNonNull,
   GraphQLList,
   GraphQLInterfaceType,
+  GraphQLFloat,
 } from 'graphql'
-import { GraphQLLong } from '@aleph-indexer/core'
-import { GraphQLBigNumber, TokenType } from '@aleph-indexer/core'
+import { TokenType, GraphQLLong } from '@aleph-indexer/core'
 import { LendingEventType } from '../types.js'
 
 // ------------------- STATS ---------------------------
@@ -20,44 +16,44 @@ export const LendingInfo = new GraphQLObjectType({
   name: 'LendingInfo',
   fields: {
     liquidityEventsVol: { type: new GraphQLNonNull(GraphQLFloat) },
-    liquidityVol: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    liquidity: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    totalLiquidity: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityVol: { type: new GraphQLNonNull(GraphQLLong) },
+    liquidity: { type: new GraphQLNonNull(GraphQLLong) },
+    totalLiquidity: { type: new GraphQLNonNull(GraphQLLong) },
     borrowedEventsVol: { type: new GraphQLNonNull(GraphQLFloat) },
-    borrowedVol: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    borrowed: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    borrowFees: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    borrowedVol: { type: new GraphQLNonNull(GraphQLLong) },
+    borrowed: { type: new GraphQLNonNull(GraphQLLong) },
+    borrowFees: { type: new GraphQLNonNull(GraphQLLong) },
     liquidationsEventsVol: { type: new GraphQLNonNull(GraphQLFloat) },
-    liquidations: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidations: { type: new GraphQLNonNull(GraphQLLong) },
 
-    // totalBorrowed: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // liquidationBonus: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    // totalBorrowed: { type: new GraphQLNonNull(GraphQLLong) },
+    // liquidationBonus: { type: new GraphQLNonNull(GraphQLLong) },
 
     // @todo
     // FlashLoans
-    // liquidityUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalLiquidityUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // borrowedUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalBorrowedUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // borrowFeesUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalBorrowFees: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalBorrowFeesUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // liquidationsUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalLiquidations: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalLiquidationsUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // liquidationBonusUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalLiquidationBonus: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalLiquidationBonusUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    // liquidityUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalLiquidityUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // borrowedUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalBorrowedUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // borrowFeesUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalBorrowFees: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalBorrowFeesUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // liquidationsUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalLiquidations: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalLiquidationsUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // liquidationBonusUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalLiquidationBonus: { type: new GraphQLNonNull(GraphQLLong) },
+    // totalLiquidationBonusUsd: { type: new GraphQLNonNull(GraphQLLong) },
   },
 })
 
 export const GlobalStatsInfo = new GraphQLObjectType({
   name: 'GlobalStatsInfo',
   fields: {
-    liquidityTotalUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    borrowedTotalUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    totalDepositedUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    flashLoanedTotalUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityTotalUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    borrowedTotalUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    totalDepositedUsd: { type: new GraphQLNonNull(GraphQLLong) },
+    flashLoanedTotalUsd: { type: new GraphQLNonNull(GraphQLLong) },
     quantityDecimals: { type: new GraphQLNonNull(GraphQLFloat) },
   },
 })
@@ -76,17 +72,17 @@ export const ReserveStats = new GraphQLObjectType({
     utilizationRatio: { type: new GraphQLNonNull(GraphQLFloat) },
     markPrice: { type: new GraphQLNonNull(GraphQLFloat) },
 
-    liquidityTotal: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    liquidityTotalUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityTotal: { type: new GraphQLNonNull(GraphQLLong) },
+    liquidityTotalUsd: { type: new GraphQLNonNull(GraphQLLong) },
 
-    totalDeposited: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    totalDepositedUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    totalDeposited: { type: new GraphQLNonNull(GraphQLLong) },
+    totalDepositedUsd: { type: new GraphQLNonNull(GraphQLLong) },
 
-    borrowedTotal: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    borrowedTotalUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    borrowedTotal: { type: new GraphQLNonNull(GraphQLLong) },
+    borrowedTotalUsd: { type: new GraphQLNonNull(GraphQLLong) },
 
-    flashLoanedTotal: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    flashLoanedTotalUsd: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    flashLoanedTotal: { type: new GraphQLNonNull(GraphQLLong) },
+    flashLoanedTotalUsd: { type: new GraphQLNonNull(GraphQLLong) },
   },
 })
 
@@ -117,7 +113,7 @@ export const Reserve = new GraphQLObjectType({
     switchboardFeedAddress: { type: GraphQLString },
     assetPrice: { type: GraphQLFloat },
     collateralExchangeRate: { type: GraphQLFloat },
-    depositLimit: { type: GraphQLBigNumber },
+    depositLimit: { type: GraphQLLong },
     stakingPool: { type: GraphQLString },
     borrowInterestAPY: { type: GraphQLFloat },
     borrowFeePercentage: { type: GraphQLFloat },
@@ -195,8 +191,8 @@ export const EventDepositReserveLiquidity = new GraphQLObjectType({
   isTypeOf: (item) => item.type === LendingEventType.DepositReserveLiquidity,
   fields: {
     ...commonEventFields,
-    liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    collateralAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
+    collateralAmount: { type: new GraphQLNonNull(GraphQLLong) },
     userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
     userCollateral: { type: new GraphQLNonNull(GraphQLString) },
     reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -205,7 +201,7 @@ export const EventDepositReserveLiquidity = new GraphQLObjectType({
     lendingMarket: { type: new GraphQLNonNull(GraphQLString) },
     lendingMarketAuthority: { type: new GraphQLNonNull(GraphQLString) },
     transferAuthority: { type: new GraphQLNonNull(GraphQLString) },
-    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
   },
 })
 
@@ -215,8 +211,8 @@ export const EventRedeemReserveCollateral = new GraphQLObjectType({
   isTypeOf: (item) => item.type === LendingEventType.RedeemReserveCollateral,
   fields: {
     ...commonEventFields,
-    liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    collateralAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
+    collateralAmount: { type: new GraphQLNonNull(GraphQLLong) },
     userCollateral: { type: new GraphQLNonNull(GraphQLString) },
     userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
     reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -228,7 +224,7 @@ export const EventRedeemReserveCollateral = new GraphQLObjectType({
     stakeAccount: { type: GraphQLString },
     stakingPool: { type: GraphQLString },
     stakingProgram: { type: GraphQLString },
-    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
   },
 })
 
@@ -239,7 +235,7 @@ export const EventDepositObligationCollateral = new GraphQLObjectType({
     item.type === LendingEventType.DepositObligationCollateral,
   fields: {
     ...commonEventFields,
-    collateralAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    collateralAmount: { type: new GraphQLNonNull(GraphQLLong) },
     userCollateral: { type: new GraphQLNonNull(GraphQLString) },
     reserveCollateralVault: { type: new GraphQLNonNull(GraphQLString) },
     reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -261,7 +257,7 @@ export const EventWithdrawObligationCollateral = new GraphQLObjectType({
     item.type === LendingEventType.WithdrawObligationCollateral,
   fields: {
     ...commonEventFields,
-    collateralAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    collateralAmount: { type: new GraphQLNonNull(GraphQLLong) },
     reserveCollateralVault: { type: new GraphQLNonNull(GraphQLString) },
     userCollateral: { type: new GraphQLNonNull(GraphQLString) },
     reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -281,7 +277,7 @@ export const EventBorrowObligationLiquidity = new GraphQLObjectType({
   isTypeOf: (item) => item.type === LendingEventType.BorrowObligationLiquidity,
   fields: {
     ...commonEventFields,
-    liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
     reserveLiquidityVault: { type: new GraphQLNonNull(GraphQLString) },
     userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
     reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -290,8 +286,8 @@ export const EventBorrowObligationLiquidity = new GraphQLObjectType({
     lendingMarket: { type: new GraphQLNonNull(GraphQLString) },
     lendingMarketAuthority: { type: new GraphQLNonNull(GraphQLString) },
     obligationOwner: { type: new GraphQLNonNull(GraphQLString) },
-    liquidityFeeAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityFeeAmount: { type: new GraphQLNonNull(GraphQLLong) },
+    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
   },
 })
 
@@ -301,22 +297,22 @@ export const EventRepayObligationLiquidity = new GraphQLObjectType({
   isTypeOf: (item) => item.type === LendingEventType.RepayObligationLiquidity,
   fields: {
     ...commonEventFields,
-    liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
     userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
     reserveLiquidityVault: { type: new GraphQLNonNull(GraphQLString) },
     reserve: { type: new GraphQLNonNull(GraphQLString) },
     obligation: { type: new GraphQLNonNull(GraphQLString) },
     lendingMarket: { type: new GraphQLNonNull(GraphQLString) },
     transferAuthority: { type: new GraphQLNonNull(GraphQLString) },
-    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
   },
 })
 
 export const eventLiquidateObligationFields = {
   ...commonEventFields,
-  liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-  liquidityRepayAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-  collateralWithdrawAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+  liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
+  liquidityRepayAmount: { type: new GraphQLNonNull(GraphQLLong) },
+  collateralWithdrawAmount: { type: new GraphQLNonNull(GraphQLLong) },
   userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
   userCollateral: { type: new GraphQLNonNull(GraphQLString) },
   repayReserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -330,7 +326,7 @@ export const eventLiquidateObligationFields = {
   stakeAccount: { type: GraphQLString },
   stakingPool: { type: GraphQLString },
   stakingProgram: { type: GraphQLString },
-  repayReserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+  repayReserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
 }
 
 export const EventLiquidateObligation = new GraphQLObjectType({
@@ -357,7 +353,7 @@ export const EventFlashLoan = new GraphQLObjectType({
   isTypeOf: (item) => item.type === LendingEventType.FlashLoan,
   fields: {
     ...commonEventFields,
-    liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
     reserveLiquidityVault: { type: new GraphQLNonNull(GraphQLString) },
     userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
     reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -370,8 +366,8 @@ export const EventFlashLoan = new GraphQLObjectType({
     flashLoanReceiverAddresses: {
       type: new GraphQLNonNull(GraphQLList(GraphQLString)),
     },
-    liquidityFeeAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    liquidityFeeAmount: { type: new GraphQLNonNull(GraphQLLong) },
+    reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
   },
 })
 
@@ -384,8 +380,8 @@ export const EventDepositReserveLiquidityAndObligationCollateral =
       LendingEventType.DepositReserveLiquidityAndObligationCollateral,
     fields: {
       ...commonEventFields,
-      liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-      collateralAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+      liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
+      collateralAmount: { type: new GraphQLNonNull(GraphQLLong) },
       userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
       userCollateral: { type: new GraphQLNonNull(GraphQLString) },
       reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -400,7 +396,7 @@ export const EventDepositReserveLiquidityAndObligationCollateral =
       stakeAccount: { type: GraphQLString },
       stakingPool: { type: GraphQLString },
       stakingProgram: { type: GraphQLString },
-      reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+      reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
     },
   })
 
@@ -413,8 +409,8 @@ export const EventWithdrawObligationCollateralAndRedeemReserveCollateral =
       LendingEventType.WithdrawObligationCollateralAndRedeemReserveCollateral,
     fields: {
       ...commonEventFields,
-      liquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
-      collateralAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+      liquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
+      collateralAmount: { type: new GraphQLNonNull(GraphQLLong) },
       userLiquidity: { type: new GraphQLNonNull(GraphQLString) },
       userCollateral: { type: new GraphQLNonNull(GraphQLString) },
       reserve: { type: new GraphQLNonNull(GraphQLString) },
@@ -429,7 +425,7 @@ export const EventWithdrawObligationCollateralAndRedeemReserveCollateral =
       stakeAccount: { type: GraphQLString },
       stakingPool: { type: GraphQLString },
       stakingProgram: { type: GraphQLString },
-      reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+      reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLLong) },
     },
   })
 

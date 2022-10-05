@@ -1,6 +1,5 @@
-import { DateTime } from 'luxon'
+import { Duration } from 'luxon'
 import BN from 'bn.js'
-import { TimeFrame } from '@aleph-indexer/framework'
 import {
   LendingInfo,
   LendingReserveStats,
@@ -11,6 +10,7 @@ import {
   LendingReserveStatsAggregator,
   LendingReserveStatsAggregatorArgs,
 } from '../types.js'
+import { MAX_TIMEFRAME } from '@aleph-indexer/framework'
 
 export abstract class BaseLendingReserveStatsAggregator
   implements LendingReserveStatsAggregator
@@ -31,8 +31,12 @@ export abstract class BaseLendingReserveStatsAggregator
     }
 
     const type = 'lending'
-    const currHour = DateTime.fromMillis(now).startOf('hour')
-    const commonFields = [account, type, TimeFrame.Hour]
+    const currHour = now.startOf('hour')
+    const commonFields = [
+      account,
+      type,
+      Duration.fromObject({ hours: 1 }).toMillis(),
+    ]
 
     const last1h = await timeSeriesDAL.get([
       ...commonFields,
@@ -59,7 +63,12 @@ export abstract class BaseLendingReserveStatsAggregator
       last7d = lendingEventAggregator.aggregate(event.data, last7d)
     }
 
-    const total = await timeSeriesDAL.get([account, type, TimeFrame.All, 0])
+    const total = await timeSeriesDAL.get([
+      account,
+      type,
+      MAX_TIMEFRAME.toMillis(),
+      0,
+    ])
 
     if (last1h) stats.last1h = last1h.data
     if (last24h) stats.last24h = last24h

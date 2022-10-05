@@ -20,6 +20,15 @@ export const ACCOUNT_MAP: Record<
   },
 }
 
+export const TIME_FRAMES: string[] = [
+  '1hour',
+  '1day',
+  '1week',
+  '1month',
+  '1year',
+  'all',
+]
+
 // ----------------- EVENTS --------------------
 export const liquidityEvents = [
   LendingEventType.DepositReserveLiquidity,

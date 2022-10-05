@@ -1,15 +1,17 @@
 import {
   AccountTimeSeriesStatsManager,
+  candleIntervalToDuration,
   IndexerMsI,
   StatsStateStorage,
   StatsTimeSeriesStorage,
-  TimeFrame,
   TimeSeriesStats,
 } from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../../dal/event.js'
 import { LendingEvent, LendingInfo } from '../../types'
 import { ReserveStatsAggregatorFactory } from './reserve/index.js'
 import lendingEventAggregator from './timeSeriesAggregator.js'
+import { DateTime } from 'luxon'
+import { TIME_FRAMES } from '../../constants.js'
 
 export async function createAccountStats(
   projectId: string,
@@ -25,19 +27,12 @@ export async function createAccountStats(
   const LendingTimeSeries = new TimeSeriesStats<LendingEvent, LendingInfo>(
     {
       type: 'lending',
-      startDate: 0,
-      timeFrames: [
-        TimeFrame.Hour,
-        TimeFrame.Day,
-        TimeFrame.Week,
-        TimeFrame.Month,
-        TimeFrame.Year,
-        TimeFrame.All,
-      ],
+      startDate: DateTime.fromMillis(0),
+      timeFrames: TIME_FRAMES.map((tf) => candleIntervalToDuration(tf)),
       getInputStream: ({ account, startDate, endDate }) => {
         return eventDAL
           .useIndex(EventDALIndex.ReserveTimestamp)
-          .getAllValuesFromTo([account, startDate], [account, endDate])
+          .getAllValuesFromTo([account, startDate.toMillis()], [account, endDate.toMillis()])
       },
       aggregate: ({ input, prevValue }): LendingInfo => {
         return lendingEventAggregator.aggregate(input, prevValue)
