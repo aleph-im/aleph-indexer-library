@@ -39,17 +39,17 @@ const {
 
 export class EventParser {
   parse(ixCtx: InstructionContextV1): LendingEvent {
-    const { ix, parentIx, parentTx } = ixCtx
+    const { ix, parentIx, txContext } = ixCtx
     const parsed = (ix as AlephParsedEvent<LendingEventType, LendingEventInfo>)
       .parsed
 
-    const id = `${parentTx.signature}${
+    const id = `${txContext.tx.signature}${
       parentIx ? `:${parentIx.index.toString().padStart(2, '0')}` : ''
     }:${ix.index.toString().padStart(2, '0')}`
 
-    const timestamp = parentTx.blockTime
-      ? parentTx.blockTime * 1000
-      : parentTx.slot
+    const timestamp = txContext.tx.blockTime
+      ? txContext.tx.blockTime * 1000
+      : txContext.tx.slot
 
     const baseEvent = {
       ...parsed.info,
@@ -79,7 +79,8 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(txContext.tx, info.reserveLiquidityVault, true) ||
+              0,
           )
           return {
             ...baseEvent,
@@ -106,7 +107,8 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(txContext.tx, info.reserveLiquidityVault, true) ||
+              0,
           )
           return {
             ...baseEvent,
@@ -161,7 +163,7 @@ export class EventParser {
             )
             const reserveLiquidityAmount = new BN(
               getTokenBalance(
-                ixCtx.parentTx,
+                ixCtx.txContext.tx,
                 info.reserveLiquidityVault,
                 true,
               ) || 0,
@@ -192,7 +194,8 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(txContext.tx, info.reserveLiquidityVault, true) ||
+              0,
           )
           return {
             ...baseEvent,
@@ -214,7 +217,8 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(txContext.tx, info.reserveLiquidityVault, true) ||
+              0,
           )
           return {
             ...baseEvent,
@@ -238,8 +242,11 @@ export class EventParser {
             subIxs,
           )
           const repayReserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.repayReserveLiquidityVault, true) ||
-              0,
+            getTokenBalance(
+              txContext.tx,
+              info.repayReserveLiquidityVault,
+              true,
+            ) || 0,
           )
           return {
             ...baseEvent,

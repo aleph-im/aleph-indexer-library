@@ -7,8 +7,7 @@ import {
   GraphQLInterfaceType,
   GraphQLFloat,
 } from 'graphql'
-import { GraphQLLong } from 'graphql-scalars'
-import { TokenType } from '@aleph-indexer/core'
+import { TokenType, GraphQLLong } from '@aleph-indexer/core'
 import { LendingEventType } from '../types.js'
 
 // ------------------- STATS ---------------------------
