@@ -1,0 +1,82 @@
+on:
+  pull_request:
+    types: [ labeled ]
+
+jobs:
+  clean:
+    if: ${{ github.event.label.name == 'deploy' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cleanup Artifacts
+        uses: glassechidna/artifact-cleaner@master
+
+  build:
+    if: ${{ github.event.label.name == 'deploy' }}
+    runs-on: ubuntu-latest
+    name: Build the indexer image
+    needs: clean
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker-practice/actions-setup-docker@master
+        with:
+          docker_daemon_json: |
+            {
+              "storage-driver": "vfs"
+            }
+      - name: Build and export
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          tags: indexer-framework:latest
+          outputs: type=docker,dest=/tmp/indexer-framework.tar
+          build-args: |
+            INDEXER=spl-lending
+      - name: Load image
+        run: |
+          docker load --input /tmp/indexer-framework.tar
+      - name: Show Docker images list
+        run: |
+          docker image list
+      - name: Tar Docker image contents
+        run: |
+          sudo tar cvzf /tmp/aleph-framework-var-lib-docker.tar.gz /var/lib/docker/image /var/lib/docker/vfs
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: aleph-framework-var-lib-docker.tar.gz
+          path: /tmp/aleph-framework-var-lib-docker.tar.gz
+          retention-days: 1
+
+  generate-runtime:
+    runs-on: ubuntu-latest
+    name: Build the VM runtime
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: aleph-framework-var-lib-docker.tar.gz
+      - name: Generate Runtime
+        uses: aleph-im/aleph-github-actions/create-aleph-docker-runtime@main
+        id: generate-runtime
+        with:
+          docker_lib_path: ./
+          file_name: aleph-framework-var-lib-docker.tar.gz
+          output_path: ./rootfs.squashfs
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: aleph-docker-runtime-rootfs
+          path: rootfs.squashfs
+          retention-days: 1
+#      - uses: aleph-im/aleph-github-actions/publish-runtime@main
+#        id: publish-runtime
+#        with:
+#          fs_path: ./rootfs.squashfs
+#          private-key: ${{ secrets.WALLET_PRIVATE_KEY }}
+#          runtime_hash: XXXXXX
+#          indexer: spl-lending
