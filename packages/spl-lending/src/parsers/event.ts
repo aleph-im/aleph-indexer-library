@@ -39,7 +39,9 @@ const {
 
 export class EventParser {
   parse(ixCtx: InstructionContextV1): LendingEvent {
-    const { ix, parentIx, parentTx } = ixCtx
+    const { ix, parentIx, txContext } = ixCtx
+    const { tx: parentTx } = txContext
+
     const parsed = (ix as AlephParsedEvent<LendingEventType, LendingEventInfo>)
       .parsed
 
@@ -160,11 +162,7 @@ export class EventParser {
               subIxs,
             )
             const reserveLiquidityAmount = new BN(
-              getTokenBalance(
-                ixCtx.parentTx,
-                info.reserveLiquidityVault,
-                true,
-              ) || 0,
+              getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
             )
             return {
               ...baseEvent,
