@@ -6,6 +6,7 @@ npm i
 pip3 install aleph-client
 ```
 
+
 ## Deploying a new Indexer
 
 - Make a fork of this project in your GitHub Workspace.
