@@ -1,5 +1,5 @@
 {
-  "name": "@aleph-indexer/port-finance",
+  "name": "@aleph-indexer/spl-lending",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -14,17 +14,17 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "file:../solana-indexer-framework/packages/core",
-    "@aleph-indexer/framework": "file:../solana-indexer-framework/packages/framework",
-    "@aleph-indexer/layout": "file:../solana-indexer-framework/packages/layout",
+    "@aleph-indexer/core": "^1.0.14",
+    "@aleph-indexer/framework": "^1.0.14",
+    "@aleph-indexer/layout": "^1.0.14",
     "@port.finance/port-sdk": "^0.2.67",
     "@solendprotocol/solend-sdk": "^0.5.6",
     "bn.js": "^5.2.0",
+    "dotenv": "^16.0.1",
+    "dotenv-defaults": "^5.0.0",
     "graphql": "^15.8.0",
     "graphql-scalars": "^1.18.0",
-    "luxon": "^3.0.4",
-    "dotenv": "^16.0.1",
-    "dotenv-defaults": "^5.0.0"
+    "luxon": "^3.0.4"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.1",
