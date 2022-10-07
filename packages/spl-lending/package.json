@@ -15,7 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@aleph-indexer/core": "^1.0.16",
-    "@aleph-indexer/framework": "^1.0.16",
+    "@aleph-indexer/framework": "^1.0.17",
     "@aleph-indexer/layout": "^1.0.14",
     "@aleph-indexer/middleware": "^1.0.16",
     "@port.finance/port-sdk": "^0.2.67",
