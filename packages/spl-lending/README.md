@@ -3,10 +3,10 @@
 ## Utils
 
 - https://crates.io/crates/port-variable-rate-lending-instructions
-- https://github.com/port-finance/port-sdk/blob/master/src
-- https://github.com/port-finance/liquidator/tree/main/src
+- https://github.com/port-finance/port-sdk
+- https://github.com/port-finance/liquidator
 - https://github.com/port-finance/port-sdk/blob/master/src/structs/ReserveData.ts#L168
-- https://github.com/ProjectLarix/larix-api-server/blob/4025ae358051213871bb8c0247973f91a5fa09e0/src/sdk/models/state/reserve.js#L95
+- https://github.com/ProjectLarix/larix-sdk
 
 ## Flows
 
