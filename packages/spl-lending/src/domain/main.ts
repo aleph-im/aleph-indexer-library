@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { StorageStream, constants } from '@aleph-indexer/core'
+import { constants } from '@aleph-indexer/core'
 import {
   IndexerMainDomain,
   IndexerMainDomainWithDiscovery,
@@ -17,6 +17,7 @@ import {
 } from '../types.js'
 import { DiscovererFactory } from './discoverer/index.js'
 import { LendingDiscoverer } from './discoverer/types.js'
+import { ReserveEventsFilters } from './types.js'
 
 const { usdDecimals } = constants
 
@@ -108,20 +109,15 @@ export default class MainDomain
     )
   }
 
-  async getReserveEventsByTime(
+  async getReserveEvents(
     account: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, LendingEvent>> {
-    const stream = await this.context.apiClient.invokeDomainMethod({
+    filters: ReserveEventsFilters,
+  ): Promise<LendingEvent[]> {
+    return this.context.apiClient.invokeDomainMethod({
       account,
-      method: 'getReserveEventsByTime',
-      args: [startDate, endDate, opts],
-    })
-
-    console.log('getReserveEventsByTime stream', typeof stream)
-    return stream as StorageStream<string, LendingEvent>
+      method: 'getReserveEvents',
+      args: [filters],
+    }) as Promise<LendingEvent[]>
   }
 
   async updateStats(now: number): Promise<void> {

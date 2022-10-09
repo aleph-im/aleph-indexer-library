@@ -48,41 +48,14 @@ export class APIResolver {
     if (limit < 1 || limit > 1000)
       throw new Error('400 Bad Request: 1 <= limit <= 1000')
 
-    const typesMap = types ? new Set(types) : undefined
-
-    const result: LendingEvent[] = []
-
-    const events = await this.domain.getReserveEventsByTime(
-      reserve,
+    return this.domain.getReserveEvents(reserve, {
       startDate,
       endDate,
-      {
-        reverse,
-        limit: !typesMap ? limit + skip : undefined,
-      },
-    )
-
-    // const events = this.eventDAL
-    //   .useIndex('reserve_timestamp')
-    //   .getAllFromTo([reserve, startDate], [reserve, endDate], {
-    //     reverse,
-    //     limit: !typesMap ? limit + skip : undefined,
-    //   })
-
-    for await (const { value } of events) {
-      // @note: Filter by type
-      if (typesMap && !typesMap.has(value.type)) continue
-
-      // @note: Skip first N events
-      if (--skip >= 0) continue
-
-      result.push(value)
-
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && result.length >= limit) return result
-    }
-
-    return result
+      types,
+      skip,
+      reverse,
+      limit,
+    })
   }
 
   async getGlobalStats(args: GlobalStatsFilters): Promise<GlobalLendingStats> {

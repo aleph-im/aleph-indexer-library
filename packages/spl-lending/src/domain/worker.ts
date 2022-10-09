@@ -1,4 +1,4 @@
-import { StorageStream, Utils } from '@aleph-indexer/core'
+import { Utils } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
@@ -17,6 +17,7 @@ import { LendingEvent, LendingReserveInfo } from '../types.js'
 import { Reserve } from './reserve.js'
 import { createAccountStats } from './stats/timeSeries.js'
 import { ACCOUNT_MAP } from '../constants.js'
+import { ReserveEventsFilters } from './types.js'
 
 const { isParsedIx } = Utils
 
@@ -91,14 +92,12 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  getReserveEventsByTime(
+  getReserveEvents(
     reserve: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, LendingEvent>> {
+    filters: ReserveEventsFilters,
+  ): Promise<LendingEvent[]> {
     const res = this.getReserve(reserve)
-    return res.getEventsByTime(startDate, endDate, opts)
+    return res.getEvents(filters)
   }
 
   protected async filterInstructions(
