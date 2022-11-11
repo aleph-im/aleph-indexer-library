@@ -25,19 +25,18 @@ export default class SolendDiscoverer implements LendingDiscoverer {
       const address = reserve.config.address.toString()
       if (this.cache[address]) continue
 
-      const reserveLiquidityMint = reserve.config.mintAddress.toString()
+      const reserveLiquidityMint = reserve.config.liquidityToken.mint.toString()
       const reserveLiquidityVault = reserve.config.liquidityAddress.toString()
       const collateralMintAddress =
         reserve.config.collateralMintAddress.toString()
       const reserveCollateralVault =
         reserve.config.collateralSupplyAddress.toString()
-      const pythPriceOracle = reserve.config.priceAddress.toString()
-      const switchboardFeedAddress =
-        reserve.config.switchboardFeedAddress.toString()
+      const pythPriceOracle = reserve.config.pythOracle.toString()
+      const switchboardFeedAddress = reserve.config.switchboardOracle.toString()
 
       const liquidityFeeReceiver =
         reserve.config.liquidityFeeReceiverAddress.toString()
-      const quantityDecimals = reserve.config.decimals
+      const quantityDecimals = reserve.config.liquidityToken.decimals
       const quantityMultiplier = new BN(10)
         .pow(new BN(quantityDecimals))
         .toString()

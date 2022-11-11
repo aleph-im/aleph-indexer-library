@@ -21,7 +21,7 @@ export default class SolendReserveStatsAggregator
     account,
   }: LendingReserveStatsAggregatorArgs): Promise<LendingReserveStatsFromContext> {
     const context = await this.loadReserve(account)
-    const quantityDecimals = context.config.decimals
+    const quantityDecimals = context.config.liquidityToken.decimals
     const precisionFactor = new BN(10 ** quantityDecimals)
 
     const stats = this.getEmptyContextStats()
