@@ -1,4 +1,3 @@
-import { SolanaRPC } from '@aleph-indexer/core'
 import { TokenInfo } from '@solana/spl-token-registry'
 import BN from 'bn.js'
 
@@ -64,6 +63,17 @@ export enum AuthorityType {
   AccountOwner = 'accountOwner',
   /// Authority to close a token account
   CloseAccount = 'closeAccount',
+}
+
+export enum SPLTokenType {
+  Account = 'account',
+  Mint = 'mint',
+  AccountMint = 'account_mint',
+}
+
+export type SPLToken = {
+  address: string
+  type: SPLTokenType
 }
 
 export type SPLTokenRawEventBase = {
@@ -438,4 +448,4 @@ export type DiscoveryFnReturn = {
   accounts: string[]
 }
 
-export type DiscoveryFn = (solana: SolanaRPC) => Promise<DiscoveryFnReturn>
+export type DiscoveryFn = () => Promise<DiscoveryFnReturn>

@@ -5,12 +5,12 @@ import {
   AccountStats,
 } from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
-import { LendingEvent, LendingReserveInfo } from '../types'
-import { ReserveEventsFilters } from './types.js'
+import { SPLTokenEvent } from '../types'
+import { MintEventsFilters } from './types.js'
 
-export class Reserve {
+export class Account {
   constructor(
-    public info: LendingReserveInfo,
+    public address: string,
     protected eventDAL: EventStorage,
     protected timeSeriesStats: AccountTimeSeriesStatsManager,
   ) {}
@@ -30,8 +30,7 @@ export class Reserve {
     return this.timeSeriesStats.getStats()
   }
 
-  // @note: Improve it creating a "ReserveTypeTimestamp" index
-  async getEvents(filters: ReserveEventsFilters): Promise<LendingEvent[]> {
+  async getEvents(filters: MintEventsFilters): Promise<SPLTokenEvent[]> {
     const { startDate, endDate, types, skip: sk, ...opts } = filters
 
     const typesMap = types ? new Set(types) : undefined
@@ -40,15 +39,11 @@ export class Reserve {
     const limit = opts.limit || 1000
     opts.limit = !typesMap ? limit + skip : undefined
 
-    const result: LendingEvent[] = []
+    const result: SPLTokenEvent[] = []
 
     const events = await this.eventDAL
-      .useIndex(EventDALIndex.ReserveTimestamp)
-      .getAllFromTo(
-        [this.info.address, startDate],
-        [this.info.address, endDate],
-        opts,
-      )
+      .useIndex(EventDALIndex.AccountTimestamp)
+      .getAllFromTo([this.address, startDate], [this.address, endDate], opts)
 
     for await (const { value } of events) {
       // @note: Filter by type

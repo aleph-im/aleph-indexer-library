@@ -1,12 +1,10 @@
 import fs, { Stats } from 'fs'
 import path from 'path'
-import { SolanaRPC, config } from '@aleph-indexer/core'
+import { config } from '@aleph-indexer/core'
 import { discoveryLevelStorage, DiscoveryEntity } from '../dal/discovery.js'
 import { DiscoveryFn, DiscoveryFnReturn } from '../types.js'
 
-export async function discoveryFn(
-  solana: SolanaRPC,
-): Promise<DiscoveryFnReturn> {
+export async function discoveryFn(): Promise<DiscoveryFnReturn> {
   // @note: Get addresses from env vars
   const mintsSet = new Set(
     config.SPL_TOKEN_MINTS ? config.SPL_TOKEN_MINTS.split(',') : [],
@@ -73,7 +71,7 @@ export async function discoveryFn(
               const module = await import(filePath)
               const discoverFn: DiscoveryFn = module.default
 
-              const { accounts, mints } = await discoverFn(solana)
+              const { accounts, mints } = await discoverFn()
 
               const countMintBefore = mintsSet.size
               const countAccountBefore = accountsSet.size

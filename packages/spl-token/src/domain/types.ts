@@ -1,4 +1,4 @@
-export type ReserveEventsFilters = {
+export type MintEventsFilters = {
   startDate: number
   endDate: number
   types?: string[]
