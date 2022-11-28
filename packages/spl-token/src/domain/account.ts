@@ -1,36 +1,11 @@
-import {
-  AccountTimeSeriesStatsManager,
-  AccountTimeSeriesStats,
-  AccountStatsFilters,
-  AccountStats,
-} from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
-import { SPLTokenEvent } from '../types'
-import { MintEventsFilters } from './types.js'
+import { SPLTokenEvent } from '../types.js'
+import { AccountEventsFilters } from './types.js'
 
 export class Account {
-  constructor(
-    public address: string,
-    protected eventDAL: EventStorage,
-    protected timeSeriesStats: AccountTimeSeriesStatsManager,
-  ) {}
+  constructor(public address: string, protected eventDAL: EventStorage) {}
 
-  async updateStats(now: number): Promise<void> {
-    await this.timeSeriesStats.process(now)
-  }
-
-  async getTimeSeriesStats(
-    type: string,
-    filters: AccountStatsFilters,
-  ): Promise<AccountTimeSeriesStats> {
-    return this.timeSeriesStats.getTimeSeriesStats(type, filters)
-  }
-
-  async getStats(): Promise<AccountStats> {
-    return this.timeSeriesStats.getStats()
-  }
-
-  async getEvents(filters: MintEventsFilters): Promise<SPLTokenEvent[]> {
+  async getEvents(filters: AccountEventsFilters): Promise<SPLTokenEvent[]> {
     const { startDate, endDate, types, skip: sk, ...opts } = filters
 
     const typesMap = types ? new Set(types) : undefined
@@ -41,9 +16,12 @@ export class Account {
 
     const result: SPLTokenEvent[] = []
 
+    const from = startDate ? [this.address, startDate] : [this.address]
+    const to = endDate ? [this.address, endDate] : [this.address]
+
     const events = await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
-      .getAllFromTo([this.address, startDate], [this.address, endDate], opts)
+      .getAllFromTo(from, to, opts)
 
     for await (const { value } of events) {
       // @note: Filter by type

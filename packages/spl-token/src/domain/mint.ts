@@ -1,63 +1,110 @@
+import { EventStorage } from '../dal/event.js'
+import {AccountHoldingsFilters, AccountHoldingsOptions, MintEventsFilters} from './types.js'
 import {
-  AccountTimeSeriesStatsManager,
-  AccountTimeSeriesStats,
-  AccountStatsFilters,
-  AccountStats,
-} from '@aleph-indexer/framework'
-import { EventDALIndex, EventStorage } from '../dal/event.js'
-import { SPLTokenEvent } from '../types'
-import { MintEventsFilters } from './types.js'
+  SPLAccountBalance,
+  SPLAccountHoldings,
+  SPLTokenEvent,
+} from '../types.js'
+import { Account } from './account.js'
+import { BalanceStateStorage } from '../dal/balanceState.js'
+import BN from 'bn.js'
 
 export class Mint {
+  protected accounts: string[]
   constructor(
-    public address: string,
+    protected address: string,
     protected eventDAL: EventStorage,
-    protected timeSeriesStats: AccountTimeSeriesStatsManager,
-  ) {}
-
-  async updateStats(now: number): Promise<void> {
-    await this.timeSeriesStats.process(now)
+    protected balanceStateDAL: BalanceStateStorage,
+    protected balanceHistoryDAL: BalanceStateStorage,
+  ) {
+    this.accounts = []
   }
 
-  async getTimeSeriesStats(
-    type: string,
-    filters: AccountStatsFilters,
-  ): Promise<AccountTimeSeriesStats> {
-    return this.timeSeriesStats.getTimeSeriesStats(type, filters)
-  }
-
-  async getStats(): Promise<AccountStats> {
-    return this.timeSeriesStats.getStats()
+  addAccount(account: string): void {
+    if (this.accounts.indexOf(account) !== -1) this.accounts.push(account)
   }
 
   async getEvents(filters: MintEventsFilters): Promise<SPLTokenEvent[]> {
-    const { startDate, endDate, types, skip: sk, ...opts } = filters
+    let result: SPLTokenEvent[] = []
 
-    const typesMap = types ? new Set(types) : undefined
+    const promises = this.accounts.map(async (account) => {
+      const instance = new Account(account, this.eventDAL)
+      const events = await instance.getEvents(filters)
+      result = [...result, ...events]
+    })
 
-    let skip = sk || 0
-    const limit = opts.limit || 1000
-    opts.limit = !typesMap ? limit + skip : undefined
-
-    const result: SPLTokenEvent[] = []
-
-    const events = await this.eventDAL
-      .useIndex(EventDALIndex.AccountTimestamp)
-      .getAllFromTo([this.address, startDate], [this.address, endDate], opts)
-
-    for await (const { value } of events) {
-      // @note: Filter by type
-      if (typesMap && !typesMap.has(value.type)) continue
-
-      // @note: Skip first N events
-      if (--skip >= 0) continue
-
-      result.push(value)
-
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && result.length >= limit) return result
-    }
+    await Promise.all(promises)
 
     return result
+  }
+
+  async getTokenHolders(): Promise<SPLAccountBalance[]> {
+    return await this.balanceStateDAL.getMany(this.accounts)
+  }
+
+  async getTokenHoldings({
+    account,
+    startDate,
+    endDate,
+    gte,
+  }: AccountHoldingsFilters): Promise<SPLAccountHoldings[]> {
+    const accountsHoldingsMap: Record<string, SPLAccountHoldings> = {}
+
+    const accounts = account ? [account] : this.accounts
+
+    const opts: AccountHoldingsOptions = {
+      reverse: true,
+    }
+
+    const gteBn = gte ? new BN(gte) : undefined
+
+    const promises = accounts.map(async (account) => {
+      const balances = await this.balanceHistoryDAL.getAllFromTo(
+        [account, startDate],
+        [account, endDate],
+        opts,
+      )
+      for await (const { value: accountBalance } of balances) {
+        const balance = new BN(accountBalance.balance)
+        const holding = (accountsHoldingsMap[account] = accountsHoldingsMap[
+          account
+        ] || {
+          account: account,
+          balance,
+          max: balance,
+          min: balance,
+          avg: new BN(0),
+          events: 0,
+        })
+
+        holding.min = BN.min(holding.min, balance)
+        holding.max = BN.max(holding.max, balance)
+        holding.avg.iadd(balance)
+        holding.events++
+        if (!holding.owner) {
+          holding.owner = accountBalance.owner
+        }
+      }
+    })
+
+    await Promise.all(promises)
+
+    const accountsHoldings = Object.values(accountsHoldingsMap)
+    const filteredHoldings: SPLAccountHoldings[] = []
+
+    for (const holdings of accountsHoldings) {
+      holdings.avg = holdings.avg.divn(holdings.events)
+
+      if (gteBn) {
+        if (holdings.max.gte(gteBn)) {
+          filteredHoldings.push(holdings)
+        }
+        continue
+      }
+
+      filteredHoldings.push(holdings)
+    }
+
+    return filteredHoldings
   }
 }

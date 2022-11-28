@@ -9,43 +9,57 @@ import {
   InstructionContextV1,
 } from '@aleph-indexer/framework'
 import { PendingWorkPool, PendingWork } from '@aleph-indexer/core'
-import { eventParser as eParser } from '../parsers/event.js'
+import {
+  createEventParser,
+  EventParser as eventParser,
+} from '../parsers/event.js'
 import { mintParser as mParser } from '../parsers/mint.js'
 import { createEventDAL } from '../dal/event.js'
 import {
+  SPLAccountBalance,
+  SPLAccountHoldings,
   SPLTokenAccount,
   SPLTokenEvent,
-  SPLTokenEventType, SPLTokenInfo,
+  SPLTokenEventType,
   SPLTokenType,
 } from '../types.js'
 import { Mint } from './mint.js'
-import { createAccountStats } from './stats/timeSeries.js'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
-import { isParsedIx } from '../utils/utils.js'
+import {
+  getBalanceFromEvent,
+  getEventAccounts,
+  isParsedIx,
+} from '../utils/utils.js'
 import { createFetchMintDAL } from '../dal/fetchMint.js'
-import { MintAccount } from './types.js'
-import { createTokenDAL } from '../dal/token.js'
+import {
+  AccountHoldingsFilters,
+  MintAccount,
+  MintEventsFilters,
+} from './types.js'
+import { createBalanceHistoryDAL } from '../dal/balanceHistory.js'
+import { createBalanceStateDAL } from '../dal/balanceState.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
   implements IndexerWorkerDomainWithStats
 {
   protected mints: Record<string, Mint> = {}
-  protected mintAccounts: Record<string, string[]> = {}
   protected accountMints: PendingWorkPool<MintAccount>
 
   constructor(
     protected context: IndexerDomainContext,
-    protected eventParser = eParser,
+    protected eventParser: eventParser,
     protected mintParser = mParser,
     protected eventDAL = createEventDAL(context.dataPath),
     protected statsStateDAL = createStatsStateDAL(context.dataPath),
     protected statsTimeSeriesDAL = createStatsTimeSeriesDAL(context.dataPath),
     protected fetchMintDAL = createFetchMintDAL(context.dataPath),
-    protected tokenDAL = createTokenDAL(context.dataPath),
+    protected balanceHistoryDAL = createBalanceHistoryDAL(context.dataPath),
+    protected balanceStateDAL = createBalanceStateDAL(context.dataPath),
     protected programId = TOKEN_PROGRAM_ID,
   ) {
     super(context)
+    this.eventParser = createEventParser(this.eventDAL)
     this.accountMints = new PendingWorkPool<MintAccount>({
       id: 'mintAccounts',
       interval: 0,
@@ -65,23 +79,29 @@ export default class WorkerDomain
     config: AccountIndexerConfigWithMeta<SPLTokenAccount>,
   ): Promise<void> {
     const { account, meta } = config
-    const { projectId, apiClient: indexerApi } = this.context
 
     if (meta.type === SPLTokenType.Mint) {
-      const accountTimeSeries = await createAccountStats(
-        projectId,
+      this.mints[account] = new Mint(
         account,
-        indexerApi,
         this.eventDAL,
-        this.statsStateDAL,
-        this.statsTimeSeriesDAL,
+        this.balanceStateDAL,
+        this.balanceHistoryDAL,
       )
-
-      this.mints[account] = new Mint(account, this.eventDAL, accountTimeSeries)
-      this.mintAccounts[account] = this.mintAccounts[account] || []
     }
-    if (meta.type === SPLTokenType.AccountMint) {
-      this.mintAccounts[meta.mint].push(account)
+    if (
+      meta.type === SPLTokenType.Account ||
+      meta.type === SPLTokenType.AccountMint
+    ) {
+      const mint = meta.mint
+      if (!this.mints[mint]) {
+        this.mints[mint] = new Mint(
+          mint,
+          this.eventDAL,
+          this.balanceStateDAL,
+          this.balanceHistoryDAL,
+        )
+      }
+      this.mints[mint].addAccount(account)
     }
     console.log('Account indexing', this.context.instanceName, account)
   }
@@ -102,8 +122,22 @@ export default class WorkerDomain
     console.log('', account)
   }
 
-  async getToken(account: string): Promise<SPLTokenInfo | undefined> {
-    return await this.tokenDAL.getFirstValueFromTo([account], [account])
+  async getMintEvents(
+    account: string,
+    filters: MintEventsFilters,
+  ): Promise<SPLTokenEvent[]> {
+    return await this.mints[account].getEvents(filters)
+  }
+
+  async getTokenHolders(account: string): Promise<SPLAccountBalance[]> {
+    return await this.mints[account].getTokenHolders()
+  }
+
+  async getAccountHoldings(
+    account: string,
+    filters: AccountHoldingsFilters,
+  ): Promise<SPLAccountHoldings[]> {
+    return await this.mints[account].getTokenHoldings(filters)
   }
 
   protected async filterInstructions(
@@ -117,7 +151,7 @@ export default class WorkerDomain
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
     const works: PendingWork<MintAccount>[] = []
-    ixsContext.map((ix) => {
+    const promises = ixsContext.map(async (ix) => {
       const account = ix.txContext.parserContext.account
       if (this.mints[account]) {
         const parsedIx = this.mintParser.parse(ix, account)
@@ -133,17 +167,22 @@ export default class WorkerDomain
           works.push(work)
         }
       } else {
-        const parsedIx = this.eventParser.parse(ix)
+        const parsedIx = await this.eventParser.parse(ix)
         if (parsedIx) {
           parsedEvents.push(parsedIx)
         }
       }
     })
 
+    await Promise.all(promises)
+
     console.log(`indexing ${ixsContext.length} parsed ixs`)
 
     if (parsedEvents.length > 0) {
       await this.eventDAL.save(parsedEvents)
+
+      const lastEvent = parsedEvents[0]
+      this.dealBalances(lastEvent)
     }
     if (works.length > 0) {
       await this.accountMints.addWork(works)
@@ -180,5 +219,20 @@ export default class WorkerDomain
       }
       await this.context.apiClient.indexAccount(options)
     }
+  }
+
+  protected dealBalances(entity: SPLTokenEvent): void {
+    const accounts = getEventAccounts(entity)
+    const entities = accounts.map((account) => {
+      const balance = getBalanceFromEvent(entity, account)
+      return {
+        account,
+        owner: entity.owner,
+        balance,
+        timestamp: entity.timestamp,
+      } as SPLAccountBalance
+    })
+    this.balanceHistoryDAL.save(entities)
+    this.balanceStateDAL.save(entities)
   }
 }

@@ -5,20 +5,27 @@ import {
   IndexerMainDomainWithDiscovery,
   IndexerMainDomainWithStats,
 } from '@aleph-indexer/framework'
-import { SPLTokenInfo, SPLTokenType } from '../types.js'
+import { Token, solanaPrivateRPCRoundRobin } from '@aleph-indexer/core'
+import {
+  SPLAccountBalance,
+  SPLAccountHoldings,
+  SPLTokenEvent,
+  SPLTokenInfo,
+  SPLTokenType,
+} from '../types.js'
 import { discoveryFn } from '../utils/discovery.js'
+import { AccountHoldingsFilters, MintEventsFilters } from './types.js'
+import { TOKEN_PROGRAM_ID } from '../constants.js'
 
 export default class MainDomain
   extends IndexerMainDomain
   implements IndexerMainDomainWithDiscovery, IndexerMainDomainWithStats
 {
   protected accounts: Set<string> = new Set()
-  protected mints: Set<string> = new Set()
+  protected tokens: Record<string, SPLTokenInfo> = {}
 
   constructor(protected context: IndexerMainDomainContext) {
-    super(context, {
-      stats: 1000 * 60 * 5,
-    })
+    super(context, {})
   }
 
   async updateStats(now: number): Promise<void> {
@@ -45,9 +52,16 @@ export default class MainDomain
 
     await Promise.all(
       accounts.map(async (account: string) => {
+        const connection = solanaPrivateRPCRoundRobin.getClient()
+        const mint = await Token.getTokenMintByAccount(
+          account,
+          connection.getConnection(),
+        )
+        await this.addToken(mint)
+
         const options = {
           account,
-          meta: { type: SPLTokenType.Account },
+          meta: { type: SPLTokenType.Account, mint: mint },
           index: {
             transactions: {
               chunkDelay: 0,
@@ -62,6 +76,7 @@ export default class MainDomain
     )
     await Promise.all(
       mints.map(async (mint: string) => {
+        await this.addToken(mint)
         const options = {
           account: mint,
           meta: { type: SPLTokenType.Mint },
@@ -74,28 +89,60 @@ export default class MainDomain
           },
         }
         await this.context.apiClient.indexAccount(options)
-        this.mints.add(mint)
       }),
     )
   }
 
   async getTokens(): Promise<Record<string, SPLTokenInfo>> {
-    const tokens: Record<string, SPLTokenInfo> = {}
-
-    await Promise.all(
-      Array.from(this.accounts || []).map(async (account) => {
-        const token = await this.getToken(account)
-        tokens[account] = token as SPLTokenInfo
-      }),
-    )
-
-    return tokens
+    return this.tokens
   }
 
-  async getToken(account: string): Promise<SPLTokenInfo> {
+  async getTokenHolders(account: string): Promise<SPLAccountBalance[]> {
     return (await this.context.apiClient.invokeDomainMethod({
       account,
-      method: 'getToken',
-    })) as SPLTokenInfo
+      method: 'getTokenHolders',
+    })) as SPLAccountBalance[]
+  }
+
+  async getMintEvents(
+    account: string,
+    filters: MintEventsFilters,
+  ): Promise<SPLTokenEvent[]> {
+    return (await this.context.apiClient.invokeDomainMethod({
+      account,
+      args: [filters],
+      method: 'getMintEvents',
+    })) as SPLTokenEvent[]
+  }
+
+  async getAccountHoldings(
+    account: string,
+    filters: AccountHoldingsFilters,
+  ): Promise<SPLAccountHoldings[]> {
+    return (await this.context.apiClient.invokeDomainMethod({
+      account,
+      args: [filters],
+      method: 'getAccountHoldings',
+    })) as SPLAccountHoldings[]
+  }
+
+  protected async addToken(mint: string): Promise<void> {
+    const connection = solanaPrivateRPCRoundRobin.getClient()
+    const tokenInfo = await Token.getTokenByAddress(
+      mint,
+      connection.getConnection(),
+    )
+
+    if (!tokenInfo) return
+
+    const entity: SPLTokenInfo = {
+      name: tokenInfo.symbol,
+      address: mint,
+      programId: TOKEN_PROGRAM_ID,
+      tokenInfo,
+    }
+
+    console.log('Save token entity ', entity)
+    this.tokens[mint] = entity
   }
 }
