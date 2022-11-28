@@ -1,12 +1,12 @@
 import {
+  AccountIndexerRequestArgs,
   IndexerMainDomain,
+  IndexerMainDomainContext,
   IndexerMainDomainWithDiscovery,
   IndexerMainDomainWithStats,
-  IndexerMainDomainContext,
 } from '@aleph-indexer/framework'
-import { SPLTokenType } from '../types.js'
-import { DiscovererFactory } from './discoverer/index.js'
-import { discoveryFn } from '../utils/discovery'
+import { SPLTokenInfo, SPLTokenType } from '../types.js'
+import { discoveryFn } from '../utils/discovery.js'
 
 export default class MainDomain
   extends IndexerMainDomain
@@ -15,13 +15,28 @@ export default class MainDomain
   protected accounts: Set<string> = new Set()
   protected mints: Set<string> = new Set()
 
-  constructor(
-    protected context: IndexerMainDomainContext,
-    protected discovererFactory: typeof DiscovererFactory = DiscovererFactory,
-  ) {
+  constructor(protected context: IndexerMainDomainContext) {
     super(context, {
       stats: 1000 * 60 * 5,
     })
+  }
+
+  async updateStats(now: number): Promise<void> {
+    console.log('Method not implemented.')
+  }
+
+  async discoverAccounts(): Promise<AccountIndexerRequestArgs[]> {
+    const init = {
+      account: '',
+      index: {
+        transactions: {
+          chunkDelay: 0,
+          chunkTimeframe: 1000 * 60 * 60 * 24,
+        },
+        content: false,
+      },
+    }
+    return [init]
   }
 
   async init(...args: unknown[]): Promise<void> {
@@ -62,5 +77,25 @@ export default class MainDomain
         this.mints.add(mint)
       }),
     )
+  }
+
+  async getTokens(): Promise<Record<string, SPLTokenInfo>> {
+    const tokens: Record<string, SPLTokenInfo> = {}
+
+    await Promise.all(
+      Array.from(this.accounts || []).map(async (account) => {
+        const token = await this.getToken(account)
+        tokens[account] = token as SPLTokenInfo
+      }),
+    )
+
+    return tokens
+  }
+
+  async getToken(account: string): Promise<SPLTokenInfo> {
+    return (await this.context.apiClient.invokeDomainMethod({
+      account,
+      method: 'getToken',
+    })) as SPLTokenInfo
   }
 }

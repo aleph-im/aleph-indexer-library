@@ -1,6 +1,7 @@
 {
   "packages": [
-    "packages/spl-lending"
+    "packages/spl-lending",
+    "packages/spl-token"
   ],
   "version": "1.0.0"
 }

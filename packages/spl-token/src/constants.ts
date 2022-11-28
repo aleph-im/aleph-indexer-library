@@ -1,39 +1,38 @@
 import BN from 'bn.js'
 import { constants } from '@aleph-indexer/core'
-import { LendingEventType } from './types.js'
+import { SPLTokenEventType } from './types.js'
 
 const { TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID_PK } = constants
 export { TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID_PK }
 
+export enum ProgramName {
+  SPLToken = 'spl-token',
+}
+
 // ----------------- EVENTS --------------------
 export const liquidityEvents = [
-  LendingEventType.DepositReserveLiquidity,
-  LendingEventType.RedeemReserveCollateral,
-  LendingEventType.BorrowObligationLiquidity,
-  LendingEventType.RepayObligationLiquidity,
-  LendingEventType.LiquidateObligation,
-  LendingEventType.DepositReserveLiquidityAndObligationCollateral,
-  LendingEventType.WithdrawObligationCollateralAndRedeemReserveCollateral,
-  LendingEventType.LiquidateObligation2,
+  SPLTokenEventType.InitializeAccount,
+  SPLTokenEventType.CloseAccount,
+  SPLTokenEventType.Burn,
 ]
 
 export const liquidityEventsWhitelist = new Set(liquidityEvents)
 
 export const borrowEvents = [
-  LendingEventType.BorrowObligationLiquidity,
-  LendingEventType.RepayObligationLiquidity,
-  LendingEventType.LiquidateObligation,
-  LendingEventType.LiquidateObligation2,
+  SPLTokenEventType.InitializeAccount,
+  SPLTokenEventType.CloseAccount,
 ]
 
 export const borrowEventsWhitelist = new Set(borrowEvents)
 
 export const liquidationEventsWhitelist = new Set([
-  LendingEventType.LiquidateObligation,
-  LendingEventType.LiquidateObligation2,
+  SPLTokenEventType.InitializeAccount,
+  SPLTokenEventType.Burn,
 ])
 
-export const flashLoanEventsWhitelist = new Set([LendingEventType.FlashLoan])
+export const flashLoanEventsWhitelist = new Set([
+  SPLTokenEventType.InitializeAccount,
+])
 
 // WADS
 

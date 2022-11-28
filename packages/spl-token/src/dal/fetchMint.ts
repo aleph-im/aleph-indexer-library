@@ -3,8 +3,9 @@ import {
   PendingWork,
   PendingWorkStorage,
 } from '@aleph-indexer/core'
+import { MintAccount } from '../domain/types.js'
 
-export type FetchMintStorage = PendingWorkStorage<string[]>
+export type FetchMintStorage = PendingWorkStorage<MintAccount>
 
 /**
  * Creates a new pending transaction storage for the fetcher.
@@ -14,22 +15,18 @@ export function createFetchMintDAL(
   path: string,
   name = 'fetcher_account_mints',
 ): FetchMintStorage {
-  return new PendingWorkStorage({
+  return new PendingWorkStorage<MintAccount>({
     name,
     path,
     count: true,
     async updateCheckFn(
-      oldEntity: PendingWork<string[]> | undefined,
-      newEntity: PendingWork<string[]>,
+      oldEntity: PendingWork<MintAccount> | undefined,
+      newEntity: PendingWork<MintAccount>,
     ): Promise<EntityUpdateOp> {
       if (oldEntity) {
-        const peers = new Set([
-          ...(oldEntity.payload || []),
-          ...(newEntity.payload || []),
-        ])
-
-        newEntity.payload = [...peers]
-        newEntity.time = oldEntity.time
+        if (oldEntity.payload.timestamp > newEntity.payload.timestamp) {
+          newEntity.payload = oldEntity.payload
+        }
       }
 
       return EntityUpdateOp.Update

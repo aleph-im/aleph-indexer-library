@@ -71,8 +71,9 @@ export enum SPLTokenType {
   AccountMint = 'account_mint',
 }
 
-export type SPLToken = {
+export type SPLTokenAccount = {
   address: string
+  mint: string
   type: SPLTokenType
 }
 

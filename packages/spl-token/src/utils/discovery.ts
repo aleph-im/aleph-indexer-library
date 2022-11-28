@@ -1,7 +1,6 @@
 import fs, { Stats } from 'fs'
 import path from 'path'
 import { config } from '@aleph-indexer/core'
-import { discoveryLevelStorage, DiscoveryEntity } from '../dal/discovery.js'
 import { DiscoveryFn, DiscoveryFnReturn } from '../types.js'
 
 export async function discoveryFn(): Promise<DiscoveryFnReturn> {
@@ -14,11 +13,11 @@ export async function discoveryFn(): Promise<DiscoveryFnReturn> {
   )
 
   // @note: Get addresses from storage
-  for await (const { key: item } of discoveryLevelStorage.getAll()) {
+  /*for await (const { key: item } of discoveryLevelStorage.getAll()) {
     const [address, type] = item.split('|')
     if (type === 'mint') mintsSet.add(address)
     if (type === 'account') accountsSet.add(address)
-  }
+  }*/
 
   // @note: Get addresses from custom discovery scripts under "discoveryPath"
 
@@ -104,7 +103,7 @@ export async function discoveryFn(): Promise<DiscoveryFnReturn> {
 
   // @note: Save all in storage
   // @todo: Implement forget by blacklist
-  const saveEntities: DiscoveryEntity[] = []
+  /*const saveEntities: DiscoveryEntity[] = []
 
   for (const address of result.mints) {
     saveEntities.push({ address, type: 'mint' })
@@ -112,9 +111,7 @@ export async function discoveryFn(): Promise<DiscoveryFnReturn> {
 
   for (const address of result.accounts) {
     saveEntities.push({ address, type: 'account' })
-  }
-
-  await discoveryLevelStorage.save(saveEntities)
+  }*/
 
   return result
 }

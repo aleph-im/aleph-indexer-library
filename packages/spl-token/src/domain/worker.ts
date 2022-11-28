@@ -1,8 +1,6 @@
 import {
   AccountIndexerConfigWithMeta,
-  AccountStats,
   AccountStatsFilters,
-  AccountTimeSeriesStats,
   createStatsStateDAL,
   createStatsTimeSeriesDAL,
   IndexerDomainContext,
@@ -15,23 +13,26 @@ import { eventParser as eParser } from '../parsers/event.js'
 import { mintParser as mParser } from '../parsers/mint.js'
 import { createEventDAL } from '../dal/event.js'
 import {
-  SPLToken,
+  SPLTokenAccount,
   SPLTokenEvent,
-  SPLTokenEventType,
+  SPLTokenEventType, SPLTokenInfo,
   SPLTokenType,
 } from '../types.js'
 import { Mint } from './mint.js'
 import { createAccountStats } from './stats/timeSeries.js'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
-import { isSPLTokenParsedInstruction } from '../utils/utils'
-import { createFetchMintDAL } from '../dal/fetchMint'
+import { isParsedIx } from '../utils/utils.js'
+import { createFetchMintDAL } from '../dal/fetchMint.js'
+import { MintAccount } from './types.js'
+import { createTokenDAL } from '../dal/token.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
   implements IndexerWorkerDomainWithStats
 {
   protected mints: Record<string, Mint> = {}
-  protected accountMints: PendingWorkPool<string[]>
+  protected mintAccounts: Record<string, string[]> = {}
+  protected accountMints: PendingWorkPool<MintAccount>
 
   constructor(
     protected context: IndexerDomainContext,
@@ -41,10 +42,11 @@ export default class WorkerDomain
     protected statsStateDAL = createStatsStateDAL(context.dataPath),
     protected statsTimeSeriesDAL = createStatsTimeSeriesDAL(context.dataPath),
     protected fetchMintDAL = createFetchMintDAL(context.dataPath),
+    protected tokenDAL = createTokenDAL(context.dataPath),
     protected programId = TOKEN_PROGRAM_ID,
   ) {
     super(context)
-    this.accountMints = new PendingWorkPool({
+    this.accountMints = new PendingWorkPool<MintAccount>({
       id: 'mintAccounts',
       interval: 0,
       chunkSize: 100,
@@ -60,22 +62,26 @@ export default class WorkerDomain
   }
 
   async onNewAccount(
-    config: AccountIndexerConfigWithMeta<SPLToken>,
+    config: AccountIndexerConfigWithMeta<SPLTokenAccount>,
   ): Promise<void> {
-    const { account, type } = config
+    const { account, meta } = config
     const { projectId, apiClient: indexerApi } = this.context
 
-    const accountTimeSeries = await createAccountStats(
-      projectId,
-      account,
-      indexerApi,
-      this.eventDAL,
-      this.statsStateDAL,
-      this.statsTimeSeriesDAL,
-    )
+    if (meta.type === SPLTokenType.Mint) {
+      const accountTimeSeries = await createAccountStats(
+        projectId,
+        account,
+        indexerApi,
+        this.eventDAL,
+        this.statsStateDAL,
+        this.statsTimeSeriesDAL,
+      )
 
-    if (type === SPLTokenType.Mint) {
       this.mints[account] = new Mint(account, this.eventDAL, accountTimeSeries)
+      this.mintAccounts[account] = this.mintAccounts[account] || []
+    }
+    if (meta.type === SPLTokenType.AccountMint) {
+      this.mintAccounts[meta.mint].push(account)
     }
     console.log('Account indexing', this.context.instanceName, account)
   }
@@ -84,38 +90,47 @@ export default class WorkerDomain
     account: string,
     type: string,
     filters: AccountStatsFilters,
-  ): Promise<AccountTimeSeriesStats> {
+  ): Promise<any> {
     return {}
   }
 
-  async getStats(account: string): Promise<AccountStats> {
+  async getStats(account: string): Promise<any> {
     return {}
+  }
+
+  async updateStats(account: string, now: number): Promise<void> {
+    console.log('', account)
+  }
+
+  async getToken(account: string): Promise<SPLTokenInfo | undefined> {
+    return await this.tokenDAL.getFirstValueFromTo([account], [account])
   }
 
   protected async filterInstructions(
     ixsContext: InstructionContextV1[],
   ): Promise<InstructionContextV1[]> {
-    return ixsContext.filter(({ ix }) => isSPLTokenParsedInstruction(ix))
+    return ixsContext.filter(({ ix }) => isParsedIx(ix))
   }
 
   protected async indexInstructions(
     ixsContext: InstructionContextV1[],
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
+    const works: PendingWork<MintAccount>[] = []
     ixsContext.map((ix) => {
       const account = ix.txContext.parserContext.account
       if (this.mints[account]) {
         const parsedIx = this.mintParser.parse(ix, account)
         if (parsedIx && parsedIx.type === SPLTokenEventType.InitializeAccount) {
           const work = {
-            id: account,
+            id: parsedIx.account,
             time: Date.now(),
             payload: {
               mint: account,
               timestamp: parsedIx.timestamp,
             },
           }
-          this.accountMints.addWork(work)
+          works.push(work)
         }
       } else {
         const parsedIx = this.eventParser.parse(ix)
@@ -127,7 +142,12 @@ export default class WorkerDomain
 
     console.log(`indexing ${ixsContext.length} parsed ixs`)
 
-    await this.eventDAL.save(parsedEvents)
+    if (parsedEvents.length > 0) {
+      await this.eventDAL.save(parsedEvents)
+    }
+    if (works.length > 0) {
+      await this.accountMints.addWork(works)
+    }
   }
 
   /**
@@ -135,7 +155,7 @@ export default class WorkerDomain
    * @param works Txn signatures with extra properties as time and payload.
    */
   protected async _handleMintAccounts(
-    works: PendingWork<string[]>[],
+    works: PendingWork<MintAccount>[],
   ): Promise<void> {
     console.log(
       `Mint accounts | Start handling ${works.length} minted accounts`,
@@ -145,7 +165,11 @@ export default class WorkerDomain
       const account = work.id
       const options = {
         account,
-        meta: { type: SPLTokenType.AccountMint, payload: work.payload },
+        meta: {
+          address: account,
+          type: SPLTokenType.AccountMint,
+          mint: work.payload.mint,
+        },
         index: {
           transactions: {
             chunkDelay: 0,

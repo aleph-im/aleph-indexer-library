@@ -6,3 +6,8 @@ export type MintEventsFilters = {
   reverse?: boolean
   skip?: number
 }
+
+export type MintAccount = {
+  mint: string
+  timestamp: number
+}

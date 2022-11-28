@@ -7,9 +7,7 @@ import {
   TimeSeriesStats,
 } from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../../dal/event.js'
-import { LendingEvent, LendingInfo } from '../../types'
-import { ReserveStatsAggregatorFactory } from './reserve/index.js'
-import lendingEventAggregator from './timeSeriesAggregator.js'
+import { SPLTokenEvent, SPLTokenInfo } from '../../types'
 
 export async function createAccountStats(
   projectId: string,
@@ -19,10 +17,8 @@ export async function createAccountStats(
   statsStateDAL: StatsStateStorage,
   statsTimeSeriesDAL: StatsTimeSeriesStorage,
 ): Promise<AccountTimeSeriesStatsManager> {
-  const reserveStatsAggregator =
-    await ReserveStatsAggregatorFactory.getSingleton(projectId)
 
-  const LendingTimeSeries = new TimeSeriesStats<LendingEvent, LendingInfo>(
+  const LendingTimeSeries = new TimeSeriesStats<SPLTokenEvent, SPLTokenInfo>(
     {
       type: 'lending',
       startDate: 0,
@@ -39,8 +35,8 @@ export async function createAccountStats(
           .useIndex(EventDALIndex.AccountTimestamp)
           .getAllValuesFromTo([account, startDate], [account, endDate])
       },
-      aggregate: ({ input, prevValue }): LendingInfo => {
-        return lendingEventAggregator.aggregate(input, prevValue)
+      aggregate: ({ input, prevValue }): any => {
+        return {}
       },
     },
     statsStateDAL,
@@ -52,7 +48,7 @@ export async function createAccountStats(
       account,
       series: [LendingTimeSeries],
       aggregate(args) {
-        return reserveStatsAggregator.aggregate(args)
+        return {}
       },
     },
     indexerApi,

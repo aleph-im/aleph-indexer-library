@@ -14,7 +14,8 @@ export class MintParser {
     ixCtx: InstructionContextV1,
     mintAddress: string,
   ): SPLTokenEvent | undefined {
-    const { ix, parentIx, parentTx } = ixCtx
+    const { ix, parentIx, txContext } = ixCtx
+    const parentTx = txContext.tx
     const parsed = (ix as SLPTokenRawEvent).parsed
 
     // @note: Skip unrelated token ixs from being parsed

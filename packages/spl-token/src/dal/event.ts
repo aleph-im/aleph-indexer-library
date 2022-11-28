@@ -2,15 +2,7 @@ import BN from 'bn.js'
 import { EntityStorage } from '@aleph-indexer/core'
 import { SPLTokenEvent } from '../types.js'
 
-const mappedProps = [
-  'liquidityAmount',
-  'collateralAmount',
-  'liquidityFeeAmount',
-  'liquidityRepayAmount',
-  'collateralWithdrawAmount',
-  'reserveLiquidityAmount',
-  'repayReserveLiquidityAmount',
-]
+const mappedProps = ['balance']
 
 export type EventStorage = EntityStorage<SPLTokenEvent>
 
