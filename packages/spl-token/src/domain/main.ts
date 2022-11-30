@@ -21,7 +21,6 @@ export default class MainDomain
   extends IndexerMainDomain
   implements IndexerMainDomainWithDiscovery, IndexerMainDomainWithStats
 {
-  protected accounts: Set<string> = new Set()
   protected tokens: Record<string, SPLTokenInfo> = {}
 
   constructor(protected context: IndexerMainDomainContext) {
@@ -79,7 +78,7 @@ export default class MainDomain
         await this.addToken(mint)
         const options = {
           account: mint,
-          meta: { type: SPLTokenType.Mint },
+          meta: { type: SPLTokenType.Mint, mint },
           index: {
             transactions: {
               chunkDelay: 0,
@@ -89,6 +88,7 @@ export default class MainDomain
           },
         }
         await this.context.apiClient.indexAccount(options)
+        this.accounts.add(mint)
       }),
     )
   }
@@ -142,7 +142,6 @@ export default class MainDomain
       tokenInfo,
     }
 
-    console.log('Save token entity ', entity)
     this.tokens[mint] = entity
   }
 }

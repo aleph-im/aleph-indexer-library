@@ -1,3 +1,5 @@
+import { SPLTokenEvent } from '../types.js'
+
 export type MintEventsFilters = {
   account?: string
   startDate?: number
@@ -36,4 +38,5 @@ export type AccountHoldingsOptions = {
 export type MintAccount = {
   mint: string
   timestamp: number
+  event: SPLTokenEvent
 }

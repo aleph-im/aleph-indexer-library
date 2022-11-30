@@ -114,11 +114,11 @@ export class APIResolver {
     let sortedBalances: SPLAccountBalance[] = []
     if (reverse) {
       sortedBalances = balances.sort((a, b) =>
-        b.account.localeCompare(a.account),
+        b.balance.localeCompare(a.balance),
       )
     } else {
       sortedBalances = balances.sort((a, b) =>
-        a.account.localeCompare(b.account),
+        a.balance.localeCompare(b.balance),
       )
     }
 

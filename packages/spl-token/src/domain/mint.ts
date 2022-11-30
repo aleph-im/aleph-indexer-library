@@ -1,5 +1,9 @@
 import { EventStorage } from '../dal/event.js'
-import {AccountHoldingsFilters, AccountHoldingsOptions, MintEventsFilters} from './types.js'
+import {
+  AccountHoldingsFilters,
+  AccountHoldingsOptions,
+  MintEventsFilters,
+} from './types.js'
 import {
   SPLAccountBalance,
   SPLAccountHoldings,
@@ -11,6 +15,7 @@ import BN from 'bn.js'
 
 export class Mint {
   protected accounts: string[]
+
   constructor(
     protected address: string,
     protected eventDAL: EventStorage,
@@ -21,13 +26,14 @@ export class Mint {
   }
 
   addAccount(account: string): void {
-    if (this.accounts.indexOf(account) !== -1) this.accounts.push(account)
+    if (!this.accounts.includes(account)) this.accounts.push(account)
   }
 
   async getEvents(filters: MintEventsFilters): Promise<SPLTokenEvent[]> {
     let result: SPLTokenEvent[] = []
+    const accounts = filters.account ? [filters.account] : this.accounts
 
-    const promises = this.accounts.map(async (account) => {
+    const promises = accounts.map(async (account) => {
       const instance = new Account(account, this.eventDAL)
       const events = await instance.getEvents(filters)
       result = [...result, ...events]
@@ -39,7 +45,8 @@ export class Mint {
   }
 
   async getTokenHolders(): Promise<SPLAccountBalance[]> {
-    return await this.balanceStateDAL.getMany(this.accounts)
+    const balances = await this.balanceStateDAL.getMany(this.accounts)
+    return balances.filter((balance) => balance !== undefined)
   }
 
   async getTokenHoldings({
@@ -51,6 +58,8 @@ export class Mint {
     const accountsHoldingsMap: Record<string, SPLAccountHoldings> = {}
 
     const accounts = account ? [account] : this.accounts
+    if (accounts.length === 0) return []
+    const orderedAccounts = accounts.sort()
 
     const opts: AccountHoldingsOptions = {
       reverse: true,
@@ -58,7 +67,7 @@ export class Mint {
 
     const gteBn = gte ? new BN(gte) : undefined
 
-    const promises = accounts.map(async (account) => {
+    const promises = orderedAccounts.map(async (account) => {
       const balances = await this.balanceHistoryDAL.getAllFromTo(
         [account, startDate],
         [account, endDate],

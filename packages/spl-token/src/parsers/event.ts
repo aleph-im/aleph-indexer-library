@@ -1,7 +1,7 @@
 import { InstructionContextV1, Utils } from '@aleph-indexer/core'
 import { SLPTokenRawEvent, SPLTokenEvent, SPLTokenEventType } from '../types.js'
-import { EventStorage } from '../dal/event.js'
 import { getMintAndOwnerFromEvent } from '../utils/utils.js'
+import { FetchMintStorage } from '../dal/fetchMint.js'
 
 const { getTokenBalance } = Utils
 
@@ -11,7 +11,7 @@ export type MintOwner = {
 }
 
 export class EventParser {
-  constructor(protected eventDAL: EventStorage) {}
+  constructor(protected fetchMintDAL: FetchMintStorage) {}
 
   async parse(ixCtx: InstructionContextV1): Promise<SPLTokenEvent | undefined> {
     const { ix, parentIx, txContext } = ixCtx
@@ -272,9 +272,13 @@ export class EventParser {
   }
 
   protected async getMintAndOwner(account: string): Promise<MintOwner> {
-    const dbEvent = await this.eventDAL.getLastValueFromTo([account], [account])
+    const dbEvent = await this.fetchMintDAL.getFirstValueFromTo(
+      [account],
+      [account],
+    )
     if (dbEvent) {
-      const data = getMintAndOwnerFromEvent(dbEvent, account)
+      const event = dbEvent.payload.event
+      const data = getMintAndOwnerFromEvent(event, account)
 
       if (data) {
         return {
@@ -291,6 +295,6 @@ export class EventParser {
   }
 }
 
-export function createEventParser(dal: EventStorage): EventParser {
+export function createEventParser(dal: FetchMintStorage): EventParser {
   return new EventParser(dal)
 }

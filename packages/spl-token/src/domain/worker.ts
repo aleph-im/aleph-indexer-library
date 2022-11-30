@@ -8,7 +8,7 @@ import {
   IndexerWorkerDomainWithStats,
   InstructionContextV1,
 } from '@aleph-indexer/framework'
-import { PendingWorkPool, PendingWork } from '@aleph-indexer/core'
+import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   createEventParser,
   EventParser as eventParser,
@@ -59,7 +59,7 @@ export default class WorkerDomain
     protected programId = TOKEN_PROGRAM_ID,
   ) {
     super(context)
-    this.eventParser = createEventParser(this.eventDAL)
+    this.eventParser = createEventParser(this.fetchMintDAL)
     this.accountMints = new PendingWorkPool<MintAccount>({
       id: 'mintAccounts',
       interval: 0,
@@ -80,15 +80,8 @@ export default class WorkerDomain
   ): Promise<void> {
     const { account, meta } = config
 
-    if (meta.type === SPLTokenType.Mint) {
-      this.mints[account] = new Mint(
-        account,
-        this.eventDAL,
-        this.balanceStateDAL,
-        this.balanceHistoryDAL,
-      )
-    }
     if (
+      meta.type === SPLTokenType.Mint ||
       meta.type === SPLTokenType.Account ||
       meta.type === SPLTokenType.AccountMint
     ) {
@@ -126,18 +119,24 @@ export default class WorkerDomain
     account: string,
     filters: MintEventsFilters,
   ): Promise<SPLTokenEvent[]> {
-    return await this.mints[account].getEvents(filters)
+    const mint = this.mints[account]
+    if (!mint) return []
+    return await mint.getEvents(filters)
   }
 
   async getTokenHolders(account: string): Promise<SPLAccountBalance[]> {
-    return await this.mints[account].getTokenHolders()
+    const mint = this.mints[account]
+    if (!mint) return []
+    return await mint.getTokenHolders()
   }
 
   async getAccountHoldings(
     account: string,
     filters: AccountHoldingsFilters,
   ): Promise<SPLAccountHoldings[]> {
-    return await this.mints[account].getTokenHoldings(filters)
+    const mint = this.mints[account]
+    if (!mint) return []
+    return await mint.getTokenHoldings(filters)
   }
 
   protected async filterInstructions(
@@ -155,16 +154,39 @@ export default class WorkerDomain
       const account = ix.txContext.parserContext.account
       if (this.mints[account]) {
         const parsedIx = this.mintParser.parse(ix, account)
-        if (parsedIx && parsedIx.type === SPLTokenEventType.InitializeAccount) {
-          const work = {
-            id: parsedIx.account,
-            time: Date.now(),
-            payload: {
-              mint: account,
-              timestamp: parsedIx.timestamp,
-            },
+        if (parsedIx) {
+          if (parsedIx.type === SPLTokenEventType.InitializeAccount) {
+            const work = {
+              id: parsedIx.account,
+              time: Date.now(),
+              payload: {
+                mint: account,
+                timestamp: parsedIx.timestamp,
+                event: parsedIx,
+              },
+            }
+            works.push(work)
           }
-          works.push(work)
+          if (parsedIx.type === SPLTokenEventType.CloseAccount) {
+            const work = await this.fetchMintDAL.getFirstValueFromTo(
+              [parsedIx.account],
+              [parsedIx.account],
+            )
+            if (work && parsedIx.timestamp >= work.payload.timestamp) {
+              this.fetchMintDAL.remove(work)
+              /*
+              TODO: To optimize the fetcher and remove already closed accounts
+              const options = {
+                account: parsedIx.account,
+                index: {
+                  transactions: true,
+                  content: true,
+                },
+              }
+              await this.context.apiClient.deleteAccount(options)
+               */
+            }
+          }
         }
       } else {
         const parsedIx = await this.eventParser.parse(ix)

@@ -33,7 +33,7 @@ const timestampKey = {
 
 export function createEventDAL(path: string): EventStorage {
   return new EntityStorage<SPLTokenEvent>({
-    name: 'event',
+    name: 'token_event',
     path,
     key: [idKey],
     indexes: [
