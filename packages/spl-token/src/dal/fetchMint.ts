@@ -10,6 +10,7 @@ export type FetchMintStorage = PendingWorkStorage<MintAccount>
 /**
  * Creates a new pending transaction storage for the fetcher.
  * @param path Path to the database.
+ * @param name Name of the storage file
  */
 export function createFetchMintDAL(
   path: string,

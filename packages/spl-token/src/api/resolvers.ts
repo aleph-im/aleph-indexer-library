@@ -79,13 +79,15 @@ export class APIResolver {
 
     const typesMap = types ? new Set(types) : undefined
 
-    return await this.domain.getMintEvents(mint, {
+    const events = await this.domain.getMintEvents(mint, {
       account,
       startDate,
       endDate,
       reverse,
       limit: !typesMap ? limit + skip : undefined,
     })
+
+    return events
   }
 
   async getTokenHolders({
@@ -113,13 +115,17 @@ export class APIResolver {
 
     let sortedBalances: SPLAccountBalance[] = []
     if (reverse) {
-      sortedBalances = balances.sort((a, b) =>
-        b.balance.localeCompare(a.balance),
-      )
+      sortedBalances = balances.sort((a, b) => {
+        const aBalance = new BN(a.balance)
+        const bBalance = new BN(b.balance)
+        return bBalance.lt(aBalance) ? -1 : 1
+      })
     } else {
-      sortedBalances = balances.sort((a, b) =>
-        a.balance.localeCompare(b.balance),
-      )
+      sortedBalances = balances.sort((a, b) => {
+        const aBalance = new BN(a.balance)
+        const bBalance = new BN(b.balance)
+        return aBalance.lt(bBalance) ? -1 : 1
+      })
     }
 
     for (const value of sortedBalances) {

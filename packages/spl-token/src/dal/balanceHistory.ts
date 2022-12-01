@@ -8,7 +8,7 @@ export type BalanceHistoryStorage = EntityStorage<SPLAccountBalance>
 
 const idKey = {
   get: (e: SPLAccountBalance) => e.account,
-  length: EntityStorage.VariableLength,
+  length: EntityStorage.AddressLength,
 }
 
 const timestampKey = {

@@ -40,3 +40,8 @@ export type MintAccount = {
   timestamp: number
   event: SPLTokenEvent
 }
+
+export type AccountMint = {
+  account: string
+  mint: string
+}

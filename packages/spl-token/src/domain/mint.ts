@@ -1,7 +1,9 @@
+import { StorageValueStream } from '@aleph-indexer/core'
 import { EventStorage } from '../dal/event.js'
 import {
   AccountHoldingsFilters,
   AccountHoldingsOptions,
+  AccountMint,
   MintEventsFilters,
 } from './types.js'
 import {
@@ -9,44 +11,63 @@ import {
   SPLAccountHoldings,
   SPLTokenEvent,
 } from '../types.js'
+import BN from 'bn.js'
 import { Account } from './account.js'
 import { BalanceStateStorage } from '../dal/balanceState.js'
-import BN from 'bn.js'
+import { AccountMintStorage } from '../dal/accountMints.js'
 
 export class Mint {
-  protected accounts: string[]
-
   constructor(
     protected address: string,
     protected eventDAL: EventStorage,
     protected balanceStateDAL: BalanceStateStorage,
     protected balanceHistoryDAL: BalanceStateStorage,
-  ) {
-    this.accounts = []
+    protected accountMintDAL: AccountMintStorage,
+  ) {}
+
+  async getMintAccounts(
+    account?: string,
+  ): Promise<StorageValueStream<AccountMint>> {
+    const range = account ? [this.address, account] : [this.address]
+    return await this.accountMintDAL.getAllValuesFromTo(range, range)
   }
 
   addAccount(account: string): void {
-    if (!this.accounts.includes(account)) this.accounts.push(account)
+    const accountMint: AccountMint = {
+      mint: this.address,
+      account,
+    }
+    this.accountMintDAL.save(accountMint)
   }
 
   async getEvents(filters: MintEventsFilters): Promise<SPLTokenEvent[]> {
     let result: SPLTokenEvent[] = []
-    const accounts = filters.account ? [filters.account] : this.accounts
+    const accountMints = await this.getMintAccounts(filters.account)
 
-    const promises = accounts.map(async (account) => {
+    for await (const { account } of accountMints) {
       const instance = new Account(account, this.eventDAL)
       const events = await instance.getEvents(filters)
       result = [...result, ...events]
-    })
-
-    await Promise.all(promises)
+    }
 
     return result
   }
 
   async getTokenHolders(): Promise<SPLAccountBalance[]> {
-    const balances = await this.balanceStateDAL.getMany(this.accounts)
-    return balances.filter((balance) => balance !== undefined)
+    const accountMints = await this.getMintAccounts()
+    const balances = []
+
+    for await (const { account } of accountMints) {
+      const balance = await this.balanceStateDAL.getFirstValueFromTo(
+        [account],
+        [account],
+      )
+      if (balance) {
+        balances.push(balance)
+      }
+    }
+
+    return balances
   }
 
   async getTokenHoldings({
@@ -56,18 +77,14 @@ export class Mint {
     gte,
   }: AccountHoldingsFilters): Promise<SPLAccountHoldings[]> {
     const accountsHoldingsMap: Record<string, SPLAccountHoldings> = {}
-
-    const accounts = account ? [account] : this.accounts
-    if (accounts.length === 0) return []
-    const orderedAccounts = accounts.sort()
-
     const opts: AccountHoldingsOptions = {
       reverse: true,
     }
-
     const gteBn = gte ? new BN(gte) : undefined
 
-    const promises = orderedAccounts.map(async (account) => {
+    const accountMints = await this.getMintAccounts(account)
+
+    for await (const { account } of accountMints) {
       const balances = await this.balanceHistoryDAL.getAllFromTo(
         [account, startDate],
         [account, endDate],
@@ -94,9 +111,7 @@ export class Mint {
           holding.owner = accountBalance.owner
         }
       }
-    })
-
-    await Promise.all(promises)
+    }
 
     const accountsHoldings = Object.values(accountsHoldingsMap)
     const filteredHoldings: SPLAccountHoldings[] = []
