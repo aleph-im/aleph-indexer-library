@@ -56,12 +56,14 @@ export class APIResolver {
     endDate,
     gte,
   }: AccountHoldingsFilters): Promise<SPLAccountHoldings[]> {
-    return await this.domain.getAccountHoldings(mint, {
+    const accountHoldings = await this.domain.getAccountHoldings(mint, {
       account,
       startDate,
       endDate,
       gte,
     })
+
+    return accountHoldings.sort((a, b) => a.account.localeCompare(b.account))
   }
 
   async getTokenEvents({
