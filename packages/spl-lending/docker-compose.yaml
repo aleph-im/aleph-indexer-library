@@ -14,7 +14,7 @@ services:
       - INDEXER=spl-lending
       - LENDING_ID=port
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
-    network_mode: host
+    network_mode: bridge
 
   solend-indexer:
     build: ../..
@@ -29,7 +29,7 @@ services:
       - INDEXER=spl-lending
       - LENDING_ID=solend
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
-    network_mode: host
+    network_mode: bridge
 
   larix-indexer:
     build: ../..
@@ -44,4 +44,4 @@ services:
       - INDEXER=spl-lending
       - LENDING_ID=larix
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
-    network_mode: host
+    network_mode: bridge

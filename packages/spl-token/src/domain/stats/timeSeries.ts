@@ -16,8 +16,7 @@ export async function createAccountStats(
   eventDAL: EventStorage,
   statsStateDAL: StatsStateStorage,
   statsTimeSeriesDAL: StatsTimeSeriesStorage,
-): Promise<AccountTimeSeriesStatsManager> {
-
+): Promise<AccountTimeSeriesStatsManager<any>> {
   const LendingTimeSeries = new TimeSeriesStats<SPLTokenEvent, SPLTokenInfo>(
     {
       type: 'lending',
@@ -47,7 +46,7 @@ export async function createAccountStats(
     {
       account,
       series: [LendingTimeSeries],
-      aggregate(args) {
+      async aggregate(args) {
         return {}
       },
     },

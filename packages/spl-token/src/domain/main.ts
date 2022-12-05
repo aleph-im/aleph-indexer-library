@@ -14,7 +14,11 @@ import {
   SPLTokenType,
 } from '../types.js'
 import { discoveryFn } from '../utils/discovery.js'
-import { AccountHoldingsFilters, MintEventsFilters } from './types.js'
+import {
+  AccountHoldingsFilters,
+  MintEventsFilters,
+  TokenHoldersFilters,
+} from './types.js'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
 
 export default class MainDomain
@@ -97,9 +101,13 @@ export default class MainDomain
     return this.tokens
   }
 
-  async getTokenHolders(account: string): Promise<SPLAccountBalance[]> {
+  async getTokenHolders(
+    account: string,
+    filters: TokenHoldersFilters,
+  ): Promise<SPLAccountBalance[]> {
     return (await this.context.apiClient.invokeDomainMethod({
       account,
+      args: [filters],
       method: 'getTokenHolders',
     })) as SPLAccountBalance[]
   }

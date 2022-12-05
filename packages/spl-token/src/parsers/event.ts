@@ -275,6 +275,7 @@ export class EventParser {
     const dbEvent = await this.fetchMintDAL.getFirstValueFromTo(
       [account],
       [account],
+      { atomic: true },
     )
     if (dbEvent) {
       const event = dbEvent.payload.event

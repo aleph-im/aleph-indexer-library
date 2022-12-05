@@ -4,9 +4,7 @@ import {
   SPLTokenEvent,
   SPLTokenInfo,
 } from '../types.js'
-import BN from 'bn.js'
 import MainDomain from '../domain/main.js'
-import { ALEPH_MINT_ADDRESS } from '../constants.js'
 
 export type TokenFilters = {
   mint?: string
@@ -34,7 +32,6 @@ export type AccountHoldingsFilters = {
 
 export type TokenHoldersFilters = {
   mint: string
-  account?: string
   limit?: number
   skip?: number
   reverse?: boolean
@@ -92,63 +89,10 @@ export class APIResolver {
     return events
   }
 
-  async getTokenHolders({
-    mint,
-    limit,
-    skip = 0,
-    reverse = true,
-    gte,
-    lte,
-  }: TokenHoldersFilters): Promise<SPLAccountBalance[]> {
-    const isALEPH = mint === ALEPH_MINT_ADDRESS
-
-    // @note: Default limit and gte
-    limit = limit || (isALEPH ? Number.MAX_SAFE_INTEGER : 1000)
-
-    // @note: Do not add constraints to limit arg when it is ALEPH token
-    if (!isALEPH && (limit < 1 || limit > 1000))
-      throw new Error('400 Bad Request: 1 <= limit <= 1000')
-
-    const gteBn = gte ? new BN(gte) : undefined
-    const lteBn = lte ? new BN(lte) : undefined
-
-    const result: SPLAccountBalance[] = []
-    const balances = await this.domain.getTokenHolders(mint)
-
-    let sortedBalances: SPLAccountBalance[] = []
-    if (reverse) {
-      sortedBalances = balances.sort((a, b) => {
-        const aBalance = new BN(a.balance)
-        const bBalance = new BN(b.balance)
-        return bBalance.lt(aBalance) ? -1 : 1
-      })
-    } else {
-      sortedBalances = balances.sort((a, b) => {
-        const aBalance = new BN(a.balance)
-        const bBalance = new BN(b.balance)
-        return aBalance.lt(bBalance) ? -1 : 1
-      })
-    }
-
-    for (const value of sortedBalances) {
-      // @note: Filter by gte || lte
-      if (gteBn || lteBn) {
-        const balanceBN = new BN(value.balance)
-
-        if (gteBn && balanceBN.lt(gteBn)) continue
-        if (lteBn && balanceBN.gt(lteBn)) continue
-      }
-
-      // @note: Skip first N events
-      if (--skip >= 0) continue
-
-      result.push(value)
-
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && result.length >= limit) return result
-    }
-
-    return result
+  async getTokenHolders(
+    filters: TokenHoldersFilters,
+  ): Promise<SPLAccountBalance[]> {
+    return await this.domain.getTokenHolders(filters.mint, filters)
   }
 
   protected async filterTokens({

@@ -19,6 +19,14 @@ export type AccountEventsFilters = {
   skip?: number
 }
 
+export type TokenHoldersFilters = {
+  limit?: number
+  skip?: number
+  reverse?: boolean
+  gte?: string
+  lte?: string
+}
+
 export type AccountHoldingsFilters = {
   account?: string
   startDate?: number

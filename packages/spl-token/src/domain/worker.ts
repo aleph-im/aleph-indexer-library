@@ -35,6 +35,7 @@ import {
   AccountHoldingsFilters,
   MintAccount,
   MintEventsFilters,
+  TokenHoldersFilters,
 } from './types.js'
 import { createBalanceHistoryDAL } from '../dal/balanceHistory.js'
 import { createBalanceStateDAL } from '../dal/balanceState.js'
@@ -127,10 +128,13 @@ export default class WorkerDomain
     return await mint.getEvents(filters)
   }
 
-  async getTokenHolders(account: string): Promise<SPLAccountBalance[]> {
+  async getTokenHolders(
+    account: string,
+    filters: TokenHoldersFilters,
+  ): Promise<SPLAccountBalance[]> {
     const mint = this.mints[account]
     if (!mint) return []
-    return await mint.getTokenHolders()
+    return await mint.getTokenHolders(filters)
   }
 
   async getAccountHoldings(
@@ -170,15 +174,18 @@ export default class WorkerDomain
             }
             works.push(work)
           }
+        }
+      } else {
+        const parsedIx = await this.eventParser.parse(ix)
+        if (parsedIx) {
           if (parsedIx.type === SPLTokenEventType.CloseAccount) {
             const work = await this.fetchMintDAL.getFirstValueFromTo(
               [parsedIx.account],
               [parsedIx.account],
+              { atomic: true },
             )
             if (work && parsedIx.timestamp >= work.payload.timestamp) {
-              this.fetchMintDAL.remove(work)
-              /*
-              TODO: To optimize the fetcher and remove already closed accounts
+              await this.accountMints.removeWork(work)
               const options = {
                 account: parsedIx.account,
                 index: {
@@ -187,13 +194,8 @@ export default class WorkerDomain
                 },
               }
               await this.context.apiClient.deleteAccount(options)
-               */
             }
           }
-        }
-      } else {
-        const parsedIx = await this.eventParser.parse(ix)
-        if (parsedIx) {
           parsedEvents.push(parsedIx)
         }
       }
@@ -207,7 +209,7 @@ export default class WorkerDomain
       await this.eventDAL.save(parsedEvents)
 
       const lastEvent = parsedEvents[0]
-      this.dealBalances(lastEvent)
+      await this.dealBalances(lastEvent)
     }
     if (works.length > 0) {
       await this.accountMints.addWork(works)
@@ -226,6 +228,8 @@ export default class WorkerDomain
     )
 
     for (const work of works) {
+      if (!work) continue
+
       const account = work.id
       const options = {
         account,
@@ -246,7 +250,7 @@ export default class WorkerDomain
     }
   }
 
-  protected dealBalances(entity: SPLTokenEvent): void {
+  protected async dealBalances(entity: SPLTokenEvent): Promise<void> {
     const accounts = getEventAccounts(entity)
     const entities = accounts.map((account) => {
       const balance = getBalanceFromEvent(entity, account)
@@ -257,7 +261,7 @@ export default class WorkerDomain
         timestamp: entity.timestamp,
       } as SPLAccountBalance
     })
-    this.balanceHistoryDAL.save(entities)
-    this.balanceStateDAL.save(entities)
+    await this.balanceHistoryDAL.save(entities)
+    await this.balanceStateDAL.save(entities)
   }
 }

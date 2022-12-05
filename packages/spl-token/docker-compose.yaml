@@ -12,6 +12,6 @@ services:
       - ./.env
     environment:
       - INDEXER=spl-token
-      - TOKEN=XXXXXXXXXXXXX
+      - SPL_TOKEN_MINTS=3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
-    network_mode: host
+    network_mode: bridge
