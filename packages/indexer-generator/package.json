@@ -1,0 +1,30 @@
+{
+  "name": "@aleph-indexer/generator",
+  "version": "1.0.0",
+  "author": "Mike Hukiewitz & Ricardo Castello",
+  "description": "Generates the basic implementation of your Solana program",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.js",
+  "type": "module",
+  "scripts": {
+    "start": "npm i && npm run build",
+    "prepare": "npm run build",
+    "postinstall": "npm run build",
+    "build": "npm run clean:ts && npm run build:ts ",
+    "build:ts": "tsc -p ./tsconfig.json",
+    "clean:ts": "rm -rf ./dist",
+    "clean:all": "rm -rf ./node_modules && rm -rf ./dist && rm -rf package-lock.json && rm -rf ./packages"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^9.4.1",
+    "@metaplex-foundation/solita": "^0.19.1",
+    "bs58": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.7",
+    "@types/node": "^17.0.23",
+    "@types/prettier": "^2.7.1"
+  }
+}

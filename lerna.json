@@ -1,6 +1,8 @@
 {
   "packages": [
-    "packages/spl-lending"
+    "packages/spl-lending",
+    "packages/indexer-generator",
+    "packages/marinade_finance"
   ],
   "version": "1.0.0"
 }
