@@ -1,0 +1,1070 @@
+{
+  "version": "0.1.0",
+  "name": "no_loss_lottery",
+  "instructions": [
+    {
+      "name": "initState",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vrf",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMasterEdition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "metadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "InitStateParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateResult",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vrf",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "UpdateResultParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "requestResult",
+      "accounts": [
+        {
+          "name": "state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "switchboardProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vrf",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "oracleQueue",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "queueAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "dataBuffer",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "permission",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrow",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payerWallet",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payerAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "recentBlockhashes",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "programState",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "RequestResultParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "depositMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMasterEdition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "metadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "lotteryName",
+          "type": "string"
+        },
+        {
+          "name": "drawDuration",
+          "type": "u64"
+        },
+        {
+          "name": "ticketPrice",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "buy",
+      "accounts": [
+        {
+          "name": "depositMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMasterEdition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketMasterEdition",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTicketAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "userDepositAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "metadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "numbers",
+          "type": {
+            "array": [
+              "u8",
+              6
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "redeem",
+      "accounts": [
+        {
+          "name": "depositMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticketMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userTicketAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "swapYieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "swapDepositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolFee",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "userDepositAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenSwapProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "draw",
+      "accounts": [
+        {
+          "name": "depositMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "dispense",
+      "accounts": [
+        {
+          "name": "depositMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "collectionMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "winnerTicketAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "winnerDepositAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "swapYieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "swapDepositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolFee",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenSwapProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "numbers",
+          "type": {
+            "array": [
+              "u8",
+              6
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stake",
+      "accounts": [
+        {
+          "name": "yieldMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vaultManager",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "swapYieldVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "swapDepositVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "amm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ammAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "poolFee",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenSwapProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "VrfClient",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "maxResult",
+            "type": "u64"
+          },
+          {
+            "name": "vrf",
+            "type": "publicKey"
+          },
+          {
+            "name": "resultBuffer",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "result",
+            "type": "u128"
+          },
+          {
+            "name": "lastTimestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VaultManager",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lotteryName",
+            "type": "string"
+          },
+          {
+            "name": "depositMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "depositVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "yieldMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "yieldVault",
+            "type": "publicKey"
+          },
+          {
+            "name": "collectionMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "circulatingTicketSupply",
+            "type": "u64"
+          },
+          {
+            "name": "cutoffTime",
+            "type": "u64"
+          },
+          {
+            "name": "drawDuration",
+            "type": "u64"
+          },
+          {
+            "name": "ticketPrice",
+            "type": "u64"
+          },
+          {
+            "name": "winningNumbers",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "previousWinningNumbers",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "locked",
+            "type": "bool"
+          },
+          {
+            "name": "depositTokenReserve",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ticket",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "depositMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "yieldMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "ticketMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "numbers",
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "InitStateParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "clientStateBump",
+            "type": "u8"
+          },
+          {
+            "name": "maxResult",
+            "type": "u64"
+          },
+          {
+            "name": "drawDuration",
+            "type": "u64"
+          },
+          {
+            "name": "ticketPrice",
+            "type": "u64"
+          },
+          {
+            "name": "lotteryName",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RequestResultParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "clientStateBump",
+            "type": "u8"
+          },
+          {
+            "name": "permissionBump",
+            "type": "u8"
+          },
+          {
+            "name": "switchboardStateBump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateResultParams",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "TimeRemaining",
+      "msg": "TimeRemaining"
+    },
+    {
+      "code": 6001,
+      "name": "CallDispense",
+      "msg": "Must call Dispense"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidNumbers",
+      "msg": "Invalid Numbers"
+    },
+    {
+      "code": 6003,
+      "name": "NoTicketsPurchased",
+      "msg": "No Tickets Purchased"
+    },
+    {
+      "code": 6004,
+      "name": "PassInWinningPDA",
+      "msg": "Must Pass in Winning PDA to Dispense"
+    },
+    {
+      "code": 6005,
+      "name": "NotEnoughTokens",
+      "msg": "Not enough tokens for swap"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidTicketPrice",
+      "msg": "Invalid ticket price"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidDrawDuration",
+      "msg": "Invalid draw duration"
+    },
+    {
+      "code": 6008,
+      "name": "IncorrectTicketMint",
+      "msg": "Ticket PDA does not match ticket ata mint"
+    },
+    {
+      "code": 6009,
+      "name": "WinnerTicketAndDepositAtasMismatch",
+      "msg": "Winning Deposit ATA and Winning Ticket ATA owners do not match"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidSwitchboardVrfAccount",
+      "msg": "Not a valid Switchboard VRF account"
+    },
+    {
+      "code": 6011,
+      "name": "MaxResultExceedsMaximum",
+      "msg": "The max result must not exceed u64"
+    },
+    {
+      "code": 6012,
+      "name": "EmptyCurrentRoundResult",
+      "msg": "Current round result is empty"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidAuthorityError",
+      "msg": "Invalid authority account provided."
+    }
+  ]
+}

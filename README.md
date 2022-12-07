@@ -6,6 +6,13 @@ npm i
 pip3 install aleph-client
 ```
 
+## Create your own indexer implementation
+In order to run your own indexer, you need to start by creating a new project:
+
+- using the Anchor Indexer Generator, you can generate a basic custom implementation of your Solana program in a few minutes with this option, read this [documentation](https://github.com/aleph-im/solana-indexer-library/packages/indexer-generator/#indexer-generator).
+- or by using one of the customized indexers (in the packages folder).
+- or by creating a new project from scratch.
+
 ## Deploying a new Indexer
 
 - Make a fork of this project in your GitHub Workspace.

@@ -5,14 +5,14 @@ import {
   AccountStats,
 } from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
-import { LendingEvent, LendingReserveInfo } from '../types'
+import { LendingEvent, LendingReserveInfo, LendingReserveStats } from '../types'
 import { ReserveEventsFilters } from './types.js'
 
 export class Reserve {
   constructor(
     public info: LendingReserveInfo,
     protected eventDAL: EventStorage,
-    protected timeSeriesStats: AccountTimeSeriesStatsManager,
+    protected timeSeriesStats: AccountTimeSeriesStatsManager<LendingReserveStats>,
   ) {}
 
   async updateStats(now: number): Promise<void> {
