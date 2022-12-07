@@ -31,16 +31,6 @@ You can run the indexer generator (from solana-indexer-library's root):
 npm i && npm run build
 npm run generate MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD
 ```
-- Include the package name in the lerna.json file (root): 
-```json
-{
-  "packages": [
-    "packages/spl-lending",
-    "packages/indexer-generator",
-    "packages/marinade_finance"
-  ]
-}
-```
 - Run the indexer:
 ```bash
 npm run start marinade_finance
