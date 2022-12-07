@@ -11,7 +11,6 @@ const mappedBNProps: string[] = [
   'lamports',
   'msolAmount',
   'tokens',
-  'liquidityTarget',
   'desiredUnstakeAmount',
 ]
 

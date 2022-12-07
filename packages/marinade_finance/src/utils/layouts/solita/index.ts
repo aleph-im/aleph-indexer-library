@@ -15,6 +15,7 @@ import {
   LiqPoolInitializeData,
   InitializeData,
   ChangeAuthorityData,
+  ConfigLpParams,
   ConfigMarinadeParams,
   LiqPool,
   List,
@@ -205,13 +206,13 @@ export const RemoveLiquidityAccounts = [
   'tokenProgram',
 ]
 
-export type SetLpParamsInstruction = {
+export type ConfigLpInstruction = {
   programId: PublicKey
   keys: AccountMeta[]
   data: Buffer
 }
 
-export const SetLpParamsAccounts = ['state', 'adminAuthority']
+export const ConfigLpAccounts = ['state', 'adminAuthority']
 
 export type ConfigMarinadeInstruction = {
   programId: PublicKey
@@ -391,7 +392,7 @@ export type ParsedInstructions =
   | LiquidUnstakeInstruction
   | AddLiquidityInstruction
   | RemoveLiquidityInstruction
-  | SetLpParamsInstruction
+  | ConfigLpInstruction
   | ConfigMarinadeInstruction
   | OrderUnstakeInstruction
   | ClaimInstruction
@@ -411,6 +412,7 @@ export type ParsedTypes =
   | LiqPoolInitializeData
   | InitializeData
   | ChangeAuthorityData
+  | ConfigLpParams
   | ConfigMarinadeParams
   | LiqPool
   | List

@@ -54,6 +54,16 @@ export const ChangeAuthorityData = new GraphQLObjectType({
   },
 })
 
+export const ConfigLpParams = new GraphQLObjectType({
+  name: 'ConfigLpParams',
+  fields: {
+    minFee: { type: new GraphQLNonNull(Fee) },
+    maxFee: { type: new GraphQLNonNull(Fee) },
+    liquidityTarget: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    treasuryCut: { type: new GraphQLNonNull(Fee) },
+  },
+})
+
 export const ConfigMarinadeParams = new GraphQLObjectType({
   name: 'ConfigMarinadeParams',
   fields: {
@@ -286,7 +296,7 @@ export const ParsedEvents = new GraphQLEnumType({
     LiquidUnstakeEvent: { value: 'LiquidUnstakeEvent' },
     AddLiquidityEvent: { value: 'AddLiquidityEvent' },
     RemoveLiquidityEvent: { value: 'RemoveLiquidityEvent' },
-    SetLpParamsEvent: { value: 'SetLpParamsEvent' },
+    ConfigLpEvent: { value: 'ConfigLpEvent' },
     ConfigMarinadeEvent: { value: 'ConfigMarinadeEvent' },
     OrderUnstakeEvent: { value: 'OrderUnstakeEvent' },
     ClaimEvent: { value: 'ClaimEvent' },
@@ -680,22 +690,22 @@ export const RemoveLiquidityEvent = new GraphQLObjectType({
 
 /*----------------------------------------------------------------------*/
 
-export const SetLpParamsEventAccounts = new GraphQLObjectType({
-  name: 'SetLpParamsEventAccounts',
+export const ConfigLpEventAccounts = new GraphQLObjectType({
+  name: 'ConfigLpEventAccounts',
   fields: {
     state: { type: new GraphQLNonNull(GraphQLString) },
     adminAuthority: { type: new GraphQLNonNull(GraphQLString) },
   },
 })
 
-export const SetLpParamsEvent = new GraphQLObjectType({
-  name: 'SetLpParamsEvent',
+export const ConfigLpEvent = new GraphQLObjectType({
+  name: 'ConfigLpEvent',
   interfaces: [Event],
-  isTypeOf: (item) => item.type === InstructionType.SetLpParams,
+  isTypeOf: (item) => item.type === InstructionType.ConfigLp,
   fields: {
     ...commonEventFields,
-    data: { type: new GraphQLNonNull(Fee) },
-    accounts: { type: new GraphQLNonNull(SetLpParamsEventAccounts) },
+    data: { type: new GraphQLNonNull(ConfigLpParams) },
+    accounts: { type: new GraphQLNonNull(ConfigLpEventAccounts) },
   },
 })
 
@@ -1049,7 +1059,7 @@ export const types = [
   LiquidUnstakeEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
-  SetLpParamsEvent,
+  ConfigLpEvent,
   ConfigMarinadeEvent,
   OrderUnstakeEvent,
   ClaimEvent,

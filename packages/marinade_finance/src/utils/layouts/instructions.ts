@@ -15,7 +15,7 @@ export enum InstructionType {
   LiquidUnstake = 'LiquidUnstakeEvent',
   AddLiquidity = 'AddLiquidityEvent',
   RemoveLiquidity = 'RemoveLiquidityEvent',
-  SetLpParams = 'SetLpParamsEvent',
+  ConfigLp = 'ConfigLpEvent',
   ConfigMarinade = 'ConfigMarinadeEvent',
   OrderUnstake = 'OrderUnstakeEvent',
   Claim = 'ClaimEvent',
@@ -207,14 +207,14 @@ export type RemoveLiquidityEvent = InstructionBase &
 
 /*----------------------------------------------------------------------*/
 
-export type SetLpParamsInfo = {
-  data: solita.SetLpParamsInstructionArgs
-  accounts: solita.SetLpParamsInstructionAccounts
+export type ConfigLpInfo = {
+  data: solita.ConfigLpParams
+  accounts: solita.ConfigLpInstructionAccounts
 }
 
-export type SetLpParamsEvent = InstructionBase &
-  SetLpParamsInfo & {
-    type: InstructionType.SetLpParams
+export type ConfigLpEvent = InstructionBase &
+  ConfigLpInfo & {
+    type: InstructionType.ConfigLp
   }
 
 /*----------------------------------------------------------------------*/
@@ -443,8 +443,8 @@ export const IX_METHOD_CODE: Map<string, InstructionType | undefined> = new Map<
     InstructionType.RemoveLiquidity,
   ],
   [
-    Buffer.from(solita.setLpParamsInstructionDiscriminator).toString('ascii'),
-    InstructionType.SetLpParams,
+    Buffer.from(solita.configLpInstructionDiscriminator).toString('ascii'),
+    InstructionType.ConfigLp,
   ],
   [
     Buffer.from(solita.configMarinadeInstructionDiscriminator).toString(
@@ -509,7 +509,7 @@ export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.LiquidUnstake]: solita.liquidUnstakeStruct,
   [InstructionType.AddLiquidity]: solita.addLiquidityStruct,
   [InstructionType.RemoveLiquidity]: solita.removeLiquidityStruct,
-  [InstructionType.SetLpParams]: solita.setLpParamsStruct,
+  [InstructionType.ConfigLp]: solita.configLpStruct,
   [InstructionType.ConfigMarinade]: solita.configMarinadeStruct,
   [InstructionType.OrderUnstake]: solita.orderUnstakeStruct,
   [InstructionType.Claim]: solita.claimStruct,
@@ -534,7 +534,7 @@ export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.LiquidUnstake]: solita.LiquidUnstakeAccounts,
   [InstructionType.AddLiquidity]: solita.AddLiquidityAccounts,
   [InstructionType.RemoveLiquidity]: solita.RemoveLiquidityAccounts,
-  [InstructionType.SetLpParams]: solita.SetLpParamsAccounts,
+  [InstructionType.ConfigLp]: solita.ConfigLpAccounts,
   [InstructionType.ConfigMarinade]: solita.ConfigMarinadeAccounts,
   [InstructionType.OrderUnstake]: solita.OrderUnstakeAccounts,
   [InstructionType.Claim]: solita.ClaimAccounts,
@@ -559,7 +559,7 @@ export type ParsedEventsInfo =
   | LiquidUnstakeInfo
   | AddLiquidityInfo
   | RemoveLiquidityInfo
-  | SetLpParamsInfo
+  | ConfigLpInfo
   | ConfigMarinadeInfo
   | OrderUnstakeInfo
   | ClaimInfo
@@ -583,7 +583,7 @@ export type ParsedEvents =
   | LiquidUnstakeEvent
   | AddLiquidityEvent
   | RemoveLiquidityEvent
-  | SetLpParamsEvent
+  | ConfigLpEvent
   | ConfigMarinadeEvent
   | OrderUnstakeEvent
   | ClaimEvent
