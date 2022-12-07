@@ -139,7 +139,7 @@ export default class MainDomain
   protected async computeGlobalStats(
     addresses?: string[],
   ): Promise<GlobalLendingStats> {
-    const accountStats = await this.getAccountStats(addresses)
+    const accountStats = await this.getAccountStats<LendingReserveStats>(addresses)
 
     const globalStats: GlobalLendingStats = this.getNewGlobalStats()
 
@@ -151,13 +151,13 @@ export default class MainDomain
         liquidityTotalUsd,
         borrowedTotalUsd,
         totalDepositedUsd,
-        flashLoansTotalUsd,
+        flashLoanedTotalUsd,
       } = stats
 
       globalStats.liquidityTotalUsd.iadd(new BN(liquidityTotalUsd, 'hex'))
       globalStats.borrowedTotalUsd.iadd(new BN(borrowedTotalUsd, 'hex'))
       globalStats.totalDepositedUsd.iadd(new BN(totalDepositedUsd, 'hex'))
-      globalStats.flashLoanedTotalUsd.iadd(new BN(flashLoansTotalUsd, 'hex'))
+      globalStats.flashLoanedTotalUsd.iadd(new BN(flashLoanedTotalUsd, 'hex'))
     }
 
     return globalStats

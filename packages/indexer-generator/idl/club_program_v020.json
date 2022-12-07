@@ -1,0 +1,2137 @@
+{
+  "version": "0.2.0",
+  "name": "club_program",
+  "instructions": [
+    {
+      "name": "createClub",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realmAuthority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenHoldingAddress",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realmConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "voterWeightProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "clubName",
+          "type": "string"
+        },
+        {
+          "name": "sellPermissionConfig",
+          "type": {
+            "vec": {
+              "defined": "SellPermissionDto"
+            }
+          }
+        },
+        {
+          "name": "clubType",
+          "type": "u8"
+        },
+        {
+          "name": "roleConfig",
+          "type": {
+            "defined": "RoleConfig"
+          }
+        },
+        {
+          "name": "nftMaxVoterWeight",
+          "type": {
+            "option": "u64"
+          }
+        }
+      ]
+    },
+    {
+      "name": "createClubVault",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vaultData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "chainId",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "createTreasuryGovernance",
+      "accounts": [
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realmConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realmAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenOwnerRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "voterWeightRecord",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "maxVotingTime",
+          "type": "u32"
+        },
+        {
+          "name": "voteThresholdPercentage",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "supportClub",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fundraiseConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depositRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "depositAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "leaveClub",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenHoldingAddress",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governingTokenDestination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "createClubProposal",
+      "accounts": [
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governanceAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realmConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposalTransactionAddress",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "voterWeightRecord",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "offer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "makerOfferedTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "makerWantedTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "makerWantedAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "makerOfferedAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposalMetadata",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "chainId",
+          "type": "string"
+        },
+        {
+          "name": "useDeny",
+          "type": "bool"
+        },
+        {
+          "name": "proposalIndex",
+          "type": "u32"
+        },
+        {
+          "name": "offeredAmount",
+          "type": "u64"
+        },
+        {
+          "name": "wantedAmount",
+          "type": "u64"
+        },
+        {
+          "name": "action",
+          "type": "u8"
+        },
+        {
+          "name": "dedicatedTaker",
+          "type": {
+            "option": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "allowMember",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realmAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "clubData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "role",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "updateMembership",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realmAuthority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memberAddress",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "isMember",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "acceptMembership",
+      "accounts": [
+        {
+          "name": "memberData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancelInvitation",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "memberData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "memberAddress",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "recipient",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "createFundraise",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fundraiseConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "finishFundraise",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fundraiseConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "clock",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "transferFunds",
+      "accounts": [
+        {
+          "name": "governedToken",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "destinationAddress",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "fundraiseConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "clubData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "updateVoterWeight",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "voterWeightRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "clubData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "governedAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "action",
+          "type": "u8"
+        },
+        {
+          "name": "proposalIndex",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "executeTransaction",
+      "accounts": [
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposalTransaction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "offer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "makerOfferedTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "makerWantedTokenAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "maker",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowedOfferedTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "offeredTokensMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "wantedTokensMint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "chainId",
+          "type": "string"
+        },
+        {
+          "name": "action",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "cancelEscrow",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "offer",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "makerOfferedTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "maker",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowedOfferedTokens",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "chainId",
+          "type": "string"
+        },
+        {
+          "name": "action",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "createProposalMetadata",
+      "accounts": [
+        {
+          "name": "realm",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposalMetadata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "memberData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "governedAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "proposalIndex",
+          "type": "bytes"
+        },
+        {
+          "name": "options",
+          "type": {
+            "vec": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "createWithdrawalProposal",
+      "accounts": [
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realmConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposalTransactionAddress",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fundraiseConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenOwnerRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "communityTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "voterWeightRecord",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawal",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawalData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposalMetadata",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "useDeny",
+          "type": "bool"
+        },
+        {
+          "name": "proposalIndex",
+          "type": "u32"
+        },
+        {
+          "name": "withdrawalAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "executeWithdrawalTransaction",
+      "accounts": [
+        {
+          "name": "governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realm",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "realmConfig",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fundraiseConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "splGovernanceProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treasuryData",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "withdrawalData",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposalTransaction",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "escrowProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ClubData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "slotCreated",
+            "type": "u64"
+          },
+          {
+            "name": "clubType",
+            "type": "u8"
+          },
+          {
+            "name": "roleConfig",
+            "type": {
+              "defined": "RoleConfig"
+            }
+          },
+          {
+            "name": "sellPermission",
+            "type": {
+              "array": [
+                {
+                  "defined": "SellPermission"
+                },
+                10
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SellPermissionConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": {
+              "array": [
+                {
+                  "defined": "SellPermission"
+                },
+                10
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClubVault",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "ClubVaultData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "chainId",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FundraiseConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "capAmount",
+            "type": "u64"
+          },
+          {
+            "name": "raisedAmount",
+            "type": "u64"
+          },
+          {
+            "name": "isActive",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DepositRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AllowedMemberData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "realm",
+            "type": "publicKey"
+          },
+          {
+            "name": "memberPubkey",
+            "type": "publicKey"
+          },
+          {
+            "name": "isMember",
+            "type": "bool"
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "role",
+            "type": "u8"
+          },
+          {
+            "name": "joinedAt",
+            "type": "i64"
+          },
+          {
+            "name": "joinedAtSlot",
+            "type": "u64"
+          },
+          {
+            "name": "financialRight",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "NftVoteRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "type": "publicKey"
+          },
+          {
+            "name": "nftMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "governingTokenOwner",
+            "type": "publicKey"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "options",
+            "type": {
+              "vec": "string"
+            }
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClubTreasury",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "TreasuryData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fundraiseCount",
+            "type": "u32"
+          },
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "hasActiveFundraise",
+            "type": "bool"
+          },
+          {
+            "name": "governance",
+            "type": "publicKey"
+          },
+          {
+            "name": "maxVoterWeight",
+            "type": "u64"
+          },
+          {
+            "name": "totalFinancialPower",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Withdrawal",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "WithdrawalData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treasury",
+            "type": "publicKey"
+          },
+          {
+            "name": "fundraiseNumber",
+            "type": "u32"
+          },
+          {
+            "name": "fundraiseAddress",
+            "type": "publicKey"
+          },
+          {
+            "name": "withdrawalAmount",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "SellPermission",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "from",
+            "type": "u64"
+          },
+          {
+            "name": "to",
+            "type": "u64"
+          },
+          {
+            "name": "quorumMinimum",
+            "type": "u8"
+          },
+          {
+            "name": "decimal",
+            "type": "u16"
+          },
+          {
+            "name": "governance",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SellPermissionDto",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "from",
+            "type": "u64"
+          },
+          {
+            "name": "to",
+            "type": "u64"
+          },
+          {
+            "name": "quorumMinimum",
+            "type": "u8"
+          },
+          {
+            "name": "decimal",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RoleConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "curator",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "member",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClubType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TokenProportional"
+          },
+          {
+            "name": "TokenEqual"
+          },
+          {
+            "name": "RoleBased"
+          },
+          {
+            "name": "NftBased"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClubVoterWeightAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "CastVote"
+          },
+          {
+            "name": "CommentProposal"
+          },
+          {
+            "name": "CreateGovernance"
+          },
+          {
+            "name": "CreateProposal"
+          },
+          {
+            "name": "SignOffProposal"
+          },
+          {
+            "name": "CancelProposal"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MemberStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "UNINVITED"
+          },
+          {
+            "name": "PENDING"
+          },
+          {
+            "name": "ACCEPTED"
+          },
+          {
+            "name": "REJECTED"
+          },
+          {
+            "name": "CANCELED"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Role",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Owner"
+          },
+          {
+            "name": "Curator"
+          },
+          {
+            "name": "Member"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalAction",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "BuyNFT"
+          },
+          {
+            "name": "SellNFT"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "WrongSplGovProgram",
+      "msg": "Wrong spl gov id!"
+    },
+    {
+      "code": 6001,
+      "name": "WrongEscrowProgram",
+      "msg": "Wrong escrow id!"
+    },
+    {
+      "code": 6002,
+      "name": "WrongUNQPubKey",
+      "msg": "Wrong UNQ mint pub key!"
+    },
+    {
+      "code": 6003,
+      "name": "WrongPermissionLength",
+      "msg": "Wrong length of Permission config!"
+    },
+    {
+      "code": 6004,
+      "name": "NotAMember",
+      "msg": "You are not allowed to make deposits!"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidMemberStatus",
+      "msg": "Invalid member status, valid values are: 0,1,2"
+    },
+    {
+      "code": 6006,
+      "name": "NotEnoughFunds",
+      "msg": "Not enough funds"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAuthority",
+      "msg": "Not a valid authority"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidMint",
+      "msg": "Invalid mint provided"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidPerformanceFeeConfig",
+      "msg": "Performance fee configuration is invalid!"
+    },
+    {
+      "code": 6010,
+      "name": "TimeInPast",
+      "msg": "Time in past"
+    },
+    {
+      "code": 6011,
+      "name": "StartAfterTheEndTime",
+      "msg": "Start after end time"
+    },
+    {
+      "code": 6012,
+      "name": "FundraiseInvalidAmount",
+      "msg": "Invalid fundraise amount"
+    },
+    {
+      "code": 6013,
+      "name": "FundraiseAmountAlreadyMet",
+      "msg": "Fundraise amount already met"
+    },
+    {
+      "code": 6014,
+      "name": "FundraiseHasEnded",
+      "msg": "Fundraise has ended"
+    },
+    {
+      "code": 6015,
+      "name": "FundraiseStillInProgress",
+      "msg": "Fundraise still in progress"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidClubTypeStatus",
+      "msg": "Invalid club type, valid values are: 0,1,2,3"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidGovernance",
+      "msg": "Invalid governance address"
+    },
+    {
+      "code": 6018,
+      "name": "SellPermissionNotSatisfied",
+      "msg": "Sell permission not satisfied"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidCancelAuthority",
+      "msg": "You do not have the permission to cancel this invitation"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidTreasury",
+      "msg": "Invalid treasury address"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidRole",
+      "msg": "Invalid role"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidVoterWeightAction",
+      "msg": "Invalid voter weight action"
+    },
+    {
+      "code": 6023,
+      "name": "VoterWeightActionNotAllowed",
+      "msg": "Voter weight action not allowed"
+    },
+    {
+      "code": 6024,
+      "name": "BelowMinimumVoteTreshold",
+      "msg": "Below minimum vote treshold"
+    },
+    {
+      "code": 6025,
+      "name": "BelowMinimumVoteTime",
+      "msg": "Below minimum vote time"
+    },
+    {
+      "code": 6026,
+      "name": "MemberKeysMissmatch",
+      "msg": "Member data PDA sent doesn't match the one generated on Solana"
+    },
+    {
+      "code": 6027,
+      "name": "MemberAlreadyExists",
+      "msg": "Member data PDA has already been initialized"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidProposalAction",
+      "msg": "Invalid proposal action"
+    },
+    {
+      "code": 6029,
+      "name": "VoteNotAllowed",
+      "msg": "Member not allowed to vote on this proposal"
+    },
+    {
+      "code": 6030,
+      "name": "MaxOrProposalRemainingAccountsMissing",
+      "msg": "Max Voter Weight Record and Proposal need to be passed as remaining accounts to cast a vote"
+    },
+    {
+      "code": 6031,
+      "name": "WrongProposalAddress",
+      "msg": "Wrong proposal account passed as remaining account"
+    },
+    {
+      "code": 6032,
+      "name": "WrongMaxVoterWeightRecord",
+      "msg": "Wrong MaxVoterWeightRecord account passed as remaining account"
+    },
+    {
+      "code": 6033,
+      "name": "InvalidVoterWeightProgram",
+      "msg": "Invalid voter weight program id"
+    },
+    {
+      "code": 6034,
+      "name": "WrongFundraiseConfig",
+      "msg": "Wrong fundraise config"
+    },
+    {
+      "code": 6035,
+      "name": "FundraiseRemainingAccountMissing",
+      "msg": "Fundraise config needs to be passed as remaining account"
+    },
+    {
+      "code": 6036,
+      "name": "InvalidAuthorityToCreateGovernance",
+      "msg": "Invalid authority to create governance: Only owner of the club can create governance!"
+    },
+    {
+      "code": 6037,
+      "name": "GovernanceCreationAfterFundraise",
+      "msg": "The governance over treasury must be defined before the fundraise"
+    },
+    {
+      "code": 6038,
+      "name": "WrongGovernanceAccount",
+      "msg": "Wrong or uninitialized governance account provided to create_fundraise ix"
+    },
+    {
+      "code": 6039,
+      "name": "ProposalAlreadyInitialized",
+      "msg": "Proposal aready initialized"
+    },
+    {
+      "code": 6040,
+      "name": "ProposalMetadataLengthOverflow",
+      "msg": "Proposal metadata string length overflow"
+    },
+    {
+      "code": 6041,
+      "name": "FundraiseAmountExceeded",
+      "msg": "Fundraise amount exceeded"
+    },
+    {
+      "code": 6042,
+      "name": "InvalidNftAccount",
+      "msg": "Invalid NFT account provided"
+    },
+    {
+      "code": 6043,
+      "name": "NftNotOnTheProvidedAccount",
+      "msg": "Invalid NFT account provided"
+    },
+    {
+      "code": 6044,
+      "name": "CollectionMustBeVerified",
+      "msg": "Collection must be verified"
+    },
+    {
+      "code": 6045,
+      "name": "CollectionMissing",
+      "msg": "Collection missing"
+    },
+    {
+      "code": 6046,
+      "name": "InvalidAccountOwner",
+      "msg": "Invalid account owner"
+    },
+    {
+      "code": 6047,
+      "name": "InvalidTokenMetadataAccount",
+      "msg": "Invalid token metadata account"
+    },
+    {
+      "code": 6048,
+      "name": "TokenMetadataDoesNotMatch",
+      "msg": "Token metadata does not match"
+    },
+    {
+      "code": 6049,
+      "name": "OnlyForNftBasedClubs",
+      "msg": "Only callable for nft based clubs"
+    },
+    {
+      "code": 6050,
+      "name": "InvalidCollection",
+      "msg": "Invalid collection"
+    },
+    {
+      "code": 6051,
+      "name": "NftAlreadyVoted",
+      "msg": "Nft already voted on"
+    },
+    {
+      "code": 6052,
+      "name": "MissingRemainingAccounts",
+      "msg": "Missing remaining accounts"
+    },
+    {
+      "code": 6053,
+      "name": "ProposalMetadataAlreadyInitialized",
+      "msg": "Proposal metadata aready initialized"
+    },
+    {
+      "code": 6054,
+      "name": "InvalidSellPermissionGovernanceAccount",
+      "msg": "Invalid sell permission governance account"
+    },
+    {
+      "code": 6055,
+      "name": "SellPermissionAmountNotSatisfied",
+      "msg": "Sell permission amount not satisfied"
+    },
+    {
+      "code": 6056,
+      "name": "SellPermissionGovernanceOnlyForBuyAction",
+      "msg": "Sell permission governance only for Buy action"
+    }
+  ],
+  "metadata": {
+    "address": "lololololololo"
+  }
+}
