@@ -9,7 +9,7 @@ if [[ $# -ne 1 && $# -ne 2 ]]; then
     exit 1
 fi
 
-if [[ "$arg1" -lt 34 || "$arg1" -gt 44 ]]; then
+if [[ "$arg1" -ge 34 && "$arg1" -le 44 ]]; then
     flag1="-a"
     if [[ $# -eq 2 ]]; then
         flag2="-f"
