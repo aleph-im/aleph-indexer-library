@@ -33,6 +33,7 @@ npm run generate MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD
 ```
 - Run the indexer:
 ```bash
+npm i && npm run build
 npm run start marinade_finance
 ```
 
