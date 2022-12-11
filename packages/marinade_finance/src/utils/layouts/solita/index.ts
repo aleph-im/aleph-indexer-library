@@ -15,7 +15,6 @@ import {
   LiqPoolInitializeData,
   InitializeData,
   ChangeAuthorityData,
-  ConfigLpParams,
   ConfigMarinadeParams,
   LiqPool,
   List,
@@ -206,13 +205,13 @@ export const RemoveLiquidityAccounts = [
   'tokenProgram',
 ]
 
-export type ConfigLpInstruction = {
+export type SetLpParamsInstruction = {
   programId: PublicKey
   keys: AccountMeta[]
   data: Buffer
 }
 
-export const ConfigLpAccounts = ['state', 'adminAuthority']
+export const SetLpParamsAccounts = ['state', 'adminAuthority']
 
 export type ConfigMarinadeInstruction = {
   programId: PublicKey
@@ -337,29 +336,6 @@ export const EmergencyUnstakeAccounts = [
   'stakeProgram',
 ]
 
-export type PartialUnstakeInstruction = {
-  programId: PublicKey
-  keys: AccountMeta[]
-  data: Buffer
-}
-
-export const PartialUnstakeAccounts = [
-  'state',
-  'validatorManagerAuthority',
-  'validatorList',
-  'stakeList',
-  'stakeAccount',
-  'stakeDepositAuthority',
-  'reservePda',
-  'splitStakeAccount',
-  'splitStakeRentPayer',
-  'clock',
-  'rent',
-  'stakeHistory',
-  'systemProgram',
-  'stakeProgram',
-]
-
 export type MergeStakesInstruction = {
   programId: PublicKey
   keys: AccountMeta[]
@@ -392,7 +368,7 @@ export type ParsedInstructions =
   | LiquidUnstakeInstruction
   | AddLiquidityInstruction
   | RemoveLiquidityInstruction
-  | ConfigLpInstruction
+  | SetLpParamsInstruction
   | ConfigMarinadeInstruction
   | OrderUnstakeInstruction
   | ClaimInstruction
@@ -401,7 +377,6 @@ export type ParsedInstructions =
   | UpdateDeactivatedInstruction
   | DeactivateStakeInstruction
   | EmergencyUnstakeInstruction
-  | PartialUnstakeInstruction
   | MergeStakesInstruction
 export type ParsedAccounts = State | TicketAccountData
 
@@ -412,7 +387,6 @@ export type ParsedTypes =
   | LiqPoolInitializeData
   | InitializeData
   | ChangeAuthorityData
-  | ConfigLpParams
   | ConfigMarinadeParams
   | LiqPool
   | List
