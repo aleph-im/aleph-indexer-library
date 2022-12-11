@@ -159,7 +159,7 @@ export default async function generate(
       format(layoutLayouts, DEFAULT_FORMAT_OPTS),
     )
     writeFileSync(
-      paths.mockFile('tx_legacy.json', paths.layoutsDir),
+      paths.mockFile('txn_legacy.json', paths.layoutsDir),
       format(txLegacy, JSON_FORMAT),
     )
     writeFileSync(

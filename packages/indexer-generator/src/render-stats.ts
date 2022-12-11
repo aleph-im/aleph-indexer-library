@@ -5,7 +5,7 @@ export function renderStatsFiles(
   instructions: ViewInstructions | undefined,
   filename: string,
 ): string[] {
-  const NAME = Name.toUpperCase()
+  const NAME = filename.toUpperCase()
 
   const timeSeries = `import {
     AccountTimeSeriesStatsManager,
