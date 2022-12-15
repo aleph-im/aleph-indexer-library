@@ -3,21 +3,13 @@
 
 *But if you like to contribute to the indexing framework itself, head over to the [framework repo](https://github.com/aleph-im/solana-indexer-framework)*
 
-## Install dependencies
-``` sh
-npm i
-pip3 install aleph-client
-```
-
-# START HERE to create the indexer
+# START HERE to create an indexer
 There are three way's to create your indexer after you create a new project:
-1. If you have an IDL, use the 
-2. Create a new indexer from scratch or use one of the pre-built customized [***indexer examples***](https://github.com/aleph-im/solana-indexer-library/tree/main/packages) in the package folder as a starting point.
+1. If you have an IDL, use the [***Anchor Indexer Generator***](https://github.com/aleph-im/solana-indexer-library/tree/main/packages/indexer-generator#indexer-generator).
+2. Use one of the pre-built, customized [***indexer examples***](https://github.com/aleph-im/solana-indexer-library/tree/main/packages) in the package folder as a starting point.
+3. Build one from scratch.
 
-## 1. I hava an IDL
-Head over to the [Anchor Indexer Generator](https://github.com/aleph-im/solana-indexer-library/tree/main/packages/indexer-generator#indexer-generator)
-
-## 2. I want to create a new indexer from scratch.
+## Building and deploying an indexer
 
 - Make a fork of this project in your GitHub Workspace.
 - Create a package with your project name's and put it inside `/packages` directory.
