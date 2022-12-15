@@ -1,4 +1,7 @@
-# Aleph Indexer Library
+## Aleph Indexer Library
+**If you want to create an indexer, you're in the right place.**
+
+*But if you like to contribute to the indexing framework itself, head over to the [framework repo](https://github.com/aleph-im/solana-indexer-framework)*
 
 ## Install dependencies
 ``` sh
@@ -6,20 +9,21 @@ npm i
 pip3 install aleph-client
 ```
 
-## Create your own indexer implementation
-In order to run your own indexer, you need to start by creating a new project:
+# START HERE to create the indexer
+There are three way's to create your indexer after you create a new project:
+1. If you have an IDL, use the 
+2. Create a new indexer from scratch or use one of the pre-built customized [***indexer examples***](https://github.com/aleph-im/solana-indexer-library/tree/main/packages) in the package folder as a starting point.
 
-- using the Anchor Indexer Generator, you can generate a basic custom implementation of your Solana program in a few minutes with this option, read this [documentation](https://github.com/aleph-im/solana-indexer-library/tree/main/packages/indexer-generator#indexer-generator).
-- or by using one of the customized indexers (in the packages folder).
-- or by creating a new project from scratch.
+## 1. I hava an IDL
+Head over to the [Anchor Indexer Generator](https://github.com/aleph-im/solana-indexer-library/tree/main/packages/indexer-generator#indexer-generator)
 
-## Deploying a new Indexer
+## 2. I want to create a new indexer from scratch.
 
 - Make a fork of this project in your GitHub Workspace.
 - Create a package with your project name's and put it inside `/packages` directory.
-- Modify the `lerna.json` file and ensure to add there your package inside the list.
-- Write your custom indexer code or copy it from another project like `spl-lending` project.
-- Substitute the `INDEXER` variable inside `.github/workflows/main.yml` file, changing it by your project's name:
+- Modify the `lerna.json` file and ensure to add your project to the list.
+- Write your custom indexer code or copy it from another project like the `spl-lending` indexer in the [package](https://github.com/aleph-im/solana-indexer-library/tree/main/packages) folder.
+- Substitute the `INDEXER` variable inside `.github/workflows/main.yml` file, changing it to your project's name:
 ```yml
 - name: Build and export
   uses: docker/build-push-action@v3
