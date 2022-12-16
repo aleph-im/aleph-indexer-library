@@ -474,41 +474,6 @@
   ],
   "accounts": [
     {
-      "name": "MappingAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "header",
-            "type": {
-              "defined": "AccountHeader"
-            }
-          },
-          {
-            "name": "number_of_products",
-            "type": "u32"
-          },
-          {
-            "name": "unused_",
-            "type": "u32"
-          },
-          {
-            "name": "next_mapping_account",
-            "type": "publicKey"
-          },
-          {
-            "name": "products_list",
-            "type": {
-              "array": [
-                "publicKey",
-                640
-              ]
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "PriceAccount",
       "type": {
         "kind": "struct",
@@ -520,7 +485,7 @@
             }
           },
           {
-            "name": "price_type",
+            "name": "priceType",
             "type": "u32"
           },
           {
@@ -528,85 +493,85 @@
             "type": "i32"
           },
           {
-            "name": "num_",
+            "name": "numComponentPrices",
             "type": "u32"
           },
           {
-            "name": "num_qt_",
+            "name": "numQuoters",
             "type": "u32"
           },
           {
-            "name": "last_slot_",
+            "name": "lastSlot",
             "type": "u64"
           },
           {
-            "name": "valid_slot_",
-            "type": "publicKey"
+            "name": "validSlot",
+            "type": "u64"
           },
           {
-            "name": "twap_",
+            "name": "emaPrice",
             "type": {
               "defined": "PriceEma"
             }
           },
           {
-            "name": "twac_",
+            "name": "emaConfidence",
             "type": {
               "defined": "PriceEma"
             }
           },
           {
-            "name": "timestamp_",
+            "name": "timestamp",
             "type": "i64"
           },
           {
-            "name": "min_pub_",
+            "name": "minPublishers",
             "type": "u8"
           },
           {
-            "name": "unused_1_",
+            "name": "drv2",
             "type": "i8"
           },
           {
-            "name": "unused_2_",
+            "name": "drv3",
             "type": "i16"
           },
           {
-            "name": "unused_3_",
+            "name": "drv4",
             "type": "i32"
           },
           {
-            "name": "product_account",
+            "name": "productAccountKey",
             "type": "publicKey"
           },
           {
-            "name": "next_price_account",
+            "name": "nextPriceAccountKey",
             "type": "publicKey"
           },
           {
-            "name": "prev_slot_",
+            "name": "previousSlot",
             "type": "u64"
           },
           {
-            "name": "prev_price_",
+            "name": "previousPrice",
             "type": "i64"
           },
           {
-            "name": "prev_conf_",
+            "name": "previousConfidence",
             "type": "u64"
           },
           {
-            "name": "prev_timestamp_",
+            "name": "previousTimestamp",
             "type": "i64"
           },
           {
-            "name": "agg_",
+            "name": "aggregate",
             "type": {
               "defined": "PriceInfo"
             }
           },
           {
-            "name": "comp_",
+            "name": "priceComponents",
             "type": {
               "array": [
                 {
@@ -631,7 +596,7 @@
             }
           },
           {
-            "name": "first_price_account",
+            "name": "priceAccountKey",
             "type": "publicKey"
           }
         ]
@@ -645,7 +610,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "magic_number",
+            "name": "magic",
             "type": "u32"
           },
           {
@@ -653,7 +618,7 @@
             "type": "u32"
           },
           {
-            "name": "account_type",
+            "name": "type",
             "type": "u32"
           },
           {
@@ -669,15 +634,15 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "val_",
+            "name": "value",
             "type": "i64"
           },
           {
-            "name": "numer_",
+            "name": "numerator",
             "type": "i64"
           },
           {
-            "name": "denom_",
+            "name": "denominator",
             "type": "i64"
           }
         ]
@@ -689,23 +654,23 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "price_",
+            "name": "price",
             "type": "i64"
           },
           {
-            "name": "conf_",
+            "name": "confidence",
             "type": "u64"
           },
           {
-            "name": "status_",
+            "name": "status",
             "type": "u32"
           },
           {
-            "name": "corp_act_status_",
+            "name": "corporateAction",
             "type": "u32"
           },
           {
-            "name": "pub_slot_",
+            "name": "publishSlot",
             "type": "u64"
           }
         ]
@@ -717,17 +682,17 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "pub_",
+            "name": "publisher",
             "type": "publicKey"
           },
           {
-            "name": "agg_",
+            "name": "aggregate",
             "type": {
               "defined": "PriceInfo"
             }
           },
           {
-            "name": "latest_",
+            "name": "latest",
             "type": {
               "defined": "PriceInfo"
             }
