@@ -89,6 +89,7 @@ async function main() {
             return
           }
           if (stderr) {
+            console.log(`Your IDL couldn't be fetched from apr`)
             return
           }
         },

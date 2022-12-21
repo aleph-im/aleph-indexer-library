@@ -5,7 +5,7 @@ import {
 import { createEventDAL } from '../../../dal/event'
 import { InstructionType, ParsedEvents } from '../../../utils/layouts'
 import * as fs from 'fs'
-import { MARINADEFINANCE_PROGRAM_ID } from '../../../constants'
+import { MARINADE_FINANCE_PROGRAM_ID } from '../../../constants'
 import { DateTime, Interval } from 'luxon'
 
 export async function mockEventDAL(
@@ -74,7 +74,7 @@ function generateEvent(interval?: Interval): ParsedEvents {
     timestamp,
     type: getRandomInstructionType(),
     signer: 'CNCnPo5Fhfjj5Y7DSc82RDJfQoHEd2haAnTkAwRGfo8z',
-    programId: MARINADEFINANCE_PROGRAM_ID,
+    programId: MARINADE_FINANCE_PROGRAM_ID,
     data: {} as any,
     accounts: {} as any,
   }

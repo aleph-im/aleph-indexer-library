@@ -94,11 +94,18 @@ describe('EventParser', () => {
         }
       },
       programId: "programId",
-      signer: "signer",
+      signer: '2gCzKgSTPSy4fL7z9NQhJAKvumEofTa2DFJU4wGhQ5Jt',
       innerInstructions: [],
       data: "data",
       accounts: [],
     }
+    const accountKeys = [
+      {
+        pubkey: '2gCzKgSTPSy4fL7z9NQhJAKvumEofTa2DFJU4wGhQ5Jt',
+        signer: true,
+        writable: true,
+      },
+    ]
     const instructionContext: InstructionContextV1 = {
       ix: instruction,
       parentIx: undefined,
@@ -119,7 +126,7 @@ describe('EventParser', () => {
             error: undefined,
             message: {
               instructions: [instruction],
-              accountKeys: [],
+              accountKeys: accountKeys,
               recentBlockhash: "recentBlockhash",
             },
             signatures: [],
@@ -138,9 +145,10 @@ describe('EventParser', () => {
     expect(parsedEvent).toEqual({
       id: "signature:00",
       timestamp: 0,
-      type: "${instructions?.instructions[0].name}",
+      type: "${instructions?.instructions[0].name}Event",
       account: "account",
       programId: "programId",
+      signer: '2gCzKgSTPSy4fL7z9NQhJAKvumEofTa2DFJU4wGhQ5Jt',
     })
   })
 })`

@@ -471,5 +471,234 @@
       ],
       "args": []
     }
+  ],
+  "accounts": [
+    {
+      "name": "PriceAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "header",
+            "type": {
+              "defined": "AccountHeader"
+            }
+          },
+          {
+            "name": "priceType",
+            "type": "u32"
+          },
+          {
+            "name": "exponent",
+            "type": "i32"
+          },
+          {
+            "name": "numComponentPrices",
+            "type": "u32"
+          },
+          {
+            "name": "numQuoters",
+            "type": "u32"
+          },
+          {
+            "name": "lastSlot",
+            "type": "u64"
+          },
+          {
+            "name": "validSlot",
+            "type": "u64"
+          },
+          {
+            "name": "emaPrice",
+            "type": {
+              "defined": "PriceEma"
+            }
+          },
+          {
+            "name": "emaConfidence",
+            "type": {
+              "defined": "PriceEma"
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "minPublishers",
+            "type": "u8"
+          },
+          {
+            "name": "drv2",
+            "type": "i8"
+          },
+          {
+            "name": "drv3",
+            "type": "i16"
+          },
+          {
+            "name": "drv4",
+            "type": "i32"
+          },
+          {
+            "name": "productAccountKey",
+            "type": "publicKey"
+          },
+          {
+            "name": "nextPriceAccountKey",
+            "type": "publicKey"
+          },
+          {
+            "name": "previousSlot",
+            "type": "u64"
+          },
+          {
+            "name": "previousPrice",
+            "type": "i64"
+          },
+          {
+            "name": "previousConfidence",
+            "type": "u64"
+          },
+          {
+            "name": "previousTimestamp",
+            "type": "i64"
+          },
+          {
+            "name": "aggregate",
+            "type": {
+              "defined": "PriceInfo"
+            }
+          },
+          {
+            "name": "priceComponents",
+            "type": {
+              "array": [
+                {
+                  "defined": "PriceComponent"
+                },
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProductAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "header",
+            "type": {
+              "defined": "AccountHeader"
+            }
+          },
+          {
+            "name": "priceAccountKey",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "AccountHeader",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "magic",
+            "type": "u32"
+          },
+          {
+            "name": "version",
+            "type": "u32"
+          },
+          {
+            "name": "type",
+            "type": "u32"
+          },
+          {
+            "name": "size",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceEma",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "value",
+            "type": "i64"
+          },
+          {
+            "name": "numerator",
+            "type": "i64"
+          },
+          {
+            "name": "denominator",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price",
+            "type": "i64"
+          },
+          {
+            "name": "confidence",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "type": "u32"
+          },
+          {
+            "name": "corporateAction",
+            "type": "u32"
+          },
+          {
+            "name": "publishSlot",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PriceComponent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "publisher",
+            "type": "publicKey"
+          },
+          {
+            "name": "aggregate",
+            "type": {
+              "defined": "PriceInfo"
+            }
+          },
+          {
+            "name": "latest",
+            "type": {
+              "defined": "PriceInfo"
+            }
+          }
+        ]
+      }
+    }
   ]
 }

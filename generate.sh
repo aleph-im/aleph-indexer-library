@@ -2,6 +2,7 @@
 
 arg1=$1
 arg2=$2
+arg1Lenght=${#arg1}
 
 if [[ $# -ne 1 && $# -ne 2 ]]; then
     echo "Error: wrong number of arguments"
@@ -9,14 +10,14 @@ if [[ $# -ne 1 && $# -ne 2 ]]; then
     exit 1
 fi
 
-if [[ "$arg1" -lt 34 || "$arg1" -gt 44 ]]; then
+if [[ $arg1Lenght -ge 34 &&  $arg1Lenght -le 44 ]]; then
     flag1="-a"
     if [[ $# -eq 2 ]]; then
         flag2="-f"
     fi
 else
     flag1="-f"
-        if [[ $# -eq 2 ]]; then
+    if [[ $# -eq 2 ]]; then
         flag2="-a"
     fi
 fi
