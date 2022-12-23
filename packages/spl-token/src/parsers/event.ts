@@ -277,21 +277,16 @@ export class EventParser {
       [account],
       { atomic: true },
     )
-    if (dbEvent) {
-      const event = dbEvent.payload.event
-      const data = getMintAndOwnerFromEvent(event, account)
-
-      if (data) {
-        return {
-          mint: data.mint,
-          owner: data.owner || '',
-        }
-      }
+    if (!dbEvent) {
+      throw new Error('Mint event not found')
     }
 
+    const event = dbEvent.payload.event
+    const data = getMintAndOwnerFromEvent(event, account)
+
     return {
-      mint: '',
-      owner: '',
+      mint: data.mint,
+      owner: data.owner || '',
     }
   }
 }

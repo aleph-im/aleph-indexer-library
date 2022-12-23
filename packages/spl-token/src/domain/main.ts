@@ -3,7 +3,6 @@ import {
   IndexerMainDomain,
   IndexerMainDomainContext,
   IndexerMainDomainWithDiscovery,
-  IndexerMainDomainWithStats,
 } from '@aleph-indexer/framework'
 import { Token, solanaPrivateRPCRoundRobin } from '@aleph-indexer/core'
 import {
@@ -23,16 +22,12 @@ import { TOKEN_PROGRAM_ID } from '../constants.js'
 
 export default class MainDomain
   extends IndexerMainDomain
-  implements IndexerMainDomainWithDiscovery, IndexerMainDomainWithStats
+  implements IndexerMainDomainWithDiscovery
 {
   protected tokens: Record<string, SPLTokenInfo> = {}
 
   constructor(protected context: IndexerMainDomainContext) {
     super(context, {})
-  }
-
-  async updateStats(now: number): Promise<void> {
-    console.log('Method not implemented.')
   }
 
   async discoverAccounts(): Promise<AccountIndexerRequestArgs[]> {
@@ -50,7 +45,10 @@ export default class MainDomain
   }
 
   async init(...args: unknown[]): Promise<void> {
-    super.init(...args)
+    await super.init(...args)
+
+    // TODO: create mint databases
+
     const { accounts, mints } = await discoveryFn()
 
     await Promise.all(

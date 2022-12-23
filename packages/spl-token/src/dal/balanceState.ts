@@ -8,10 +8,15 @@ export enum BalanceStateDALIndex {
   BalanceAccount = 'balance_account',
 }
 
-export type BalanceStateStorage = EntityStorage<SPLAccountBalance>
+export type AccountBalanceStateStorage = EntityStorage<SPLAccountBalance>
 
-const idKey = {
+const accountKey = {
   get: (e: SPLAccountBalance) => e.account,
+  length: EntityStorage.AddressLength,
+}
+
+const mintKey = {
+  get: (e: SPLAccountBalance) => e.mint,
   length: EntityStorage.AddressLength,
 }
 
@@ -20,15 +25,17 @@ const balanceKey = {
   length: EntityStorage.TimestampLength,
 }
 
-export function createBalanceStateDAL(path: string): BalanceStateStorage {
+export function createBalanceStateDAL(
+  path: string,
+): AccountBalanceStateStorage {
   return new EntityStorage<SPLAccountBalance>({
-    name: 'balance_state',
+    name: 'account_balance_state',
     path,
-    key: [idKey],
+    key: [mintKey, accountKey],
     indexes: [
       {
         name: BalanceStateDALIndex.BalanceAccount,
-        key: [balanceKey, idKey],
+        key: [mintKey, balanceKey],
       },
     ],
     mapFn: async function (entry: { key: any; value: any }) {

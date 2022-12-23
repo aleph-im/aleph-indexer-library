@@ -4,9 +4,9 @@ import { SPLAccountBalance } from '../types.js'
 
 const mappedProps = ['balance']
 
-export type BalanceHistoryStorage = EntityStorage<SPLAccountBalance>
+export type AccountBalanceHistoryStorage = EntityStorage<SPLAccountBalance>
 
-const idKey = {
+const accountKey = {
   get: (e: SPLAccountBalance) => e.account,
   length: EntityStorage.AddressLength,
 }
@@ -16,11 +16,13 @@ const timestampKey = {
   length: EntityStorage.TimestampLength,
 }
 
-export function createBalanceHistoryDAL(path: string): BalanceHistoryStorage {
+export function createBalanceHistoryDAL(
+  path: string,
+): AccountBalanceHistoryStorage {
   return new EntityStorage<SPLAccountBalance>({
-    name: 'account_balance',
+    name: 'account_balance_history',
     path,
-    key: [idKey, timestampKey],
+    key: [accountKey, timestampKey],
     mapFn: async function (entry: { key: any; value: any }) {
       const { key, value } = entry
 

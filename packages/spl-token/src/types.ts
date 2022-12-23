@@ -427,6 +427,7 @@ export type SPLTokenEventPublic = SPLTokenEvent & { tokenInfo: TokenInfo }
 
 export type SPLAccountBalance = {
   account: string
+  mint: string
   owner?: string
   balance: string
   timestamp: number

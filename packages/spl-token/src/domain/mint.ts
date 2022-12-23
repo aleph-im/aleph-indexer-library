@@ -16,7 +16,7 @@ import BN from 'bn.js'
 import { Account } from './account.js'
 import {
   BalanceStateDALIndex,
-  BalanceStateStorage,
+  AccountBalanceStateStorage,
 } from '../dal/balanceState.js'
 import { AccountMintStorage } from '../dal/accountMints.js'
 import { ALEPH_MINT_ADDRESS } from '../constants.js'
@@ -25,8 +25,8 @@ export class Mint {
   constructor(
     protected address: string,
     protected eventDAL: EventStorage,
-    protected balanceStateDAL: BalanceStateStorage,
-    protected balanceHistoryDAL: BalanceStateStorage,
+    protected balanceStateDAL: AccountBalanceStateStorage,
+    protected balanceHistoryDAL: AccountBalanceStateStorage,
     protected accountMintDAL: AccountMintStorage,
   ) {}
 
@@ -37,12 +37,12 @@ export class Mint {
     return await this.accountMintDAL.getAllValuesFromTo(range, range)
   }
 
-  addAccount(account: string): void {
+  async addAccount(account: string): Promise<void> {
     const accountMint: AccountMint = {
       mint: this.address,
       account,
     }
-    this.accountMintDAL.save(accountMint)
+    await this.accountMintDAL.save(accountMint)
   }
 
   async getEvents(filters: MintEventsFilters): Promise<SPLTokenEvent[]> {
@@ -79,35 +79,11 @@ export class Mint {
 
     const result: SPLAccountBalance[] = []
 
-    const accountMints = await this.getMintAccounts()
-    const balances = []
+    const balances = await this.balanceStateDAL
+      .useIndex(BalanceStateDALIndex.BalanceAccount)
+      .getAllValuesFromTo([this.address], [this.address], { reverse, limit })
 
-    for await (const { account } of accountMints) {
-      const balance = await this.balanceStateDAL.getFirstValueFromTo(
-        [account],
-        [account],
-      )
-      if (balance) {
-        balances.push(balance)
-      }
-    }
-
-    let sortedBalances: SPLAccountBalance[] = []
-    if (reverse) {
-      sortedBalances = balances.sort((a, b) => {
-        const aBalance = new BN(a.balance)
-        const bBalance = new BN(b.balance)
-        return bBalance.lt(aBalance) ? -1 : 1
-      })
-    } else {
-      sortedBalances = balances.sort((a, b) => {
-        const aBalance = new BN(a.balance)
-        const bBalance = new BN(b.balance)
-        return aBalance.lt(bBalance) ? -1 : 1
-      })
-    }
-
-    for (const value of sortedBalances) {
+    for await (const value of balances) {
       // @note: Filter by gte || lte
       if (gteBn || lteBn) {
         const balanceBN = new BN(value.balance)

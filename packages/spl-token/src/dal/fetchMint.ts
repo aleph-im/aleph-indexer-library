@@ -14,7 +14,7 @@ export type FetchMintStorage = PendingWorkStorage<MintAccount>
  */
 export function createFetchMintDAL(
   path: string,
-  name = 'fetcher_account_mints',
+  name = 'fetcher_mint_accounts',
 ): FetchMintStorage {
   return new PendingWorkStorage<MintAccount>({
     name,

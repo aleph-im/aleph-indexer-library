@@ -98,7 +98,7 @@ export default class WorkerDomain
           this.accountMintDAL,
         )
       }
-      this.mints[mint].addAccount(account)
+      await this.mints[mint].addAccount(account)
     }
     console.log('Account indexing', this.context.instanceName, account)
   }
@@ -256,6 +256,7 @@ export default class WorkerDomain
       const balance = getBalanceFromEvent(entity, account)
       return {
         account,
+        mint: entity.mint,
         owner: entity.owner,
         balance,
         timestamp: entity.timestamp,
