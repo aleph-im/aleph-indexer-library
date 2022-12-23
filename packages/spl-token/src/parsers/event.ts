@@ -1,7 +1,13 @@
-import { InstructionContextV1, Utils } from '@aleph-indexer/core'
+import {
+  InstructionContextV1,
+  Utils,
+  solanaPrivateRPCRoundRobin,
+} from '@aleph-indexer/core'
+import { ParsedAccountData, PublicKey } from '@solana/web3.js'
 import { SLPTokenRawEvent, SPLTokenEvent, SPLTokenEventType } from '../types.js'
 import { getMintAndOwnerFromEvent } from '../utils/utils.js'
 import { FetchMintStorage } from '../dal/fetchMint.js'
+import { EventDALIndex, EventStorage } from '../dal/event.js'
 
 const { getTokenBalance } = Utils
 
@@ -11,7 +17,10 @@ export type MintOwner = {
 }
 
 export class EventParser {
-  constructor(protected fetchMintDAL: FetchMintStorage) {}
+  constructor(
+    protected fetchMintDAL: FetchMintStorage,
+    protected eventDAL: EventStorage,
+  ) {}
 
   async parse(ixCtx: InstructionContextV1): Promise<SPLTokenEvent | undefined> {
     const { ix, parentIx, txContext } = ixCtx
@@ -278,7 +287,7 @@ export class EventParser {
       { atomic: true },
     )
     if (!dbEvent) {
-      throw new Error('Mint event not found')
+      return await this.getMintAndOwnerFromEvents(account)
     }
 
     const event = dbEvent.payload.event
@@ -289,8 +298,56 @@ export class EventParser {
       owner: data.owner || '',
     }
   }
+
+  protected async getMintAndOwnerFromEvents(
+    account: string,
+  ): Promise<MintOwner> {
+    const dbEvent = await this.eventDAL
+      .useIndex(EventDALIndex.AccountTimestamp)
+      .getFirstValueFromTo([account], [account], { atomic: true })
+
+    if (!dbEvent) {
+      return await this.getMintAndOwnerFromAccount(account)
+    }
+
+    const data = getMintAndOwnerFromEvent(dbEvent, account)
+
+    return {
+      mint: data.mint,
+      owner: data.owner || '',
+    }
+  }
+
+  protected async getMintAndOwnerFromAccount(
+    account: string,
+  ): Promise<MintOwner> {
+    // TODO: Improve this way to get the mint and owner of an account
+    try {
+      const connection = solanaPrivateRPCRoundRobin.getClient()
+      const res = await connection
+        .getConnection()
+        .getParsedAccountInfo(new PublicKey(account))
+
+      const data = (res?.value?.data as ParsedAccountData)?.parsed?.info
+
+      return {
+        mint: data.mint,
+        owner: data.owner,
+      }
+    } catch (e) {
+      console.log('Error checking info for account ' + account)
+    }
+
+    return {
+      mint: '',
+      owner: '',
+    }
+  }
 }
 
-export function createEventParser(dal: FetchMintStorage): EventParser {
-  return new EventParser(dal)
+export function createEventParser(
+  fetchDAL: FetchMintStorage,
+  eventDAL: EventStorage,
+): EventParser {
+  return new EventParser(fetchDAL, eventDAL)
 }

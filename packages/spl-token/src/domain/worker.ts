@@ -28,7 +28,7 @@ import { TOKEN_PROGRAM_ID } from '../constants.js'
 import {
   getBalanceFromEvent,
   getEventAccounts,
-  isParsedIx,
+  isSPLTokenInstruction,
 } from '../utils/utils.js'
 import { createFetchMintDAL } from '../dal/fetchMint.js'
 import {
@@ -62,7 +62,7 @@ export default class WorkerDomain
     protected programId = TOKEN_PROGRAM_ID,
   ) {
     super(context)
-    this.eventParser = createEventParser(this.fetchMintDAL)
+    this.eventParser = createEventParser(this.fetchMintDAL, this.eventDAL)
     this.accountMints = new PendingWorkPool<MintAccount>({
       id: 'mintAccounts',
       interval: 0,
@@ -149,7 +149,7 @@ export default class WorkerDomain
   protected async filterInstructions(
     ixsContext: InstructionContextV1[],
   ): Promise<InstructionContextV1[]> {
-    return ixsContext.filter(({ ix }) => isParsedIx(ix))
+    return ixsContext.filter(({ ix }) => isSPLTokenInstruction(ix))
   }
 
   protected async indexInstructions(

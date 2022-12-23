@@ -14,4 +14,5 @@ services:
       - INDEXER=spl-token
       - SPL_TOKEN_MINTS=kinXdEcpDQeHPEuQnqmUgtYykqKGVFq6CeVX5iAHJq6
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
+      - INDEXER_INSTANCES=1 # Important to return the correct data for every mint
     network_mode: bridge

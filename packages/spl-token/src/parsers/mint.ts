@@ -19,7 +19,12 @@ export class MintParser {
     const parsed = (ix as SLPTokenRawEvent).parsed
 
     // @note: Skip unrelated token ixs from being parsed
-    if ('mint' in parsed.info && parsed.info.mint !== mintAddress) return
+    if (
+      parsed.info &&
+      'mint' in parsed.info &&
+      parsed.info.mint !== mintAddress
+    )
+      return
 
     const id = `${parentTx.signature}${
       parentIx ? `:${parentIx.index.toString().padStart(2, '0')}` : ''
