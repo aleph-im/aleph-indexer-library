@@ -13,9 +13,6 @@ services:
     environment:
       - INDEXER=spl-lending
       - LENDING_ID=port
-      - LETSENCRYPT_HOST=port.api.aleph.cloud
-      - VIRTUAL_HOST=port.api.aleph.cloud
-      - VIRTUAL_PORT=8080
       - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
     network_mode: bridge
 
@@ -31,10 +28,7 @@ services:
     environment:
       - INDEXER=spl-lending
       - LENDING_ID=solend
-      - LETSENCRYPT_HOST=solend.api.aleph.cloud
-      - VIRTUAL_HOST=solend.api.aleph.cloud
-      - VIRTUAL_PORT=8080
-      - SOLANA_RPC=http://solrpc1.aleph.cloud:7717/
+      - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
     network_mode: bridge
 
   larix-indexer:
@@ -49,8 +43,5 @@ services:
     environment:
       - INDEXER=spl-lending
       - LENDING_ID=larix
-      - LETSENCRYPT_HOST=larix.api.aleph.cloud
-      - VIRTUAL_HOST=larix.api.aleph.cloud
-      - VIRTUAL_PORT=8080
-      - SOLANA_RPC=http://solrpc1.aleph.cloud:7719/
+      - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
     network_mode: bridge
