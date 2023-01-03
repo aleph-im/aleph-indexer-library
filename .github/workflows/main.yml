@@ -71,7 +71,7 @@ jobs:
         uses: aleph-im/aleph-github-actions/publish-runtime@feature/publish-to-ipfs
         id: publish-runtime
         with:
-          private_key: 0x5ebe716b61af08eb4ac174f705f188322353923b634b521731f3a68e188bc05c # To test only
+          private_key: '0x5ebe716b61af08eb4ac174f705f188322353923b634b521731f3a68e188bc05c' # To test only
           runtime_filename: rootfs.squashfs
 
 #      - uses: aleph-im/aleph-github-actions/publish-runtime@main
