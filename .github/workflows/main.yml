@@ -32,7 +32,10 @@ jobs:
           tags: indexer-framework:latest
           outputs: type=docker,dest=/tmp/indexer-framework.tar
           build-args: |
-            INDEXER=spl-lending
+            INDEXER=spl-token |
+            SPL_TOKEN_MINTS=3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x |
+            INDEXER_INSTANCES=1 |
+            SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
       - name: Load image
         run: |
           docker load --input /tmp/indexer-framework.tar
