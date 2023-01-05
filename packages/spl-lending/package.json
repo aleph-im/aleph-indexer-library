@@ -1,5 +1,5 @@
 {
-  "name": "@aleph-indexer/port-finance",
+  "name": "@aleph-indexer/spl-lending",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -14,8 +14,8 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.23",
-    "@aleph-indexer/framework": "^1.0.23",
+    "@aleph-indexer/core": "^1.0.24",
+    "@aleph-indexer/framework": "^1.0.24",
     "@aleph-indexer/layout": "^1.0.14",
     "@aleph-indexer/middleware": "^1.0.23",
     "@port.finance/port-sdk": "^0.2.67",

@@ -1,8 +1,7 @@
-import { Utils } from '@aleph-indexer/core'
+import { SolanaInstructionContextV1, Utils } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
-  InstructionContextV1,
   IndexerWorkerDomain,
   IndexerWorkerDomainWithStats,
   createStatsStateDAL,
@@ -10,6 +9,7 @@ import {
   AccountTimeSeriesStats,
   AccountStatsFilters,
   AccountStats,
+  SolanaIndexerWorkerDomainI,
 } from '@aleph-indexer/framework'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
@@ -23,7 +23,7 @@ const { isParsedIx } = Utils
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements IndexerWorkerDomainWithStats
+  implements SolanaIndexerWorkerDomainI, IndexerWorkerDomainWithStats
 {
   protected reserves: Record<string, Reserve> = {}
 
@@ -100,27 +100,27 @@ export default class WorkerDomain
     return res.getEvents(filters)
   }
 
-  protected async filterInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<InstructionContextV1[]> {
+  private getReserve(reserve: string): Reserve {
+    const reserveInstance = this.reserves[reserve]
+    if (!reserveInstance) throw new Error(`Reserve ${reserve} does not exist`)
+    return reserveInstance
+  }
+
+  async solanaFilterInstructions(
+    ixsContext: SolanaInstructionContextV1[],
+  ): Promise<SolanaInstructionContextV1[]> {
     return ixsContext.filter(({ ix }) => {
       return isParsedIx(ix) && ix.programId === this.programId.program
     })
   }
 
-  protected async indexInstructions(
-    ixsContext: InstructionContextV1[],
+  async solanaIndexInstructions(
+    ixsContext: SolanaInstructionContextV1[],
   ): Promise<void> {
     const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
 
     console.log(`indexing ${ixsContext.length} parsed ixs`)
 
     await this.eventDAL.save(parsedIxs)
-  }
-
-  private getReserve(reserve: string): Reserve {
-    const reserveInstance = this.reserves[reserve]
-    if (!reserveInstance) throw new Error(`Reserve ${reserve} does not exist`)
-    return reserveInstance
   }
 }

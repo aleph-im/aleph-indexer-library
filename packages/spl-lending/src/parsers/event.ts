@@ -1,8 +1,8 @@
 import BN from 'bn.js'
 import {
-  InstructionContextV1,
   Utils,
-  AlephParsedEvent,
+  SolanaInstructionContextV1,
+  SolanaParsedEvent,
 } from '@aleph-indexer/core'
 import { isMaxU64 } from '@aleph-indexer/layout'
 import {
@@ -38,11 +38,11 @@ const {
 } = Utils
 
 export class EventParser {
-  parse(ixCtx: InstructionContextV1): LendingEvent {
+  parse(ixCtx: SolanaInstructionContextV1): LendingEvent {
     const { ix, parentIx, txContext } = ixCtx
     const { tx: parentTx } = txContext
 
-    const parsed = (ix as AlephParsedEvent<LendingEventType, LendingEventInfo>)
+    const parsed = (ix as SolanaParsedEvent<LendingEventType, LendingEventInfo>)
       .parsed
 
     const id = `${parentTx.signature}${

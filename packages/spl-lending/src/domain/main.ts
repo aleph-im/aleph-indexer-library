@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { constants } from '@aleph-indexer/core'
+import { Blockchain, constants } from '@aleph-indexer/core'
 import {
   IndexerMainDomain,
   IndexerMainDomainWithDiscovery,
@@ -49,6 +49,7 @@ export default class MainDomain
 
     return reserves.map((meta) => {
       return {
+        blockchainId: Blockchain.Solana,
         account: meta.address,
         meta,
         index: {
@@ -139,7 +140,9 @@ export default class MainDomain
   protected async computeGlobalStats(
     addresses?: string[],
   ): Promise<GlobalLendingStats> {
-    const accountStats = await this.getAccountStats<LendingReserveStats>(addresses)
+    const accountStats = await this.getAccountStats<LendingReserveStats>(
+      addresses,
+    )
 
     const globalStats: GlobalLendingStats = this.getNewGlobalStats()
 
