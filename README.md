@@ -24,8 +24,12 @@ There are three way's to create your indexer after you create a new project:
     tags: aleph-framework:latest
     outputs: type=docker,dest=/tmp/aleph-framework.tar
     build-args: |
-      INDEXER=XXXXXX
+      INDEXER=spl-token |
+      SPL_TOKEN_MINTS=3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x |
+      INDEXER_INSTANCES=1 |
+      SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
 ```
+- Also replace the rest of the environment variables that you want to use like `SPL_TOKEN_MINTS` or `SOLANA_RPC`.
 - Once your indexer code is finished and working, create a PR on GitHub and push it.
 - Label your PR with the `deploy` tag.
 - The GitHub action will be triggered, and you will be able to download the final root filesystem of your indexer, ready to be pushed to Aleph network.
@@ -37,17 +41,7 @@ There are three way's to create your indexer after you create a new project:
 **_Using this method you will need to store you wallet private key's inside GitHub Secrets._**
 
 - Go to repository `Secrets` tab and add a new one like `WALLET_PRIVATE_KEY`.
-- Inside `.github/workflows/main.yml` file, uncomment the last action that is commented and ensure to replace `XXXXXX` with the IPFS hash of your `rootfs.squashfs` file uploaded:
-```yml
-- uses: aleph-im/aleph-github-actions/publish-runtime@main
-  id: publish-runtime
-  with:
-    fs_path: ./rootfs.squashfs
-    private-key: ${{ secrets.WALLET_PRIVATE_KEY }}
-    runtime_hash: XXXXXX
-    indexer: spl-lending
-```
-- Pushing this new changes with a PR or a simple commit to the repository, the GitHub action will be triggered.
+- Every new PR labeled with `deploy` tag on the repository will trigger the GitHub Action and publish the VM.
 - Once the action finishes successfully, inside `Actions` -> `"Name of your last commit"` -> `Generate runtime` job -> `Publish runtime` step, you will be able to see the VM address:
 ```
 https://aleph.sh/vm/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -68,9 +62,9 @@ aleph pin RUNTIME_HASH --private-key WALLET_PRIVATE_KEY
 - Download the program files in the current directory through [here](https://github.com/aleph-im/aleph-github-actions/tree/main/publish-runtime).
 - Deploy the program inside a persistent VM at Aleph network (changing INDEXER by your indexer name):
 ```shell
-aleph program ./program "run.sh INDEXER" --persistent --private-key WALLET_PRIVATE_KEY --runtime RUNTIME_HASH
+aleph program ./program "run.sh" --persistent --private-key WALLET_PRIVATE_KEY --runtime RUNTIME_HASH
 ```
 - Once command finishes, you will be able to see the VM address:
 ```
-https://aleph-vm-lab.aleph.cloud/vm/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+https://aleph.sh/vm/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
