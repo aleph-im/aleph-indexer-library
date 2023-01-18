@@ -1,3 +1,4 @@
+import { Blockchain } from '@aleph-indexer/core'
 import {
   AccountIndexerRequestArgs,
   IndexerMainDomain,
@@ -33,6 +34,7 @@ export default class MainDomain
   async discoverAccounts(): Promise<AccountIndexerRequestArgs[]> {
     const init = {
       account: '',
+      blockchainId: Blockchain.Solana,
       index: {
         transactions: {
           chunkDelay: 0,
@@ -62,6 +64,7 @@ export default class MainDomain
 
         const options = {
           account,
+          blockchainId: Blockchain.Solana,
           meta: { type: SPLTokenType.Account, mint: mint },
           index: {
             transactions: {
@@ -71,8 +74,10 @@ export default class MainDomain
             content: false,
           },
         }
-        await this.context.apiClient.indexAccount(options)
-        this.accounts.add(account)
+        await this.context.apiClient
+          .useBlockchain(Blockchain.Solana)
+          .indexAccount(options)
+        this.accounts[Blockchain.Solana].add(account)
       }),
     )
     await Promise.all(
@@ -80,6 +85,7 @@ export default class MainDomain
         await this.addToken(mint)
         const options = {
           account: mint,
+          blockchainId: Blockchain.Solana,
           meta: { type: SPLTokenType.Mint, mint },
           index: {
             transactions: {
@@ -89,8 +95,10 @@ export default class MainDomain
             content: false,
           },
         }
-        await this.context.apiClient.indexAccount(options)
-        this.accounts.add(mint)
+        await this.context.apiClient
+          .useBlockchain(Blockchain.Solana)
+          .indexAccount(options)
+        this.accounts[Blockchain.Solana].add(mint)
       }),
     )
   }
@@ -103,33 +111,39 @@ export default class MainDomain
     account: string,
     filters: TokenHoldersFilters,
   ): Promise<SPLAccountBalance[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getTokenHolders',
-    })) as SPLAccountBalance[]
+    return (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        args: [filters],
+        method: 'getTokenHolders',
+      })) as SPLAccountBalance[]
   }
 
   async getMintEvents(
     account: string,
     filters: MintEventsFilters,
   ): Promise<SPLTokenEvent[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getMintEvents',
-    })) as SPLTokenEvent[]
+    return (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        args: [filters],
+        method: 'getMintEvents',
+      })) as SPLTokenEvent[]
   }
 
   async getAccountHoldings(
     account: string,
     filters: AccountHoldingsFilters,
   ): Promise<SPLAccountHoldings[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getAccountHoldings',
-    })) as SPLAccountHoldings[]
+    return (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        args: [filters],
+        method: 'getAccountHoldings',
+      })) as SPLAccountHoldings[]
   }
 
   protected async addToken(mint: string): Promise<void> {
