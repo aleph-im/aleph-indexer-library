@@ -16,7 +16,7 @@ async function main() {
   const tcpUrls = config.INDEXER_TCP_URLS || undefined
   const natsUrl = config.INDEXER_NATS_URL || undefined
 
-  const projectId = config.INDEXER_NAMESPACE || 'spl-token'
+  const projectId = config.INDEXER_NAMESPACE || 'token-snapshot'
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const transport =
     (config.INDEXER_TRANSPORT as TransportType) || TransportType.Thread

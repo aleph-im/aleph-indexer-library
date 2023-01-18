@@ -5,7 +5,6 @@ import {
   GraphQLList,
 } from 'graphql'
 import { TokenType } from '@aleph-indexer/core'
-import {MAX_TIMER_INTEGER} from "@aleph-indexer/core/dist/constants";
 
 // ------------------- TOKENS --------------------------
 
@@ -24,7 +23,7 @@ export const TokenMints = new GraphQLList(TokenMint)
 // ------------------- HOLDERS --------------------------
 
 export const TokenBalances = new GraphQLObjectType({
-  name: 'TokenHolder',
+  name: 'TokenBalances',
   fields: {
     wallet: { type: new GraphQLNonNull(GraphQLString) },
     solend: { type: GraphQLString },
