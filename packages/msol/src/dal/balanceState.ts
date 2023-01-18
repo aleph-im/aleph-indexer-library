@@ -1,41 +1,46 @@
 import BN from 'bn.js'
 import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
-import { SPLAccountBalance } from '../types.js'
+import { SPLTokenHolding } from '../types.js'
 
 const mappedProps = ['balance']
 
 export enum BalanceStateDALIndex {
-  BalanceAccount = 'balance_account',
+  Mint = 'mint',
+  MintSlot = 'mintSlot',
 }
 
-export type AccountBalanceStateStorage = EntityStorage<SPLAccountBalance>
+export type AccountBalanceStateStorage = EntityStorage<SPLTokenHolding>
 
 const accountKey = {
-  get: (e: SPLAccountBalance) => e.account,
+  get: (e: SPLTokenHolding) => e.account,
   length: EntityStorage.AddressLength,
 }
 
 const mintKey = {
-  get: (e: SPLAccountBalance) => e.mint,
+  get: (e: SPLTokenHolding) => e.tokenMint,
   length: EntityStorage.AddressLength,
 }
 
-const balanceKey = {
-  get: (e: SPLAccountBalance) => e.balance,
-  length: EntityStorage.TimestampLength,
+const slotKey = {
+  get: (e: SPLTokenHolding) => e.slot,
+  length: EntityStorage.VariableLength,
 }
 
 export function createBalanceStateDAL(
   path: string,
 ): AccountBalanceStateStorage {
-  return new EntityStorage<SPLAccountBalance>({
+  return new EntityStorage<SPLTokenHolding>({
     name: 'account_balance_state',
     path,
-    key: [mintKey, accountKey],
+    key: [mintKey, accountKey, slotKey],
     indexes: [
       {
-        name: BalanceStateDALIndex.BalanceAccount,
-        key: [mintKey, balanceKey],
+        name: BalanceStateDALIndex.Mint,
+        key: [mintKey],
+      },
+      {
+        name: BalanceStateDALIndex.MintSlot,
+        key: [mintKey, slotKey],
       },
     ],
     mapFn: async function (entry: { key: any; value: any }) {
@@ -51,15 +56,14 @@ export function createBalanceStateDAL(
       return { key, value }
     },
     async updateCheckFn(
-      oldEntity: SPLAccountBalance | undefined,
-      newEntity: SPLAccountBalance,
+      oldEntity: SPLTokenHolding | undefined,
+      newEntity: SPLTokenHolding,
     ): Promise<EntityUpdateOp> {
       if (oldEntity && oldEntity.timestamp > newEntity.timestamp) {
         return EntityUpdateOp.Keep
       }
 
-      console.log('Save new entity balance ', newEntity.balance)
-      if ((newEntity.balance as string) === '0') {
+      if ((newEntity.balances.total as string) === '0') {
         return EntityUpdateOp.Delete
       }
 

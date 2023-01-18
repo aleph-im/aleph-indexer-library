@@ -8,7 +8,7 @@ import {
   TokenHoldersFilters,
 } from './types.js'
 import {
-  SPLAccountBalance,
+  SPLTokenHolding,
   SPLAccountHoldings,
   SPLTokenEvent,
 } from '../types.js'
@@ -58,35 +58,38 @@ export class Mint {
     return result
   }
 
-  async getTokenHolders({
+  async getTokenHoldings({
+    slot,
     limit,
     skip = 0,
     reverse = true,
     gte,
     lte,
-  }: TokenHoldersFilters): Promise<SPLAccountBalance[]> {
-    const isALEPH = this.address === ALEPH_MINT_ADDRESS
+  }: TokenHoldersFilters): Promise<SPLTokenHolding[]> {
 
     // @note: Default limit and gte
-    limit = limit || (isALEPH ? Number.MAX_SAFE_INTEGER : 1000)
+    limit = limit || 1000
 
     // @note: Do not add constraints to limit arg when it is ALEPH token
-    if (!isALEPH && (limit < 1 || limit > 1000))
+    if (limit < 1 || limit > 1000)
       throw new Error('400 Bad Request: 1 <= limit <= 1000')
 
     const gteBn = gte ? new BN(gte) : undefined
     const lteBn = lte ? new BN(lte) : undefined
 
-    const result: SPLAccountBalance[] = []
+    const result: SPLTokenHolding[] = []
 
     const balances = await this.balanceStateDAL
-      .useIndex(BalanceStateDALIndex.BalanceAccount)
-      .getAllValuesFromTo([this.address], [this.address], { reverse, limit })
+      .useIndex(BalanceStateDALIndex.Mint)
+      .getAllValuesFromTo([this.address, slot], [this.address, slot], {
+        reverse,
+        limit,
+      })
 
     for await (const value of balances) {
       // @note: Filter by gte || lte
       if (gteBn || lteBn) {
-        const balanceBN = new BN(value.balance)
+        const balanceBN = new BN(value.balances.total)
 
         if (gteBn && balanceBN.lt(gteBn)) continue
         if (lteBn && balanceBN.gt(lteBn)) continue
@@ -104,7 +107,7 @@ export class Mint {
     return result
   }
 
-  async getTokenHoldings({
+  async getAccountHoldings({
     account,
     startDate,
     endDate,

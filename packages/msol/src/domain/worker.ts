@@ -11,12 +11,12 @@ import {
 import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   createEventParser,
-  EventParser as eventParser,
-} from '../parsers/event.js'
+  TokenEventParser as eventParser,
+} from '../parsers/tokenEvent.js'
 import { mintParser as mParser } from '../parsers/mint.js'
 import { createEventDAL } from '../dal/event.js'
 import {
-  SPLAccountBalance,
+  SPLTokenHolding,
   SPLAccountHoldings,
   SPLTokenAccount,
   SPLTokenEvent,
@@ -119,28 +119,10 @@ export default class WorkerDomain
     console.log('', account)
   }
 
-  async getMintEvents(
-    account: string,
-    filters: MintEventsFilters,
-  ): Promise<SPLTokenEvent[]> {
-    const mint = this.mints[account]
-    if (!mint) return []
-    return await mint.getEvents(filters)
-  }
-
-  async getTokenHolders(
+  async getTokenHoldings(
     account: string,
     filters: TokenHoldersFilters,
-  ): Promise<SPLAccountBalance[]> {
-    const mint = this.mints[account]
-    if (!mint) return []
-    return await mint.getTokenHolders(filters)
-  }
-
-  async getAccountHoldings(
-    account: string,
-    filters: AccountHoldingsFilters,
-  ): Promise<SPLAccountHoldings[]> {
+  ): Promise<SPLTokenHolding[]> {
     const mint = this.mints[account]
     if (!mint) return []
     return await mint.getTokenHoldings(filters)
@@ -256,11 +238,13 @@ export default class WorkerDomain
       const balance = getBalanceFromEvent(entity, account)
       return {
         account,
-        mint: entity.mint,
-        owner: entity.owner,
-        balance,
+        tokenMint: entity.mint,
+        tokenHolder: entity.owner,
+        balances: {
+          wallet: balance,
+        },
         timestamp: entity.timestamp,
-      } as SPLAccountBalance
+      } as SPLTokenHolding
     })
     await this.balanceHistoryDAL.save(entities)
     await this.balanceStateDAL.save(entities)

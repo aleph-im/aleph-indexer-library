@@ -20,6 +20,7 @@ export type AccountEventsFilters = {
 }
 
 export type TokenHoldersFilters = {
+  slot: number
   limit?: number
   skip?: number
   reverse?: boolean

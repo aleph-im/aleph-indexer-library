@@ -1,10 +1,10 @@
 import {
-  InstructionContextV1,
+  SolanaInstructionContextV1,
   Utils,
   solanaPrivateRPCRoundRobin,
 } from '@aleph-indexer/core'
 import { ParsedAccountData, PublicKey } from '@solana/web3.js'
-import { SLPTokenRawEvent, SPLTokenEvent, SPLTokenEventType } from '../types.js'
+import { SPLTokenRawEvent, SPLTokenEvent, SPLTokenEventType } from '../types.js'
 import { getMintAndOwnerFromEvent } from '../utils/utils.js'
 import { FetchMintStorage } from '../dal/fetchMint.js'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
@@ -16,17 +16,19 @@ export type MintOwner = {
   owner: string
 }
 
-export class EventParser {
+export class TokenEventParser {
   constructor(
     protected fetchMintDAL: FetchMintStorage,
     protected eventDAL: EventStorage,
   ) {}
 
-  async parse(ixCtx: InstructionContextV1): Promise<SPLTokenEvent | undefined> {
+  async parse(
+    ixCtx: SolanaInstructionContextV1,
+  ): Promise<SPLTokenEvent | undefined> {
     const { ix, parentIx, txContext } = ixCtx
     const { tx: parentTx } = txContext
 
-    const parsed = (ix as SLPTokenRawEvent).parsed
+    const parsed = (ix as SPLTokenRawEvent).parsed
 
     const id = `${parentTx.signature}${
       parentIx ? `:${parentIx.index.toString().padStart(2, '0')}` : ''
@@ -348,6 +350,6 @@ export class EventParser {
 export function createEventParser(
   fetchDAL: FetchMintStorage,
   eventDAL: EventStorage,
-): EventParser {
-  return new EventParser(fetchDAL, eventDAL)
+): TokenEventParser {
+  return new TokenEventParser(fetchDAL, eventDAL)
 }

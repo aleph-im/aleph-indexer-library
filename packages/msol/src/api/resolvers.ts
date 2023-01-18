@@ -1,9 +1,4 @@
-import {
-  SPLAccountBalance,
-  SPLAccountHoldings,
-  SPLTokenEvent,
-  SPLTokenInfo,
-} from '../types.js'
+import { SPLTokenHolding, SPLTokenInfo } from '../types.js'
 import MainDomain from '../domain/main.js'
 
 export type TokenFilters = {
@@ -19,15 +14,6 @@ export type TokenEventsFilters = {
   limit?: number
   skip?: number
   reverse?: boolean
-}
-
-export type AccountHoldingsFilters = {
-  mint: string
-  account?: string
-  startDate?: number
-  endDate?: number
-  gte?: string
-  lte?: string
 }
 
 export type TokenHoldersFilters = {
@@ -46,53 +32,10 @@ export class APIResolver {
     return await this.filterTokens({ mint })
   }
 
-  async getAccountHoldings({
-    mint,
-    account,
-    startDate,
-    endDate,
-    gte,
-  }: AccountHoldingsFilters): Promise<SPLAccountHoldings[]> {
-    const accountHoldings = await this.domain.getAccountHoldings(mint, {
-      account,
-      startDate,
-      endDate,
-      gte,
-    })
-
-    return accountHoldings.sort((a, b) => a.account.localeCompare(b.account))
-  }
-
-  async getTokenEvents({
-    mint,
-    account,
-    types,
-    startDate = 0,
-    endDate = Date.now(),
-    limit = 1000,
-    skip = 0,
-    reverse = true,
-  }: TokenEventsFilters): Promise<SPLTokenEvent[]> {
-    if (limit < 1 || limit > 1000)
-      throw new Error('400 Bad Request: 1 <= limit <= 1000')
-
-    const typesMap = types ? new Set(types) : undefined
-
-    const events = await this.domain.getMintEvents(mint, {
-      account,
-      startDate,
-      endDate,
-      reverse,
-      limit: !typesMap ? limit + skip : undefined,
-    })
-
-    return events
-  }
-
-  async getTokenHolders(
+  async getTokenHoldings(
     filters: TokenHoldersFilters,
-  ): Promise<SPLAccountBalance[]> {
-    return await this.domain.getTokenHolders(filters.mint, filters)
+  ): Promise<SPLTokenHolding[]> {
+    return await this.domain.getTokenHoldings(filters.mint, filters)
   }
 
   protected async filterTokens({

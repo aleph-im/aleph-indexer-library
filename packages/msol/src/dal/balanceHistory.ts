@@ -1,25 +1,25 @@
 import BN from 'bn.js'
 import { EntityStorage } from '@aleph-indexer/core'
-import { SPLAccountBalance } from '../types.js'
+import { SPLTokenHolding } from '../types.js'
 
 const mappedProps = ['balance']
 
-export type AccountBalanceHistoryStorage = EntityStorage<SPLAccountBalance>
+export type AccountBalanceHistoryStorage = EntityStorage<SPLTokenHolding>
 
 const accountKey = {
-  get: (e: SPLAccountBalance) => e.account,
+  get: (e: SPLTokenHolding) => e.account,
   length: EntityStorage.AddressLength,
 }
 
 const timestampKey = {
-  get: (e: SPLAccountBalance) => e.timestamp,
+  get: (e: SPLTokenHolding) => e.timestamp,
   length: EntityStorage.TimestampLength,
 }
 
 export function createBalanceHistoryDAL(
   path: string,
 ): AccountBalanceHistoryStorage {
-  return new EntityStorage<SPLAccountBalance>({
+  return new EntityStorage<SPLTokenHolding>({
     name: 'account_balance_history',
     path,
     key: [accountKey, timestampKey],

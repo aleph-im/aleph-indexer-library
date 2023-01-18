@@ -1,6 +1,6 @@
 import { InstructionContextV1, Utils } from '@aleph-indexer/core'
 import {
-  SLPTokenRawEvent,
+  SPLTokenRawEvent,
   SPLTokenEvent,
   SPLTokenEventInitializeAccount,
   SPLTokenEventInitializeMint,
@@ -16,7 +16,7 @@ export class MintParser {
   ): SPLTokenEvent | undefined {
     const { ix, parentIx, txContext } = ixCtx
     const parentTx = txContext.tx
-    const parsed = (ix as SLPTokenRawEvent).parsed
+    const parsed = (ix as SPLTokenRawEvent).parsed
 
     // @note: Skip unrelated token ixs from being parsed
     if (

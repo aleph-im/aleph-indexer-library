@@ -12,13 +12,6 @@ export async function discoveryFn(): Promise<DiscoveryFnReturn> {
     config.SPL_TOKEN_ACCOUNTS ? config.SPL_TOKEN_ACCOUNTS.split(',') : [],
   )
 
-  // @note: Get addresses from storage
-  /*for await (const { key: item } of discoveryLevelStorage.getAll()) {
-    const [address, type] = item.split('|')
-    if (type === 'mint') mintsSet.add(address)
-    if (type === 'account') accountsSet.add(address)
-  }*/
-
   // @note: Get addresses from custom discovery scripts under "discoveryPath"
 
   const discoveryPath = path.resolve(
@@ -44,7 +37,7 @@ export async function discoveryFn(): Promise<DiscoveryFnReturn> {
 
         let filePath = path.join(discoveryPath, file)
 
-        console.log('[Discovery] => whilisting', file, filePath)
+        console.log('[Discovery] => whitelisting', file, filePath)
 
         const stats = await new Promise<Stats>((resolve, reject) =>
           fs.lstat(filePath, (error, res) =>
@@ -96,22 +89,8 @@ export async function discoveryFn(): Promise<DiscoveryFnReturn> {
     }
   }
 
-  const result = {
+  return {
     mints: [...mintsSet],
     accounts: [...accountsSet],
   }
-
-  // @note: Save all in storage
-  // @todo: Implement forget by blacklist
-  /*const saveEntities: DiscoveryEntity[] = []
-
-  for (const address of result.mints) {
-    saveEntities.push({ address, type: 'mint' })
-  }
-
-  for (const address of result.accounts) {
-    saveEntities.push({ address, type: 'account' })
-  }*/
-
-  return result
 }

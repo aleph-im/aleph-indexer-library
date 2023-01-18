@@ -6,16 +6,12 @@ import {
 } from '@aleph-indexer/framework'
 import { Token, solanaPrivateRPCRoundRobin } from '@aleph-indexer/core'
 import {
-  SPLAccountBalance,
-  SPLAccountHoldings,
-  SPLTokenEvent,
+  SPLTokenHolding,
   SPLTokenInfo,
   SPLTokenType,
 } from '../types.js'
 import { discoveryFn } from '../utils/discovery.js'
 import {
-  AccountHoldingsFilters,
-  MintEventsFilters,
   TokenHoldersFilters,
 } from './types.js'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
@@ -99,37 +95,15 @@ export default class MainDomain
     return this.tokens
   }
 
-  async getTokenHolders(
+  async getTokenHoldings(
     account: string,
     filters: TokenHoldersFilters,
-  ): Promise<SPLAccountBalance[]> {
+  ): Promise<SPLTokenHolding[]> {
     return (await this.context.apiClient.invokeDomainMethod({
       account,
       args: [filters],
-      method: 'getTokenHolders',
-    })) as SPLAccountBalance[]
-  }
-
-  async getMintEvents(
-    account: string,
-    filters: MintEventsFilters,
-  ): Promise<SPLTokenEvent[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getMintEvents',
-    })) as SPLTokenEvent[]
-  }
-
-  async getAccountHoldings(
-    account: string,
-    filters: AccountHoldingsFilters,
-  ): Promise<SPLAccountHoldings[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getAccountHoldings',
-    })) as SPLAccountHoldings[]
+      method: 'getTokenHoldings',
+    })) as SPLTokenHolding[]
   }
 
   protected async addToken(mint: string): Promise<void> {

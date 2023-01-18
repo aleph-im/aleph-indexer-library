@@ -6,7 +6,7 @@ import {
 } from '@aleph-indexer/core'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
 import {
-  SLPTokenRawEvent,
+  SPLTokenRawEvent,
   SPLTokenEvent,
   SPLTokenEventType,
   SPLTokenIncompleteEvent,
@@ -14,7 +14,7 @@ import {
 
 export function isSPLTokenInstruction(
   ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
-): ix is SLPTokenRawEvent {
+): ix is SPLTokenRawEvent {
   return ix.programId === TOKEN_PROGRAM_ID
 }
 
@@ -26,7 +26,7 @@ export function isParsedIx(
 
 export function isSPLTokenParsedInstruction(
   ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
-): ix is SLPTokenRawEvent {
+): ix is SPLTokenRawEvent {
   if (!isParsedIx(ix) || !isSPLTokenInstruction(ix)) return false
   return true
 }
@@ -34,7 +34,7 @@ export function isSPLTokenParsedInstruction(
 export function isSPLTokenMintInstruction(
   ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
   mint: string,
-): ix is SLPTokenRawEvent {
+): ix is SPLTokenRawEvent {
   if (!isSPLTokenParsedInstruction(ix)) return false
   return getIxMint(ix) === mint
 }
@@ -42,12 +42,12 @@ export function isSPLTokenMintInstruction(
 export function isSPLTokenAccountInstruction(
   ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
   account: string,
-): ix is SLPTokenRawEvent {
+): ix is SPLTokenRawEvent {
   if (!isSPLTokenParsedInstruction(ix)) return false
   return getIxAccounts(ix).includes(account)
 }
 
-export function getIxMint(ix: SLPTokenRawEvent): string | undefined {
+export function getIxMint(ix: SPLTokenRawEvent): string | undefined {
   switch (ix.parsed.type) {
     case SPLTokenEventType.MintTo:
     case SPLTokenEventType.MintToChecked:
@@ -65,7 +65,7 @@ export function getIxMint(ix: SLPTokenRawEvent): string | undefined {
   }
 }
 
-export function getIxAccounts(ix: SLPTokenRawEvent): string[] {
+export function getIxAccounts(ix: SPLTokenRawEvent): string[] {
   switch (ix.parsed.type) {
     case SPLTokenEventType.MintTo:
     case SPLTokenEventType.MintToChecked:
@@ -143,48 +143,3 @@ export function getMintAndOwnerFromEvent(
     }
   }
 }
-
-// export function setOwnerAndMintToEvent(
-//   event: SPLTokenIncompleteEvent,
-//   account: string,
-//   owner: string,
-//   mint: string,
-// ): void {
-//   switch (event.type) {
-//     case SPLTokenEventType.Transfer: {
-//       event.mint = mint
-
-//       if (event.account === account) {
-//         event.owner = owner
-//       } else if (event.toAccount === account) {
-//         event.toOwner = owner
-//       }
-
-//       return
-//     }
-//     default: {
-//       event.mint = mint
-//       event.owner = owner
-//     }
-//   }
-// }
-
-// export function isSPLTokenCompletedEvent(
-//   event: SPLTokenEvent | SPLTokenIncompleteEvent,
-// ): event is SPLTokenEvent {
-//   const { mint, type, owner } = event
-
-//   if (!mint) return false
-
-//   switch (type) {
-//     case SPLTokenEventType.Transfer: {
-//       return Boolean(owner && event.toOwner)
-//     }
-//     case SPLTokenEventType.SetAuthority: {
-//       return Boolean(owner && event.newOwner)
-//     }
-//     default: {
-//       return Boolean(owner)
-//     }
-//   }
-// }
