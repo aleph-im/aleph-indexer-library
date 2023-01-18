@@ -6,9 +6,9 @@ import {
   IndexerDomainContext,
   IndexerWorkerDomain,
   IndexerWorkerDomainWithStats,
-  InstructionContextV1,
+  SolanaInstructionContextV1,
 } from '@aleph-indexer/framework'
-import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
+import { PendingWork, PendingWorkPool, Blockchain } from '@aleph-indexer/core'
 import {
   createEventParser,
   TokenEventParser as eventParser,
@@ -17,7 +17,6 @@ import { mintParser as mParser } from '../parsers/mint.js'
 import { createEventDAL } from '../dal/event.js'
 import {
   SPLTokenHolding,
-  SPLAccountHoldings,
   SPLTokenAccount,
   SPLTokenEvent,
   SPLTokenEventType,
@@ -31,12 +30,7 @@ import {
   isSPLTokenInstruction,
 } from '../utils/utils.js'
 import { createFetchMintDAL } from '../dal/fetchMint.js'
-import {
-  AccountHoldingsFilters,
-  MintAccount,
-  MintEventsFilters,
-  TokenHoldersFilters,
-} from './types.js'
+import { MintAccount, TokenHoldersFilters } from './types.js'
 import { createBalanceHistoryDAL } from '../dal/balanceHistory.js'
 import { createBalanceStateDAL } from '../dal/balanceState.js'
 import { createAccountMintDAL } from '../dal/accountMints.js'
@@ -129,13 +123,13 @@ export default class WorkerDomain
   }
 
   protected async filterInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<InstructionContextV1[]> {
+    ixsContext: SolanaInstructionContextV1[],
+  ): Promise<SolanaInstructionContextV1[]> {
     return ixsContext.filter(({ ix }) => isSPLTokenInstruction(ix))
   }
 
   protected async indexInstructions(
-    ixsContext: InstructionContextV1[],
+    ixsContext: SolanaInstructionContextV1[],
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
     const works: PendingWork<MintAccount>[] = []
@@ -170,6 +164,7 @@ export default class WorkerDomain
               await this.accountMints.removeWork(work)
               const options = {
                 account: parsedIx.account,
+                blockchainId: Blockchain.Solana,
                 index: {
                   transactions: true,
                   content: true,
@@ -215,6 +210,7 @@ export default class WorkerDomain
       const account = work.id
       const options = {
         account,
+        blockchainId: Blockchain.Solana,
         meta: {
           address: account,
           type: SPLTokenType.AccountMint,

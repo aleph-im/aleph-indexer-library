@@ -4,16 +4,14 @@ import {
   IndexerMainDomainContext,
   IndexerMainDomainWithDiscovery,
 } from '@aleph-indexer/framework'
-import { Token, solanaPrivateRPCRoundRobin } from '@aleph-indexer/core'
 import {
-  SPLTokenHolding,
-  SPLTokenInfo,
-  SPLTokenType,
-} from '../types.js'
+  Token,
+  solanaPrivateRPCRoundRobin,
+  Blockchain,
+} from '@aleph-indexer/core'
+import { SPLTokenHolding, SPLTokenInfo, SPLTokenType } from '../types.js'
 import { discoveryFn } from '../utils/discovery.js'
-import {
-  TokenHoldersFilters,
-} from './types.js'
+import { TokenHoldersFilters } from './types.js'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
 
 export default class MainDomain
@@ -29,6 +27,7 @@ export default class MainDomain
   async discoverAccounts(): Promise<AccountIndexerRequestArgs[]> {
     const init = {
       account: '',
+      blockchainId: Blockchain.Solana,
       index: {
         transactions: {
           chunkDelay: 0,
@@ -59,6 +58,7 @@ export default class MainDomain
         const options = {
           account,
           meta: { type: SPLTokenType.Account, mint: mint },
+          blockchainId: Blockchain.Solana,
           index: {
             transactions: {
               chunkDelay: 0,
@@ -76,6 +76,7 @@ export default class MainDomain
         await this.addToken(mint)
         const options = {
           account: mint,
+          blockchainId: Blockchain.Solana,
           meta: { type: SPLTokenType.Mint, mint },
           index: {
             transactions: {

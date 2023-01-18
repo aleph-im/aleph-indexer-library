@@ -80,7 +80,11 @@ export type SPLTokenAccount = {
   type: SPLTokenType
 }
 
-export type SPLTokenRawEventBase = EventBase<SPLTokenEventType>
+export type SPLTokenRawEventBase = {
+  parsed: unknown
+  program: string
+  programId: string
+}
 
 export type SPLTokenRawEventMintTo = SPLTokenRawEventBase & {
   parsed: {
@@ -790,10 +794,8 @@ export type Balances = {
 export type SPLTokenHolding = {
   account: string
   tokenMint: string
-  tokenName: string
   tokenHolder?: string
   balances: Balances
-  slot: number
   timestamp: number
 }
 

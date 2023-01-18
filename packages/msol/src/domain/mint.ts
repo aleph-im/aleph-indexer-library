@@ -7,11 +7,7 @@ import {
   MintEventsFilters,
   TokenHoldersFilters,
 } from './types.js'
-import {
-  SPLTokenHolding,
-  SPLAccountHoldings,
-  SPLTokenEvent,
-} from '../types.js'
+import { SPLTokenHolding, SPLTokenEvent } from '../types.js'
 import BN from 'bn.js'
 import { Account } from './account.js'
 import {
@@ -19,14 +15,14 @@ import {
   AccountBalanceStateStorage,
 } from '../dal/balanceState.js'
 import { AccountMintStorage } from '../dal/accountMints.js'
-import { ALEPH_MINT_ADDRESS } from '../constants.js'
+import {AccountBalanceHistoryStorage, BalanceHistoryDALIndex} from '../dal/balanceHistory.js'
 
 export class Mint {
   constructor(
     protected address: string,
     protected eventDAL: EventStorage,
     protected balanceStateDAL: AccountBalanceStateStorage,
-    protected balanceHistoryDAL: AccountBalanceStateStorage,
+    protected balanceHistoryDAL: AccountBalanceHistoryStorage,
     protected accountMintDAL: AccountMintStorage,
   ) {}
 
@@ -59,14 +55,13 @@ export class Mint {
   }
 
   async getTokenHoldings({
-    slot,
+    timestamp,
     limit,
     skip = 0,
     reverse = true,
     gte,
     lte,
   }: TokenHoldersFilters): Promise<SPLTokenHolding[]> {
-
     // @note: Default limit and gte
     limit = limit || 1000
 
@@ -78,94 +73,65 @@ export class Mint {
     const lteBn = lte ? new BN(lte) : undefined
 
     const result: SPLTokenHolding[] = []
-
-    const balances = await this.balanceStateDAL
+    const currentBalances = await this.balanceStateDAL
       .useIndex(BalanceStateDALIndex.Mint)
-      .getAllValuesFromTo([this.address, slot], [this.address, slot], {
+      .getAllValuesFromTo([this.address], [this.address], {
         reverse,
         limit,
       })
 
-    for await (const value of balances) {
-      // @note: Filter by gte || lte
-      if (gteBn || lteBn) {
-        const balanceBN = new BN(value.balances.total)
+    if (timestamp) {
+      for await (const value of currentBalances) {
+        const snapshotBalance = await this.balanceHistoryDAL
+          .useIndex(BalanceHistoryDALIndex.AccountTimestamp)
+          .getLastValueFromTo(
+            [value.tokenHolder ?? value.account, 0],
+            [value.tokenHolder ?? value.account, timestamp],
+          )
+        const balance = this.filterBalance(snapshotBalance, gteBn, lteBn)
+        if (!balance) continue
 
-        if (gteBn && balanceBN.lt(gteBn)) continue
-        if (lteBn && balanceBN.gt(lteBn)) continue
+        // @note: Skip first N events
+        if (--skip >= 0) continue
+
+        result.push(value)
+
+        // @note: Stop when after reaching the limit
+        if (limit > 0 && result.length >= limit) return result
       }
+    } else {
+      for await (const value of currentBalances) {
+        const balance = this.filterBalance(value, gteBn, lteBn)
+        if (!balance) continue
 
-      // @note: Skip first N events
-      if (--skip >= 0) continue
+        // @note: Skip first N events
+        if (--skip >= 0) continue
 
-      result.push(value)
+        result.push(value)
 
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && result.length >= limit) return result
+        // @note: Stop when after reaching the limit
+        if (limit > 0 && result.length >= limit) return result
+      }
     }
 
     return result
   }
 
-  async getAccountHoldings({
-    account,
-    startDate,
-    endDate,
-    gte,
-  }: AccountHoldingsFilters): Promise<SPLAccountHoldings[]> {
-    const accountsHoldingsMap: Record<string, SPLAccountHoldings> = {}
-    const opts: AccountHoldingsOptions = {
-      reverse: true,
-    }
-    const gteBn = gte ? new BN(gte) : undefined
+  private filterBalance(
+    balance: SPLTokenHolding | undefined,
+    gteBn: BN | undefined,
+    lteBn: BN | undefined,
+  ): SPLTokenHolding | undefined {
+    if (!balance) return undefined
 
-    const accountMints = await this.getMintAccounts(account)
+    // @note: Filter by gte || lte
+    if (gteBn || lteBn) {
+      const balanceBN = new BN(balance.balances.total)
 
-    for await (const { account } of accountMints) {
-      const balances = await this.balanceHistoryDAL.getAllFromTo(
-        [account, startDate],
-        [account, endDate],
-        opts,
-      )
-      for await (const { value: accountBalance } of balances) {
-        const balance = new BN(accountBalance.balance)
-        const holding = (accountsHoldingsMap[account] = accountsHoldingsMap[
-          account
-        ] || {
-          account: account,
-          balance,
-          max: balance,
-          min: balance,
-          avg: new BN(0),
-          events: 0,
-        })
-
-        holding.min = BN.min(holding.min, balance)
-        holding.max = BN.max(holding.max, balance)
-        holding.avg.iadd(balance)
-        holding.events++
-        if (!holding.owner) {
-          holding.owner = accountBalance.owner
-        }
-      }
+      if (gteBn && balanceBN.lt(gteBn)) return undefined
+      if (lteBn && balanceBN.gt(lteBn)) return undefined
     }
 
-    const accountsHoldings = Object.values(accountsHoldingsMap)
-    const filteredHoldings: SPLAccountHoldings[] = []
-
-    for (const holdings of accountsHoldings) {
-      holdings.avg = holdings.avg.divn(holdings.events)
-
-      if (gteBn) {
-        if (holdings.max.gte(gteBn)) {
-          filteredHoldings.push(holdings)
-        }
-        continue
-      }
-
-      filteredHoldings.push(holdings)
-    }
-
-    return filteredHoldings
+    return balance
   }
 }

@@ -39,10 +39,9 @@ export const TokenHolder = new GraphQLObjectType({
   name: 'TokenHolder',
   fields: {
     holderAccount: { type: GraphQLString },
-    tokenName: { type: new GraphQLNonNull(GraphQLString) },
     tokenMint: { type: new GraphQLNonNull(GraphQLString) },
     balances: { type: new GraphQLNonNull(TokenBalances) },
-    slot: { type: new GraphQLNonNull(GraphQLString) },
+    timestamp: { type: new GraphQLNonNull(GraphQLString) },
   },
 })
 

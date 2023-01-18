@@ -3,7 +3,7 @@
     "packages/indexer-generator",
     "packages/marinade_finance",
     "packages/spl-lending",
-    "packages/spl-token"
+    "packages/msol"
   ],
   "version": "1.0.0"
 }

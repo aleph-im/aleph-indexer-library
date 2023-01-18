@@ -6,7 +6,6 @@ const mappedProps = ['balance']
 
 export enum BalanceStateDALIndex {
   Mint = 'mint',
-  MintSlot = 'mintSlot',
 }
 
 export type AccountBalanceStateStorage = EntityStorage<SPLTokenHolding>
@@ -21,26 +20,17 @@ const mintKey = {
   length: EntityStorage.AddressLength,
 }
 
-const slotKey = {
-  get: (e: SPLTokenHolding) => e.slot,
-  length: EntityStorage.VariableLength,
-}
-
 export function createBalanceStateDAL(
   path: string,
 ): AccountBalanceStateStorage {
   return new EntityStorage<SPLTokenHolding>({
     name: 'account_balance_state',
     path,
-    key: [mintKey, accountKey, slotKey],
+    key: [mintKey, accountKey],
     indexes: [
       {
         name: BalanceStateDALIndex.Mint,
         key: [mintKey],
-      },
-      {
-        name: BalanceStateDALIndex.MintSlot,
-        key: [mintKey, slotKey],
       },
     ],
     mapFn: async function (entry: { key: any; value: any }) {
@@ -62,11 +52,6 @@ export function createBalanceStateDAL(
       if (oldEntity && oldEntity.timestamp > newEntity.timestamp) {
         return EntityUpdateOp.Keep
       }
-
-      if ((newEntity.balances.total as string) === '0') {
-        return EntityUpdateOp.Delete
-      }
-
       return EntityUpdateOp.Update
     },
   })

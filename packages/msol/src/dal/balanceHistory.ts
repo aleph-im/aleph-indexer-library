@@ -4,7 +4,16 @@ import { SPLTokenHolding } from '../types.js'
 
 const mappedProps = ['balance']
 
+export enum BalanceHistoryDALIndex {
+  AccountTimestamp = 'account_timestamp',
+}
+
 export type AccountBalanceHistoryStorage = EntityStorage<SPLTokenHolding>
+
+const mintKey = {
+  get: (e: SPLTokenHolding) => e.tokenMint,
+  length: EntityStorage.AddressLength,
+}
 
 const accountKey = {
   get: (e: SPLTokenHolding) => e.account,
@@ -22,7 +31,13 @@ export function createBalanceHistoryDAL(
   return new EntityStorage<SPLTokenHolding>({
     name: 'account_balance_history',
     path,
-    key: [accountKey, timestampKey],
+    key: [mintKey, accountKey, timestampKey],
+    indexes: [
+      {
+        name: BalanceHistoryDALIndex.AccountTimestamp,
+        key: [accountKey, timestampKey],
+      },
+    ],
     mapFn: async function (entry: { key: any; value: any }) {
       const { key, value } = entry
 

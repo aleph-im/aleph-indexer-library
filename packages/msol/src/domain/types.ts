@@ -20,7 +20,7 @@ export type AccountEventsFilters = {
 }
 
 export type TokenHoldersFilters = {
-  slot: number
+  timestamp?: number
   limit?: number
   skip?: number
   reverse?: boolean
