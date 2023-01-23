@@ -1,5 +1,5 @@
 import {
-  SolanaInstructionContextV1,
+  SolanaInstructionContext,
   Utils,
   solanaPrivateRPCRoundRobin,
 } from '@aleph-indexer/core'
@@ -23,7 +23,7 @@ export class EventParser {
   ) {}
 
   async parse(
-    ixCtx: SolanaInstructionContextV1,
+    ixCtx: SolanaInstructionContext,
   ): Promise<SPLTokenEvent | undefined> {
     const { ix, parentIx, txContext } = ixCtx
     const { tx: parentTx } = txContext
