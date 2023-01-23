@@ -29,6 +29,7 @@ export const TokenBalances = new GraphQLObjectType({
     solend: { type: GraphQLString },
     port: { type: GraphQLString },
     larix: { type: GraphQLString },
+    total: { type: GraphQLString },
   },
 })
 
@@ -37,7 +38,8 @@ export const TokenBalances = new GraphQLObjectType({
 export const TokenHolder = new GraphQLObjectType({
   name: 'TokenHolder',
   fields: {
-    holderAccount: { type: GraphQLString },
+    account: { type: new GraphQLNonNull(GraphQLString) },
+    owner: { type: new GraphQLNonNull(GraphQLString) },
     tokenMint: { type: new GraphQLNonNull(GraphQLString) },
     balances: { type: new GraphQLNonNull(TokenBalances) },
     timestamp: { type: new GraphQLNonNull(GraphQLString) },

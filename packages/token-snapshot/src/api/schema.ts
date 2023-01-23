@@ -6,6 +6,7 @@ import {
   GraphQLInt,
   GraphQLBoolean,
 } from 'graphql'
+import { GraphQLLong } from '@aleph-indexer/core'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
 import { APIResolver, TokenEventsFilters } from './resolvers.js'
@@ -31,7 +32,7 @@ export default class APISchema extends IndexerAPISchema {
             type: Types.TokenHolders,
             args: {
               mint: { type: new GraphQLNonNull(GraphQLString) },
-              timestamp: { type: GraphQLInt },
+              timestamp: { type: GraphQLLong },
               limit: { type: GraphQLInt },
               skip: { type: GraphQLInt },
               reverse: { type: GraphQLBoolean },

@@ -184,8 +184,9 @@ export default class WorkerDomain
     if (parsedEvents.length > 0) {
       await this.eventDAL.save(parsedEvents)
 
-      const lastEvent = parsedEvents[0]
-      await this.dealBalances(lastEvent)
+      for (const parsedEvent of parsedEvents) {
+        await this.dealBalances(parsedEvent)
+      }
     }
     if (works.length > 0) {
       await this.accountMints.addWork(works)
@@ -233,7 +234,7 @@ export default class WorkerDomain
       return {
         account,
         tokenMint: entity.mint,
-        holderAccount: entity.owner,
+        owner: entity.owner,
         balances: {
           wallet: balance,
           total: balance,

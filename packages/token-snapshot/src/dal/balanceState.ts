@@ -3,7 +3,6 @@ import { SPLTokenHolding } from '../types.js'
 
 export enum BalanceStateDALIndex {
   Mint = 'mint',
-  BalanceAccount = 'balance_account',
 }
 
 export type AccountBalanceStateStorage = EntityStorage<SPLTokenHolding>
@@ -18,11 +17,6 @@ const mintKey = {
   length: EntityStorage.AddressLength,
 }
 
-const balanceKey = {
-  get: (e: SPLTokenHolding) => e.balances.total,
-  length: EntityStorage.TimestampLength,
-}
-
 export function createBalanceStateDAL(
   path: string,
 ): AccountBalanceStateStorage {
@@ -34,10 +28,6 @@ export function createBalanceStateDAL(
       {
         name: BalanceStateDALIndex.Mint,
         key: [mintKey],
-      },
-      {
-        name: BalanceStateDALIndex.BalanceAccount,
-        key: [mintKey, balanceKey],
       },
     ],
     async updateCheckFn(

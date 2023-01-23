@@ -794,7 +794,7 @@ export type Balances = {
 export type SPLTokenHolding = {
   account: string
   tokenMint: string
-  holderAccount?: string
+  owner?: string
   balances: Balances
   timestamp: number
 }

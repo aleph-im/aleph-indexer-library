@@ -65,19 +65,28 @@ export class Mint {
 
     if (timestamp) {
       for await (const value of currentBalances) {
-        const snapshotBalance = await this.balanceHistoryDAL
-          .useIndex(BalanceHistoryDALIndex.AccountTimestamp)
-          .getLastValueFromTo(
-            [value.holderAccount ?? value.account, 0],
-            [value.holderAccount ?? value.account, timestamp],
+        const snapshotBalances = await this.balanceHistoryDAL
+          .useIndex(BalanceHistoryDALIndex.MintAccount)
+          .getAllValuesFromTo(
+            [this.address, value.account],
+            [this.address, value.account],
           )
-        const balance = this.filterBalance(snapshotBalance, gteBn, lteBn)
-        if (!balance) continue
+        let snapshotBalance: SPLTokenHolding | undefined
+        for await (const balance of snapshotBalances) {
+          if (
+            balance.timestamp < timestamp &&
+            (!snapshotBalance || balance.timestamp > snapshotBalance.timestamp)
+          ) {
+            snapshotBalance = balance
+          }
+        }
+        snapshotBalance = this.filterBalance(snapshotBalance, gteBn, lteBn)
+        if (!snapshotBalance) continue
 
         // @note: Skip first N events
         if (--skip >= 0) continue
 
-        result.push(value)
+        result.push(snapshotBalance)
 
         // @note: Stop when after reaching the limit
         if (limit > 0 && result.length >= limit) return result
