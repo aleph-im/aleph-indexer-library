@@ -3,12 +3,12 @@ on:
     types: [ labeled ]
 
 jobs:
-  clean:
-    if: ${{ github.event.label.name == 'deploy' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cleanup Artifacts
-        uses: glassechidna/artifact-cleaner@master
+#  clean:
+#    if: ${{ github.event.label.name == 'deploy' }}
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Cleanup Artifacts
+#        uses: glassechidna/artifact-cleaner@master
 
   build:
     if: ${{ github.event.label.name == 'deploy' }}
