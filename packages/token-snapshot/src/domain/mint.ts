@@ -65,21 +65,10 @@ export class Mint {
 
     if (timestamp) {
       for await (const value of currentBalances) {
-        const snapshotBalances = await this.balanceHistoryDAL
-          .useIndex(BalanceHistoryDALIndex.MintAccount)
-          .getAllValuesFromTo(
-            [this.address, value.account],
-            [this.address, value.account],
-          )
-        let snapshotBalance: SPLTokenHolding | undefined
-        for await (const balance of snapshotBalances) {
-          if (
-            balance.timestamp < timestamp &&
-            (!snapshotBalance || balance.timestamp > snapshotBalance.timestamp)
-          ) {
-            snapshotBalance = balance
-          }
-        }
+        let snapshotBalance = await this.balanceHistoryDAL.getLastValueFromTo(
+          [this.address, value.account, 0],
+          [this.address, value.account, timestamp],
+        )
         snapshotBalance = this.filterBalance(snapshotBalance, gteBn, lteBn)
         if (!snapshotBalance) continue
 
