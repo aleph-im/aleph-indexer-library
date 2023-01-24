@@ -4,7 +4,7 @@ import {
   GraphQLNonNull,
   GraphQLList,
 } from 'graphql'
-import { TokenType } from '@aleph-indexer/core'
+import { TokenType, GraphQLBigNumber } from '@aleph-indexer/core'
 
 // ------------------- TOKENS --------------------------
 
@@ -21,15 +21,22 @@ export const TokenMint = new GraphQLObjectType({
 export const TokenMints = new GraphQLList(TokenMint)
 
 // ------------------- HOLDERS --------------------------
+export const LendingBalance = new GraphQLObjectType({
+  name: 'LendingBalance',
+  fields: {
+    deposited: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    borrowed: { type: new GraphQLNonNull(GraphQLBigNumber) },
+  },
+})
 
 export const TokenBalances = new GraphQLObjectType({
   name: 'TokenBalances',
   fields: {
-    wallet: { type: new GraphQLNonNull(GraphQLString) },
-    solend: { type: GraphQLString },
-    port: { type: GraphQLString },
-    larix: { type: GraphQLString },
-    total: { type: GraphQLString },
+    wallet: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    solend: { type: new GraphQLNonNull(LendingBalance) },
+    port: { type: new GraphQLNonNull(LendingBalance) },
+    larix: { type: new GraphQLNonNull(LendingBalance) },
+    total: { type: new GraphQLNonNull(GraphQLBigNumber) },
   },
 })
 

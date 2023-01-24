@@ -1,5 +1,8 @@
 import { EntityStorage } from '@aleph-indexer/core'
 import { SPLTokenHolding } from '../types.js'
+import { getBigNumberMapFn } from './common.js'
+
+const mappedProps = ['deposited', 'borrowed', 'wallet', 'total']
 
 export enum BalanceHistoryDALIndex {
   MintAccount = 'mint_account',
@@ -35,5 +38,6 @@ export function createBalanceHistoryDAL(
         key: [mintKey, accountKey],
       },
     ],
+    mapFn: getBigNumberMapFn(mappedProps),
   })
 }

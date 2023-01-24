@@ -107,7 +107,7 @@ export class Mint {
 
     // @note: Filter by gte || lte
     if (gteBn || lteBn) {
-      const balanceBN = new BN(balance.balances.total)
+      const balanceBN = balance.balances.total
 
       if (gteBn && balanceBN.lte(gteBn)) return undefined
       if (lteBn && balanceBN.gte(lteBn)) return undefined

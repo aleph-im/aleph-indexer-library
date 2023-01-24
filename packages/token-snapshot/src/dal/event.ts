@@ -1,6 +1,6 @@
-import BN from 'bn.js'
 import { EntityStorage } from '@aleph-indexer/core'
 import { SPLTokenEvent } from '../types.js'
+import { getBigNumberMapFn } from './common.js'
 
 const mappedProps = ['balance']
 
@@ -46,17 +46,6 @@ export function createEventDAL(path: string): EventStorage {
         key: [accountKey, typeKey, timestampKey],
       },
     ],
-    mapFn: async function (entry: { key: any; value: any }) {
-      const { key, value } = entry
-
-      // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-      for (const prop of mappedProps) {
-        if (!(prop in value)) continue
-        if ((value as any)[prop] instanceof BN) continue
-        ;(value as any)[prop] = new BN((value as any)[prop], 'hex')
-      }
-
-      return { key, value }
-    },
+    mapFn: getBigNumberMapFn(mappedProps),
   })
 }

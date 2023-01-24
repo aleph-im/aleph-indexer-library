@@ -1,3 +1,4 @@
+import BN from 'bn.js'
 import {
   AccountIndexerConfigWithMeta,
   AccountStatsFilters,
@@ -34,6 +35,7 @@ import { MintAccount, TokenHoldersFilters } from './types.js'
 import { createBalanceHistoryDAL } from '../dal/balanceHistory.js'
 import { createBalanceStateDAL } from '../dal/balanceState.js'
 import { createAccountMintDAL } from '../dal/accountMints.js'
+import assert from 'assert'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -185,7 +187,7 @@ export default class WorkerDomain
       await this.eventDAL.save(parsedEvents)
 
       for (const parsedEvent of parsedEvents) {
-        await this.dealBalances(parsedEvent)
+        await this.dealWalletBalances(parsedEvent)
       }
     }
     if (works.length > 0) {
@@ -227,7 +229,7 @@ export default class WorkerDomain
     }
   }
 
-  protected async dealBalances(entity: SPLTokenEvent): Promise<void> {
+  protected async dealLendingBalances(entity: SPLTokenEvent): Promise<void> {
     const accounts = getEventAccounts(entity)
     const entities = accounts.map((account) => {
       const balance = getBalanceFromEvent(entity, account)
@@ -244,5 +246,56 @@ export default class WorkerDomain
     })
     await this.balanceHistoryDAL.save(entities)
     await this.balanceStateDAL.save(entities)
+  }
+
+  protected async dealWalletBalances(
+    entity: SPLTokenEvent,
+  ): Promise<SPLTokenHolding[]> {
+    const accounts = getEventAccounts(entity)
+    const entities = await Promise.all(
+      accounts.map(async (account) => {
+        const balance = getBalanceFromEvent(entity, account)
+        const previousBalance = await this.balanceHistoryDAL.getLastValueFromTo(
+          [entity.mint, account, 0],
+          [entity.mint, account, entity.timestamp],
+        )
+        const solend = {
+          deposited: previousBalance?.balances.solend.deposited || new BN(0),
+          borrowed: previousBalance?.balances.solend.borrowed || new BN(0),
+        }
+        const port = {
+          deposited: previousBalance?.balances.port.deposited || new BN(0),
+          borrowed: previousBalance?.balances.port.borrowed || new BN(0),
+        }
+        const larix = {
+          deposited: previousBalance?.balances.larix.deposited || new BN(0),
+          borrowed: previousBalance?.balances.larix.borrowed || new BN(0),
+        }
+        // @note: The total is the sum of the wallet balance and the deposited amounts. The borrowed amounts are subtracted.
+        const total = balance
+          .add(solend.deposited)
+          .add(port.deposited)
+          .add(larix.deposited)
+          .sub(solend.borrowed)
+          .sub(port.borrowed)
+          .sub(larix.borrowed)
+        return {
+          account,
+          tokenMint: entity.mint,
+          owner: entity.owner,
+          balances: {
+            wallet: balance,
+            solend,
+            port,
+            larix,
+            total: total,
+          },
+          timestamp: entity.timestamp,
+        } as SPLTokenHolding
+      }),
+    )
+    await this.balanceHistoryDAL.save(entities)
+    await this.balanceStateDAL.save(entities)
+    return entities
   }
 }

@@ -11,6 +11,7 @@ import {
   SPLTokenEventType,
   SPLTokenIncompleteEvent,
 } from '../types.js'
+import BN from 'bn.js'
 
 export function isSPLTokenInstruction(
   ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
@@ -111,17 +112,17 @@ export function getEventAccounts(event: SPLTokenIncompleteEvent): string[] {
 export function getBalanceFromEvent(
   event: SPLTokenIncompleteEvent,
   account: string,
-): string {
+): BN {
   switch (event.type) {
     case SPLTokenEventType.Transfer: {
       if (event.toAccount === account) {
-        return event.toBalance as string
+        return new BN(event.toBalance)
       } else {
-        return event.balance
+        return new BN(event.balance)
       }
     }
     default: {
-      return event.balance
+      return new BN(event.balance)
     }
   }
 }

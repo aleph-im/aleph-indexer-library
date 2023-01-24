@@ -1,5 +1,8 @@
 import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
 import { SPLTokenHolding } from '../types.js'
+import { getBigNumberMapFn } from './common.js'
+
+const mappedProps = ['deposited', 'borrowed', 'wallet', 'total']
 
 export enum BalanceStateDALIndex {
   Mint = 'mint',
@@ -39,6 +42,6 @@ export function createBalanceStateDAL(
       }
       return EntityUpdateOp.Update
     },
-    // @todo: maybe calculate total on insert/update?
+    mapFn: getBigNumberMapFn(mappedProps),
   })
 }
