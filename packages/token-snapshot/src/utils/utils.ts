@@ -112,17 +112,17 @@ export function getEventAccounts(event: SPLTokenIncompleteEvent): string[] {
 export function getBalanceFromEvent(
   event: SPLTokenIncompleteEvent,
   account: string,
-): BN {
+): string {
   switch (event.type) {
     case SPLTokenEventType.Transfer: {
       if (event.toAccount === account) {
-        return new BN(event.toBalance)
+        return event.toBalance as string
       } else {
-        return new BN(event.balance)
+        return event.balance
       }
     }
     default: {
-      return new BN(event.balance)
+      return event.balance
     }
   }
 }

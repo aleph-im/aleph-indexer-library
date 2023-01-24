@@ -260,25 +260,26 @@ export default class WorkerDomain
           [entity.mint, account, entity.timestamp],
         )
         const solend = {
-          deposited: previousBalance?.balances.solend.deposited || new BN(0),
-          borrowed: previousBalance?.balances.solend.borrowed || new BN(0),
+          deposited: previousBalance?.balances.solend.deposited || '0',
+          borrowed: previousBalance?.balances.solend.borrowed || '0',
         }
         const port = {
-          deposited: previousBalance?.balances.port.deposited || new BN(0),
-          borrowed: previousBalance?.balances.port.borrowed || new BN(0),
+          deposited: previousBalance?.balances.port.deposited || '0',
+          borrowed: previousBalance?.balances.port.borrowed || '0',
         }
         const larix = {
-          deposited: previousBalance?.balances.larix.deposited || new BN(0),
-          borrowed: previousBalance?.balances.larix.borrowed || new BN(0),
+          deposited: previousBalance?.balances.larix.deposited || '0',
+          borrowed: previousBalance?.balances.larix.borrowed || '0',
         }
         // @note: The total is the sum of the wallet balance and the deposited amounts. The borrowed amounts are subtracted.
-        const total = balance
-          .add(solend.deposited)
-          .add(port.deposited)
-          .add(larix.deposited)
-          .sub(solend.borrowed)
-          .sub(port.borrowed)
-          .sub(larix.borrowed)
+        const total = new BN(balance)
+          .add(new BN(solend.deposited))
+          .add(new BN(port.deposited))
+          .add(new BN(larix.deposited))
+          .sub(new BN(solend.borrowed))
+          .sub(new BN(port.borrowed))
+          .sub(new BN(larix.borrowed))
+          .toString()
         return {
           account,
           tokenMint: entity.mint,

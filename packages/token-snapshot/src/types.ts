@@ -784,16 +784,16 @@ export type LiquidateObligation2Event = LendingEventBase &
 // ----------------------------- HOLDINGS -----------------------------------
 
 export type LendingBalance = {
-  deposited: BN
-  borrowed: BN
+  deposited: string
+  borrowed: string
 }
 
 export type Balances = {
-  wallet: BN
+  wallet: string
   solend: LendingBalance
   port: LendingBalance
   larix: LendingBalance
-  total: BN
+  total: string
 }
 
 export type SPLTokenHolding = {
