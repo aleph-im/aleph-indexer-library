@@ -1,6 +1,6 @@
 # Indexer generator
 
-Aleph Indexer Generator for Solana programs, using Anchor's IDLs. It generates all boilerplate necessary for starting your own Solana indexer on our [open-source, multi-threaded node.js framework](https://github.com/aleph-im/solana-indexer-framework), using [moleculer](https://moleculer.services/).
+Aleph Indexer Generator for Solana programs, using Anchor's IDLs. It generates all boilerplate necessary for starting your own Solana indexer on our [open-source, multi-threaded node.js framework](https://github.com/aleph-im/aleph-indexer-framework), using [moleculer](https://moleculer.services/).
 
 You can run the indexer generator (from solana-indexer-library's root):
 
