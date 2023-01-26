@@ -1,9 +1,9 @@
 import {
-  AlephParsedInnerInstruction,
-  AlephParsedInstruction,
+  SolanaParsedInnerInstruction,
   AlephParsedParsedInstruction,
-  RawInstruction,
-} from '@aleph-indexer/core'
+  SolanaParsedInstruction,
+  SolanaRawInstruction,
+} from '@aleph-indexer/solana'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
 import {
   SLPTokenRawEvent,
@@ -13,26 +13,38 @@ import {
 } from '../types.js'
 
 export function isSPLTokenInstruction(
-  ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
+  ix:
+    | SolanaRawInstruction
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
 ): ix is SLPTokenRawEvent {
   return ix.programId === TOKEN_PROGRAM_ID
 }
 
 export function isParsedIx(
-  ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
+  ix:
+    | SolanaRawInstruction
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
 ): ix is AlephParsedParsedInstruction {
   return 'parsed' in ix
 }
 
 export function isSPLTokenParsedInstruction(
-  ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
+  ix:
+    | SolanaRawInstruction
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
 ): ix is SLPTokenRawEvent {
   if (!isParsedIx(ix) || !isSPLTokenInstruction(ix)) return false
   return true
 }
 
 export function isSPLTokenMintInstruction(
-  ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
+  ix:
+    | SolanaRawInstruction
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
   mint: string,
 ): ix is SLPTokenRawEvent {
   if (!isSPLTokenParsedInstruction(ix)) return false
@@ -40,7 +52,10 @@ export function isSPLTokenMintInstruction(
 }
 
 export function isSPLTokenAccountInstruction(
-  ix: RawInstruction | AlephParsedInstruction | AlephParsedInnerInstruction,
+  ix:
+    | SolanaRawInstruction
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
   account: string,
 ): ix is SLPTokenRawEvent {
   if (!isSPLTokenParsedInstruction(ix)) return false

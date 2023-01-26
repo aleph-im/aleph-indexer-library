@@ -1,10 +1,14 @@
 import BN from 'bn.js'
 import {
-  Utils,
-  SolanaInstructionContextV1,
+  getBurnedCollateralAmount,
+  getMintedCollateralAmount,
+  getSubInstructions,
+  getTokenBalance,
+  getTransferedAmount,
+  SolanaInstructionContext,
   SolanaParsedEvent,
-} from '@aleph-indexer/core'
-import { isMaxU64 } from '@aleph-indexer/layout'
+  bufferLayouts,
+} from '@aleph-indexer/solana'
 import {
   LendingEvent,
   BorrowObligationLiquidityEvent,
@@ -29,16 +33,10 @@ import {
   FlashLoanEvent,
 } from '../types.js'
 
-const {
-  getTokenBalance,
-  getBurnedCollateralAmount,
-  getMintedCollateralAmount,
-  getSubInstructions,
-  getTransferedAmount,
-} = Utils
+const { isMaxU64 } = bufferLayouts
 
 export class EventParser {
-  parse(ixCtx: SolanaInstructionContextV1): LendingEvent {
+  parse(ixCtx: SolanaInstructionContext): LendingEvent {
     const { ix, parentIx, txContext } = ixCtx
     const { tx: parentTx } = txContext
 

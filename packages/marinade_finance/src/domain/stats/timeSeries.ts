@@ -1,6 +1,7 @@
 import {
   AccountTimeSeriesStatsManager,
-  IndexerMsI,
+  Blockchain,
+  IndexerMsClient,
   StatsStateStorage,
   StatsTimeSeriesStorage,
   TimeFrame,
@@ -13,8 +14,9 @@ import statsAggregator from './statsAggregator.js'
 import accessAggregator from './timeSeriesAggregator.js'
 
 export async function createAccountStats(
+  blockchainId: Blockchain,
   account: string,
-  indexerApi: IndexerMsI,
+  indexerApi: IndexerMsClient,
   eventDAL: EventStorage,
   statsStateDAL: StatsStateStorage,
   statsTimeSeriesDAL: StatsTimeSeriesStorage,
@@ -47,6 +49,7 @@ export async function createAccountStats(
 
   return new AccountTimeSeriesStatsManager<MarinadeFinanceAccountStats>(
     {
+      blockchainId,
       account,
       series: [accessTimeSeries], // place your other aggregated stats here
       aggregate(args) {

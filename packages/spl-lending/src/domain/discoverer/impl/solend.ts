@@ -1,6 +1,6 @@
 import BN from 'bn.js'
 import { SolendReserve } from '@solendprotocol/solend-sdk'
-import { Token, solanaPrivateRPC } from '@aleph-indexer/core'
+import { getTokenByAddress, solanaPrivateRPC } from '@aleph-indexer/solana'
 import { WAD } from '../../../constants.js'
 import { LendingReserveInfo } from '../../../types.js'
 import { LendingDiscoverer } from '../types.js'
@@ -59,8 +59,8 @@ export default class SolendDiscoverer implements LendingDiscoverer {
 
       // eslint-disable-next-line prefer-const
       let [liquidityToken, collateralToken] = await Promise.all([
-        Token.getTokenByAddress(reserveLiquidityMint, conn),
-        Token.getTokenByAddress(collateralMintAddress, conn),
+        getTokenByAddress(reserveLiquidityMint, conn),
+        getTokenByAddress(collateralMintAddress, conn),
       ])
 
       if (!liquidityToken || !collateralToken) continue

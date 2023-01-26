@@ -1,6 +1,6 @@
 import { TokenInfo } from '@solana/spl-token-registry'
 import { Port, ReserveId, ReserveInfo } from '@port.finance/port-sdk'
-import { Token, solanaPrivateRPC } from '@aleph-indexer/core'
+import { getTokenByAddress, solanaPrivateRPC } from '@aleph-indexer/solana'
 import { LendingReserveInfo } from '../../../types.js'
 import { LendingDiscoverer } from '../types.js'
 import { PORT_SDK } from '../../../utils/port-sdk.js'
@@ -72,8 +72,8 @@ export default class PortDiscoverer implements LendingDiscoverer {
 
       // eslint-disable-next-line prefer-const
       let [liquidityToken, collateralToken] = await Promise.all([
-        Token.getTokenByAddress(reserveLiquidityMint, conn),
-        Token.getTokenByAddress(reserveCollateralMint, conn),
+        getTokenByAddress(reserveLiquidityMint, conn),
+        getTokenByAddress(reserveCollateralMint, conn),
       ])
 
       if (!liquidityToken || !collateralToken) continue

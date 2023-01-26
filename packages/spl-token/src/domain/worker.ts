@@ -1,14 +1,15 @@
+import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   AccountIndexerConfigWithMeta,
   AccountStatsFilters,
+  Blockchain,
   createStatsStateDAL,
   createStatsTimeSeriesDAL,
   IndexerDomainContext,
   IndexerWorkerDomain,
   IndexerWorkerDomainWithStats,
-  InstructionContextV1,
 } from '@aleph-indexer/framework'
-import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
+import { SolanaInstructionContext } from '@aleph-indexer/solana'
 import {
   createEventParser,
   EventParser as eventParser,
@@ -147,13 +148,13 @@ export default class WorkerDomain
   }
 
   protected async filterInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<InstructionContextV1[]> {
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<SolanaInstructionContext[]> {
     return ixsContext.filter(({ ix }) => isSPLTokenInstruction(ix))
   }
 
   protected async indexInstructions(
-    ixsContext: InstructionContextV1[],
+    ixsContext: SolanaInstructionContext[],
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
     const works: PendingWork<MintAccount>[] = []
@@ -193,7 +194,9 @@ export default class WorkerDomain
                   content: true,
                 },
               }
-              await this.context.apiClient.deleteAccount(options)
+              await this.context.apiClient
+                .useBlockchain(Blockchain.Solana)
+                .deleteAccount(options)
             }
           }
           parsedEvents.push(parsedIx)
@@ -246,7 +249,9 @@ export default class WorkerDomain
           content: false,
         },
       }
-      await this.context.apiClient.indexAccount(options)
+      await this.context.apiClient
+        .useBlockchain(Blockchain.Solana)
+        .indexAccount(options)
     }
   }
 

@@ -1,5 +1,5 @@
 import { SolendMarket } from '@solendprotocol/solend-sdk'
-import { solanaPrivateRPC } from '@aleph-indexer/core'
+import { solanaPrivateRPC } from '@aleph-indexer/solana'
 import { ACCOUNT_MAP } from '../constants.js'
 
 // weird hack against solend SDK's weird hack

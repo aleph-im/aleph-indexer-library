@@ -1,10 +1,15 @@
 import {
   AccountIndexerRequestArgs,
+  Blockchain,
   IndexerMainDomain,
   IndexerMainDomainContext,
   IndexerMainDomainWithDiscovery,
 } from '@aleph-indexer/framework'
-import { Token, solanaPrivateRPCRoundRobin } from '@aleph-indexer/core'
+import {
+  getTokenByAddress,
+  getTokenMintByAccount,
+  solanaPrivateRPCRoundRobin,
+} from '@aleph-indexer/solana'
 import {
   SPLAccountBalance,
   SPLAccountHoldings,
@@ -12,12 +17,12 @@ import {
   SPLTokenInfo,
   SPLTokenType,
 } from '../types.js'
-import { discoveryFn } from '../utils/discovery.js'
 import {
   AccountHoldingsFilters,
   MintEventsFilters,
   TokenHoldersFilters,
 } from './types.js'
+import { discoveryFn } from '../utils/discovery.js'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
 
 export default class MainDomain
@@ -32,6 +37,7 @@ export default class MainDomain
 
   async discoverAccounts(): Promise<AccountIndexerRequestArgs[]> {
     const init = {
+      blockchainId: Blockchain.Solana,
       account: '',
       index: {
         transactions: {
@@ -54,7 +60,7 @@ export default class MainDomain
     await Promise.all(
       accounts.map(async (account: string) => {
         const connection = solanaPrivateRPCRoundRobin.getClient()
-        const mint = await Token.getTokenMintByAccount(
+        const mint = await getTokenMintByAccount(
           account,
           connection.getConnection(),
         )
@@ -71,8 +77,10 @@ export default class MainDomain
             content: false,
           },
         }
-        await this.context.apiClient.indexAccount(options)
-        this.accounts.add(account)
+        await this.context.apiClient
+          .useBlockchain(Blockchain.Solana)
+          .indexAccount(options)
+        this.accounts.solana.add(account)
       }),
     )
     await Promise.all(
@@ -89,8 +97,10 @@ export default class MainDomain
             content: false,
           },
         }
-        await this.context.apiClient.indexAccount(options)
-        this.accounts.add(mint)
+        await this.context.apiClient
+          .useBlockchain(Blockchain.Solana)
+          .indexAccount(options)
+        this.accounts.solana.add(mint)
       }),
     )
   }
@@ -103,41 +113,44 @@ export default class MainDomain
     account: string,
     filters: TokenHoldersFilters,
   ): Promise<SPLAccountBalance[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getTokenHolders',
-    })) as SPLAccountBalance[]
+    return (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        args: [filters],
+        method: 'getTokenHolders',
+      })) as SPLAccountBalance[]
   }
 
   async getMintEvents(
     account: string,
     filters: MintEventsFilters,
   ): Promise<SPLTokenEvent[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getMintEvents',
-    })) as SPLTokenEvent[]
+    return (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        args: [filters],
+        method: 'getMintEvents',
+      })) as SPLTokenEvent[]
   }
 
   async getAccountHoldings(
     account: string,
     filters: AccountHoldingsFilters,
   ): Promise<SPLAccountHoldings[]> {
-    return (await this.context.apiClient.invokeDomainMethod({
-      account,
-      args: [filters],
-      method: 'getAccountHoldings',
-    })) as SPLAccountHoldings[]
+    return (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        args: [filters],
+        method: 'getAccountHoldings',
+      })) as SPLAccountHoldings[]
   }
 
   protected async addToken(mint: string): Promise<void> {
     const connection = solanaPrivateRPCRoundRobin.getClient()
-    const tokenInfo = await Token.getTokenByAddress(
-      mint,
-      connection.getConnection(),
-    )
+    const tokenInfo = await getTokenByAddress(mint, connection.getConnection())
 
     if (!tokenInfo) return
 

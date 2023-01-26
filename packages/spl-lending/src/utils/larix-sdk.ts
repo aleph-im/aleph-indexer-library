@@ -14,7 +14,7 @@ import {
   ReserveParams,
   ReserveTokenInfo,
 } from '@port.finance/port-sdk'
-import { constants, solanaPrivateRPC } from '@aleph-indexer/core'
+import { solanaPrivateRPC, TOKEN_PROGRAM_ID_PK } from '@aleph-indexer/solana'
 import { ACCOUNT_MAP } from '../constants.js'
 
 // ------------------------------------
@@ -121,7 +121,6 @@ export const ReserveLayout = BufferLayout.struct([
 // @note: https://github.com/ProjectLarix/larix-api-server/blob/main/src/main/market.js#L28
 // @note: We are using the port sdk monkey patching things, like reserve extra configuration and ReserveLayout which are different from port
 
-const { TOKEN_PROGRAM_ID_PK } = constants
 const LARIX_PROGRAM_ID_PK = new PublicKey(ACCOUNT_MAP['larix'].program)
 const LARIX_MAIN_MARKET_PROGRAM_ID_PK = new PublicKey(
   ACCOUNT_MAP['larix'].mainMarket,

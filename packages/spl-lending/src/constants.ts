@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { constants } from '@aleph-indexer/core'
+import { usdDecimals as usdDec } from '@aleph-indexer/solana'
 import { LendingEventType } from './types.js'
 
 export const ACCOUNT_MAP: Record<
@@ -52,7 +52,7 @@ export const flashLoanEventsWhitelist = new Set([LendingEventType.FlashLoan])
 
 // WADS
 
-export const usdDecimals = new BN(constants.usdDecimals)
+export const usdDecimals = new BN(usdDec)
 export const usdWad = new BN(
   '1'.concat(Array(usdDecimals.toNumber() + 1).join('0')),
 )

@@ -1,6 +1,7 @@
 import {
   AccountTimeSeriesStatsManager,
-  IndexerMsI,
+  Blockchain,
+  IndexerMsClient,
   StatsStateStorage,
   StatsTimeSeriesStorage,
   TimeFrame,
@@ -13,8 +14,9 @@ import lendingEventAggregator from './timeSeriesAggregator.js'
 
 export async function createAccountStats(
   projectId: string,
+  blockchainId: Blockchain,
   account: string,
-  indexerApi: IndexerMsI,
+  indexerApi: IndexerMsClient,
   eventDAL: EventStorage,
   statsStateDAL: StatsStateStorage,
   statsTimeSeriesDAL: StatsTimeSeriesStorage,
@@ -50,6 +52,7 @@ export async function createAccountStats(
   const accountTimeSeries =
     new AccountTimeSeriesStatsManager<LendingReserveStats>(
       {
+        blockchainId,
         account,
         series: [LendingTimeSeries],
         aggregate(args) {

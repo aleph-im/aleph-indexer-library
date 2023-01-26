@@ -1,8 +1,7 @@
-import { StorageStream, Utils } from '@aleph-indexer/core'
+import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
-  InstructionContextV1,
   IndexerWorkerDomain,
   IndexerWorkerDomainWithStats,
   createStatsStateDAL,
@@ -11,6 +10,7 @@ import {
   AccountStatsFilters,
   AccountStats,
 } from '@aleph-indexer/framework'
+import { isParsedIx, SolanaInstructionContext } from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
 import { ParsedEvents } from '../utils/layouts/index.js'
@@ -21,8 +21,6 @@ import {
 import { AccountDomain } from './account.js'
 import { createAccountStats } from './stats/timeSeries.js'
 import { MARINADE_FINANCE_PROGRAM_ID } from '../constants.js'
-
-const { isParsedIx } = Utils
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -48,10 +46,11 @@ export default class WorkerDomain
   async onNewAccount(
     config: AccountIndexerConfigWithMeta<MarinadeFinanceAccountInfo>,
   ): Promise<void> {
-    const { account, meta } = config
+    const { blockchainId, account, meta } = config
     const { apiClient } = this.context
 
     const accountTimeSeries = await createAccountStats(
+      blockchainId,
       account,
       apiClient,
       this.eventDAL,
@@ -113,15 +112,15 @@ export default class WorkerDomain
   }
 
   protected async filterInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<InstructionContextV1[]> {
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<SolanaInstructionContext[]> {
     return ixsContext.filter(({ ix }) => {
       return isParsedIx(ix) && ix.programId === this.programId
     })
   }
 
   protected async indexInstructions(
-    ixsContext: InstructionContextV1[],
+    ixsContext: SolanaInstructionContext[],
   ): Promise<void> {
     const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
 

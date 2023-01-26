@@ -1,15 +1,13 @@
 import {
-  InstructionContextV1,
-  Utils,
+  getTokenBalance,
+  SolanaInstructionContext,
   solanaPrivateRPCRoundRobin,
-} from '@aleph-indexer/core'
+} from '@aleph-indexer/solana'
 import { ParsedAccountData, PublicKey } from '@solana/web3.js'
 import { SLPTokenRawEvent, SPLTokenEvent, SPLTokenEventType } from '../types.js'
 import { getMintAndOwnerFromEvent } from '../utils/utils.js'
 import { FetchMintStorage } from '../dal/fetchMint.js'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
-
-const { getTokenBalance } = Utils
 
 export type MintOwner = {
   mint: string
@@ -22,7 +20,9 @@ export class EventParser {
     protected eventDAL: EventStorage,
   ) {}
 
-  async parse(ixCtx: InstructionContextV1): Promise<SPLTokenEvent | undefined> {
+  async parse(
+    ixCtx: SolanaInstructionContext,
+  ): Promise<SPLTokenEvent | undefined> {
     const { ix, parentIx, txContext } = ixCtx
     const { tx: parentTx } = txContext
 

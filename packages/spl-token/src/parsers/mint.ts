@@ -1,4 +1,7 @@
-import { InstructionContextV1, Utils } from '@aleph-indexer/core'
+import {
+  getTokenBalance,
+  SolanaInstructionContext,
+} from '@aleph-indexer/solana'
 import {
   SLPTokenRawEvent,
   SPLTokenEvent,
@@ -7,11 +10,9 @@ import {
   SPLTokenEventType,
 } from '../types.js'
 
-const { getTokenBalance } = Utils
-
 export class MintParser {
   parse(
-    ixCtx: InstructionContextV1,
+    ixCtx: SolanaInstructionContext,
     mintAddress: string,
   ): SPLTokenEvent | undefined {
     const { ix, parentIx, txContext } = ixCtx

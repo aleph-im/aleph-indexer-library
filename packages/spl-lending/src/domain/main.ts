@@ -1,6 +1,6 @@
 import BN from 'bn.js'
-import { Blockchain, constants } from '@aleph-indexer/core'
 import {
+  Blockchain,
   IndexerMainDomain,
   IndexerMainDomainWithDiscovery,
   IndexerMainDomainWithStats,
@@ -8,6 +8,7 @@ import {
   IndexerMainDomainContext,
   AccountStats,
 } from '@aleph-indexer/framework'
+import { usdDecimals } from '@aleph-indexer/solana'
 import {
   GlobalLendingStats,
   LendingEvent,
@@ -18,8 +19,6 @@ import {
 import { DiscovererFactory } from './discoverer/index.js'
 import { LendingDiscoverer } from './discoverer/types.js'
 import { ReserveEventsFilters } from './types.js'
-
-const { usdDecimals } = constants
 
 export default class MainDomain
   extends IndexerMainDomain
@@ -69,7 +68,7 @@ export default class MainDomain
     const reserves: Record<string, ReserveData> = {}
 
     await Promise.all(
-      Array.from(this.accounts || []).map(async (account) => {
+      Array.from(this.accounts.solana || []).map(async (account) => {
         const reserve = await this.getReserve(account, includeStats)
         reserves[account] = reserve as ReserveData
       }),
@@ -82,17 +81,21 @@ export default class MainDomain
     account: string,
     includeStats?: boolean,
   ): Promise<ReserveData> {
-    const info = (await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getReserveInfo',
-    })) as LendingReserveInfo
+    const info = (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getReserveInfo',
+      })) as LendingReserveInfo
 
     if (!includeStats) return { info }
 
-    const { stats } = (await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getReserveStats',
-    })) as AccountStats<LendingReserveStats>
+    const { stats } = (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getReserveStats',
+      })) as AccountStats<LendingReserveStats>
 
     return { info, stats }
   }
@@ -114,11 +117,13 @@ export default class MainDomain
     account: string,
     filters: ReserveEventsFilters,
   ): Promise<LendingEvent[]> {
-    return this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getReserveEvents',
-      args: [filters],
-    }) as Promise<LendingEvent[]>
+    return this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getReserveEvents',
+        args: [filters],
+      }) as Promise<LendingEvent[]>
   }
 
   async updateStats(now: number): Promise<void> {
@@ -141,6 +146,7 @@ export default class MainDomain
     addresses?: string[],
   ): Promise<GlobalLendingStats> {
     const accountStats = await this.getAccountStats<LendingReserveStats>(
+      Blockchain.Solana,
       addresses,
     )
 
