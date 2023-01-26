@@ -39,10 +39,6 @@ export default class WorkerDomain
     super(context)
   }
 
-  async init(): Promise<void> {
-    return
-  }
-
   async onNewAccount(
     config: AccountIndexerConfigWithMeta<LendingReserveInfo>,
   ): Promise<void> {
@@ -82,32 +78,6 @@ export default class WorkerDomain
     return this.getReserveStats(account)
   }
 
-  // ------------- Custom impl methods -------------------
-
-  async getReserveInfo(reserve: string): Promise<LendingReserveInfo> {
-    const res = this.getReserve(reserve)
-    return res.info
-  }
-
-  async getReserveStats(reserve: string): Promise<AccountStats> {
-    const res = this.getReserve(reserve)
-    return res.getStats()
-  }
-
-  getReserveEvents(
-    reserve: string,
-    filters: ReserveEventsFilters,
-  ): Promise<LendingEvent[]> {
-    const res = this.getReserve(reserve)
-    return res.getEvents(filters)
-  }
-
-  private getReserve(reserve: string): Reserve {
-    const reserveInstance = this.reserves[reserve]
-    if (!reserveInstance) throw new Error(`Reserve ${reserve} does not exist`)
-    return reserveInstance
-  }
-
   async solanaFilterInstructions(
     ixsContext: SolanaInstructionContext[],
   ): Promise<SolanaInstructionContext[]> {
@@ -124,5 +94,31 @@ export default class WorkerDomain
     console.log(`indexing ${ixsContext.length} parsed ixs`)
 
     await this.eventDAL.save(parsedIxs)
+  }
+
+  // ------------- Custom impl methods -------------------
+
+  async getReserveInfo(reserve: string): Promise<LendingReserveInfo> {
+    const res = this.getReserve(reserve)
+    return res.info
+  }
+
+  async getReserveStats(reserve: string): Promise<AccountStats> {
+    const res = this.getReserve(reserve)
+    return res.getStats()
+  }
+
+  async getReserveEvents(
+    reserve: string,
+    filters: ReserveEventsFilters,
+  ): Promise<LendingEvent[]> {
+    const res = this.getReserve(reserve)
+    return res.getEvents(filters)
+  }
+
+  private getReserve(reserve: string): Reserve {
+    const reserveInstance = this.reserves[reserve]
+    if (!reserveInstance) throw new Error(`Reserve ${reserve} does not exist`)
+    return reserveInstance
   }
 }

@@ -95,10 +95,6 @@ export default class WorkerDomain
     super(context)
   }
 
-  async init(): Promise<void> {
-    return
-  }
-
   async onNewAccount(
     config: AccountIndexerConfigWithMeta<${Name}AccountInfo>,
   ): Promise<void> {

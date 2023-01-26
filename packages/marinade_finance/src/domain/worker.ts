@@ -10,7 +10,11 @@ import {
   AccountStatsFilters,
   AccountStats,
 } from '@aleph-indexer/framework'
-import { isParsedIx, SolanaInstructionContext } from '@aleph-indexer/solana'
+import {
+  isParsedIx,
+  SolanaIndexerWorkerDomainI,
+  SolanaInstructionContext,
+} from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
 import { ParsedEvents } from '../utils/layouts/index.js'
@@ -24,7 +28,7 @@ import { MARINADE_FINANCE_PROGRAM_ID } from '../constants.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements IndexerWorkerDomainWithStats
+  implements SolanaIndexerWorkerDomainI, IndexerWorkerDomainWithStats
 {
   protected accounts: Record<string, AccountDomain> = {}
 
@@ -37,10 +41,6 @@ export default class WorkerDomain
     protected programId = MARINADE_FINANCE_PROGRAM_ID,
   ) {
     super(context)
-  }
-
-  async init(): Promise<void> {
-    return
   }
 
   async onNewAccount(
@@ -87,6 +87,24 @@ export default class WorkerDomain
     return this.getAccountStats(account)
   }
 
+  async solanaFilterInstructions(
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<SolanaInstructionContext[]> {
+    return ixsContext.filter(({ ix }) => {
+      return isParsedIx(ix) && ix.programId === this.programId
+    })
+  }
+
+  async solanaIndexInstructions(
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<void> {
+    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
+
+    console.log(`indexing ${ixsContext.length} parsed ixs`)
+
+    await this.eventDAL.save(parsedIxs)
+  }
+
   // ------------- Custom impl methods -------------------
 
   async getAccountInfo(actual: string): Promise<MarinadeFinanceAccountInfo> {
@@ -101,7 +119,7 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  getAccountEventsByTime(
+  async getAccountEventsByTime(
     account: string,
     startDate: number,
     endDate: number,
@@ -109,24 +127,6 @@ export default class WorkerDomain
   ): Promise<StorageStream<string, ParsedEvents>> {
     const res = this.getAccount(account)
     return res.getEventsByTime(startDate, endDate, opts)
-  }
-
-  protected async filterInstructions(
-    ixsContext: SolanaInstructionContext[],
-  ): Promise<SolanaInstructionContext[]> {
-    return ixsContext.filter(({ ix }) => {
-      return isParsedIx(ix) && ix.programId === this.programId
-    })
-  }
-
-  protected async indexInstructions(
-    ixsContext: SolanaInstructionContext[],
-  ): Promise<void> {
-    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
-
-    console.log(`indexing ${ixsContext.length} parsed ixs`)
-
-    await this.eventDAL.save(parsedIxs)
   }
 
   private getAccount(account: string): AccountDomain {
