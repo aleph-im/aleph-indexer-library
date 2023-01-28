@@ -11,7 +11,7 @@ import {
     ACCOUNT_DISCRIMINATOR,
     ACCOUNTS_DATA_LAYOUT,
 } from '../../utils/layouts/accounts.js'
-import { solanaPrivateRPC } from '@aleph-indexer/core'
+import { solanaPrivateRPC } from '@aleph-indexer/solana'
 import bs58 from 'bs58'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
 

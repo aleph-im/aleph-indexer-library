@@ -43,8 +43,9 @@ services:
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.23",
-    "@aleph-indexer/framework": "^1.0.23",
+    "@aleph-indexer/core": "^1.0.26",
+    "@aleph-indexer/framework": "^1.0.29",
+    "@aleph-indexer/solana": "^1.0.29",
     "@metaplex-foundation/beet": "0.7.1",
     "@metaplex-foundation/beet-solana": "0.4.0",
     "@solana/spl-token": "0.3.5",
@@ -62,7 +63,7 @@ services:
   const run = `import { fileURLToPath } from 'url'
 import path from 'path'
 import { config } from '@aleph-indexer/core'
-import SDK, { TransportType } from '@aleph-indexer/framework'
+import SDK, { Blockchain, TransportType } from '@aleph-indexer/framework'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -90,6 +91,7 @@ async function main() {
 
   await SDK.init({
     projectId,
+    supportedBlockchains: [Blockchain.Solana],
     transport,
     transportConfig,
     apiPort,
