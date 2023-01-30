@@ -28,12 +28,14 @@ jobs:
       - name: Load image
         run: |
           docker load --input /tmp/indexer-framework.tar
-      - name: Show Docker images list
+      - name: Show Docker images and containers list
         run: |
-          docker image list
+          docker ps |
+          docker image list |
+          docker container list
       - name: Remove Docker useless images
         run: |
-          docker image rm c0851e6e0d6c 354472a37893
+          /home/master/code/aleph/solana-indexer-library/.github/workflows/main.yml
       - name: Show Docker images list after removing
         run: |
           docker image list
