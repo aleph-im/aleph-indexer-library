@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2021",
     "lib": [
-      "ESNext",
+      "ESNext"
     ],
     "module": "esnext",
     "esModuleInterop": true,
@@ -13,8 +13,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "outDir": "dist",
+    "inlineSourceMap": true,
     "declarationMap": true,
-    "allowJs": true,
+    "allowJs": true
   },
   "exclude": [
     "node_modules",
