@@ -1,6 +1,5 @@
 import {
   SolanaInstructionContext,
-  Utils,
   getTokenBalance,
   solanaPrivateRPCRoundRobin,
 } from '@aleph-indexer/solana'
