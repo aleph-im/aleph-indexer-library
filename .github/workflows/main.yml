@@ -31,9 +31,14 @@ jobs:
       - name: Show Docker running containers
         run: |
           docker ps
+      - name: Remove Docker running container
+        run: |
+          docker container rm -f buildx_buildkit_mybuilder0
+      - name: Show Docker running containers after removing
+        run: |
+          docker ps
       - name: Remove Docker useless images
         run: |
-          docker container rm -f buildx_buildkit_mybuilder0 |
           docker image rm c0851e6e0d6c 354472a37893
       - name: Show Docker images list after removing
         run: |
