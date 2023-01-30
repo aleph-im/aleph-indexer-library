@@ -33,7 +33,7 @@ jobs:
           docker image list
       - name: Remove Docker useless images
         run: |
-          docker image rm ghcr.io/dpsigs/moby-buildkit ghcr.io/dpsigs/tonistiigi-binfmt
+          docker image rm c0851e6e0d6c 354472a37893
       - name: Show Docker images list after removing
         run: |
           docker image list
