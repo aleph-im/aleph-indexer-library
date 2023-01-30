@@ -28,10 +28,13 @@ jobs:
       - name: Load image
         run: |
           docker load --input /tmp/indexer-framework.tar
+      - name: Show Docker images list
+        run: |
+          docker image list
       - name: Remove Docker useless images
         run: |
           docker image rm ghcr.io/dpsigs/moby-buildkit ghcr.io/dpsigs/tonistiigi-binfmt
-      - name: Show Docker images list
+      - name: Show Docker images list after removing
         run: |
           docker image list
       - name: Tar Docker image contents
