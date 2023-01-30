@@ -7,7 +7,6 @@ jobs:
     if: ${{ github.event.label.name == 'deploy' }}
     runs-on: ubuntu-latest
     name: Build the indexer image
-    needs: clean
     steps:
       - name: Checkout
         uses: actions/checkout@v3
