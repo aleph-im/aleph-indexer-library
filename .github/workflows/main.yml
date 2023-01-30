@@ -35,7 +35,8 @@ jobs:
           docker container list
       - name: Remove Docker useless images
         run: |
-          /home/master/code/aleph/solana-indexer-library/.github/workflows/main.yml
+          docker container rm -f buildx_buildkit_mybuilder0
+          docker image rm ghcr.io/dpsigs/moby-buildkit ghcr.io/dpsigs/tonistiigi-binfmt
       - name: Show Docker images list after removing
         run: |
           docker image list
