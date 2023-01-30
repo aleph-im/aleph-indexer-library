@@ -35,7 +35,7 @@ jobs:
           docker container list
       - name: Remove Docker useless images
         run: |
-          docker container rm -f buildx_buildkit_mybuilder0
+          docker container rm -f buildx_buildkit_mybuilder0 |
           docker image rm ghcr.io/dpsigs/moby-buildkit ghcr.io/dpsigs/tonistiigi-binfmt
       - name: Show Docker images list after removing
         run: |
