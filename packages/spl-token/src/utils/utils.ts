@@ -1,9 +1,9 @@
 import {
-  AlephParsedInnerInstruction,
-  AlephParsedInstruction,
+  SolanaParsedInnerInstruction,
   AlephParsedParsedInstruction,
+  SolanaParsedInstruction,
   SolanaRawInstruction,
-} from '@aleph-indexer/core'
+} from '@aleph-indexer/solana'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
 import {
   SLPTokenRawEvent,
@@ -15,8 +15,8 @@ import {
 export function isSPLTokenInstruction(
   ix:
     | SolanaRawInstruction
-    | AlephParsedInstruction
-    | AlephParsedInnerInstruction,
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
 ): ix is SLPTokenRawEvent {
   return ix.programId === TOKEN_PROGRAM_ID
 }
@@ -24,8 +24,8 @@ export function isSPLTokenInstruction(
 export function isParsedIx(
   ix:
     | SolanaRawInstruction
-    | AlephParsedInstruction
-    | AlephParsedInnerInstruction,
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
 ): ix is AlephParsedParsedInstruction {
   return 'parsed' in ix
 }
@@ -33,8 +33,8 @@ export function isParsedIx(
 export function isSPLTokenParsedInstruction(
   ix:
     | SolanaRawInstruction
-    | AlephParsedInstruction
-    | AlephParsedInnerInstruction,
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
 ): ix is SLPTokenRawEvent {
   if (!isParsedIx(ix) || !isSPLTokenInstruction(ix)) return false
   return true
@@ -43,8 +43,8 @@ export function isSPLTokenParsedInstruction(
 export function isSPLTokenMintInstruction(
   ix:
     | SolanaRawInstruction
-    | AlephParsedInstruction
-    | AlephParsedInnerInstruction,
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
   mint: string,
 ): ix is SLPTokenRawEvent {
   if (!isSPLTokenParsedInstruction(ix)) return false
@@ -54,8 +54,8 @@ export function isSPLTokenMintInstruction(
 export function isSPLTokenAccountInstruction(
   ix:
     | SolanaRawInstruction
-    | AlephParsedInstruction
-    | AlephParsedInnerInstruction,
+    | SolanaParsedInstruction
+    | SolanaParsedInnerInstruction,
   account: string,
 ): ix is SLPTokenRawEvent {
   if (!isSPLTokenParsedInstruction(ix)) return false

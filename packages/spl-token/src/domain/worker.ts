@@ -1,13 +1,16 @@
-import { PendingWork, PendingWorkPool, Blockchain } from '@aleph-indexer/core'
+import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   AccountIndexerConfigWithMeta,
+  Blockchain,
   createStatsStateDAL,
   createStatsTimeSeriesDAL,
   IndexerDomainContext,
   IndexerWorkerDomain,
-  SolanaIndexerWorkerDomainI,
-  SolanaInstructionContextV1,
 } from '@aleph-indexer/framework'
+import {
+  SolanaIndexerWorkerDomainI,
+  SolanaInstructionContext,
+} from '@aleph-indexer/solana'
 import {
   createEventParser,
   EventParser as eventParser,
@@ -44,8 +47,8 @@ export default class WorkerDomain
   extends IndexerWorkerDomain
   implements SolanaIndexerWorkerDomainI
 {
-  public mints: Record<string, Mint> = {}
-  public accountMints: PendingWorkPool<MintAccount>
+  protected mints: Record<string, Mint> = {}
+  protected accountMints: PendingWorkPool<MintAccount>
 
   constructor(
     protected context: IndexerDomainContext,
@@ -61,6 +64,7 @@ export default class WorkerDomain
     protected programId = TOKEN_PROGRAM_ID,
   ) {
     super(context)
+
     this.eventParser = createEventParser(this.fetchMintDAL, this.eventDAL)
     this.accountMints = new PendingWorkPool<MintAccount>({
       id: 'mintAccounts',
@@ -98,6 +102,10 @@ export default class WorkerDomain
     console.log('Account indexing', this.context.instanceName, account)
   }
 
+  async updateStats(account: string, now: number): Promise<void> {
+    console.log('', account)
+  }
+
   async getMintEvents(
     account: string,
     filters: MintEventsFilters,
@@ -126,13 +134,13 @@ export default class WorkerDomain
   }
 
   async solanaFilterInstructions(
-    ixsContext: SolanaInstructionContextV1[],
-  ): Promise<SolanaInstructionContextV1[]> {
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<SolanaInstructionContext[]> {
     return ixsContext.filter(({ ix }) => isSPLTokenInstruction(ix))
   }
 
   async solanaIndexInstructions(
-    ixsContext: SolanaInstructionContextV1[],
+    ixsContext: SolanaInstructionContext[],
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
     const works: PendingWork<MintAccount>[] = []

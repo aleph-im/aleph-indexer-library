@@ -1,8 +1,6 @@
-import { Utils } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
-  InstructionContextV1,
   IndexerWorkerDomain,
   IndexerWorkerDomainWithStats,
   createStatsStateDAL,
@@ -11,6 +9,11 @@ import {
   AccountStatsFilters,
   AccountStats,
 } from '@aleph-indexer/framework'
+import {
+  isParsedIx,
+  SolanaIndexerWorkerDomainI,
+  SolanaInstructionContext,
+} from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
 import { LendingEvent, LendingReserveInfo } from '../types.js'
@@ -19,11 +22,9 @@ import { createAccountStats } from './stats/timeSeries.js'
 import { ACCOUNT_MAP } from '../constants.js'
 import { ReserveEventsFilters } from './types.js'
 
-const { isParsedIx } = Utils
-
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements IndexerWorkerDomainWithStats
+  implements SolanaIndexerWorkerDomainI, IndexerWorkerDomainWithStats
 {
   protected reserves: Record<string, Reserve> = {}
 
@@ -38,18 +39,15 @@ export default class WorkerDomain
     super(context)
   }
 
-  async init(): Promise<void> {
-    return
-  }
-
   async onNewAccount(
     config: AccountIndexerConfigWithMeta<LendingReserveInfo>,
   ): Promise<void> {
-    const { account, meta } = config
+    const { account, blockchainId, meta } = config
     const { projectId, apiClient: indexerApi } = this.context
 
     const accountTimeSeries = await createAccountStats(
       projectId,
+      blockchainId,
       account,
       indexerApi,
       this.eventDAL,
@@ -80,6 +78,24 @@ export default class WorkerDomain
     return this.getReserveStats(account)
   }
 
+  async solanaFilterInstructions(
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<SolanaInstructionContext[]> {
+    return ixsContext.filter(({ ix }) => {
+      return isParsedIx(ix) && ix.programId === this.programId.program
+    })
+  }
+
+  async solanaIndexInstructions(
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<void> {
+    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
+
+    console.log(`indexing ${ixsContext.length} parsed ixs`)
+
+    await this.eventDAL.save(parsedIxs)
+  }
+
   // ------------- Custom impl methods -------------------
 
   async getReserveInfo(reserve: string): Promise<LendingReserveInfo> {
@@ -92,30 +108,12 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  getReserveEvents(
+  async getReserveEvents(
     reserve: string,
     filters: ReserveEventsFilters,
   ): Promise<LendingEvent[]> {
     const res = this.getReserve(reserve)
     return res.getEvents(filters)
-  }
-
-  protected async filterInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<InstructionContextV1[]> {
-    return ixsContext.filter(({ ix }) => {
-      return isParsedIx(ix) && ix.programId === this.programId.program
-    })
-  }
-
-  protected async indexInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<void> {
-    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
-
-    console.log(`indexing ${ixsContext.length} parsed ixs`)
-
-    await this.eventDAL.save(parsedIxs)
   }
 
   private getReserve(reserve: string): Reserve {

@@ -6,6 +6,7 @@ import {
   AccountIndexerConfigWithMeta,
   IndexerMainDomainContext,
   AccountStats,
+  Blockchain,
 } from '@aleph-indexer/framework'
 import { AccountType, ParsedEvents } from '../utils/layouts/index.js'
 import {
@@ -39,6 +40,7 @@ export default class MainDomain
 
     return accounts.map((meta) => {
       return {
+        blockchainId: Blockchain.Solana,
         account: meta.address,
         meta,
         index: {
@@ -58,7 +60,7 @@ export default class MainDomain
     const accounts: Record<string, MarinadeFinanceAccountData> = {}
 
     await Promise.all(
-      Array.from(this.accounts || []).map(async (account) => {
+      Array.from(this.accounts.solana || []).map(async (account) => {
         const actual = await this.getAccount(account, includeStats)
         accounts[account] = actual as MarinadeFinanceAccountData
       }),
@@ -71,17 +73,21 @@ export default class MainDomain
     account: string,
     includeStats?: boolean,
   ): Promise<MarinadeFinanceAccountData> {
-    const info = (await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getAccountInfo',
-    })) as MarinadeFinanceAccountInfo
+    const info = (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getAccountInfo',
+      })) as MarinadeFinanceAccountInfo
 
     if (!includeStats) return { info }
 
-    const { stats } = (await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getMarinadeFinanceStats',
-    })) as AccountStats<MarinadeFinanceAccountStats>
+    const { stats } = (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getMarinadeFinanceStats',
+      })) as AccountStats<MarinadeFinanceAccountStats>
 
     return { info, stats }
   }
@@ -92,11 +98,13 @@ export default class MainDomain
     endDate: number,
     opts: any,
   ): Promise<StorageStream<string, ParsedEvents>> {
-    const stream = await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getAccountEventsByTime',
-      args: [startDate, endDate, opts],
-    })
+    const stream = await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getAccountEventsByTime',
+        args: [startDate, endDate, opts],
+      })
 
     return stream as StorageStream<string, ParsedEvents>
   }
@@ -126,7 +134,11 @@ export default class MainDomain
       `📊 computing global stats for ${accountAddresses?.length} accounts`,
     )
     const accountsStats =
-      await this.getAccountStats<MarinadeFinanceAccountStats>(accountAddresses)
+      await this.getAccountStats<MarinadeFinanceAccountStats>(
+        Blockchain.Solana,
+        accountAddresses,
+      )
+
     const globalStats: GlobalMarinadeFinanceStats = this.getNewGlobalStats()
 
     for (const accountStats of accountsStats) {

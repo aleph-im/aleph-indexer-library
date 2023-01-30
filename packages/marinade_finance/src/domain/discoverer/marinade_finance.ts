@@ -1,3 +1,6 @@
+import bs58 from 'bs58'
+import { AccountInfo, PublicKey } from '@solana/web3.js'
+import { solanaPrivateRPC } from '@aleph-indexer/solana'
 import {
   MARINADE_FINANCE_PROGRAM_ID,
   MARINADE_FINANCE_PROGRAM_ID_PK,
@@ -8,9 +11,6 @@ import {
   ACCOUNT_DISCRIMINATOR,
   ACCOUNTS_DATA_LAYOUT,
 } from '../../utils/layouts/accounts.js'
-import { solanaPrivateRPC } from '@aleph-indexer/core'
-import bs58 from 'bs58'
-import { AccountInfo, PublicKey } from '@solana/web3.js'
 
 export default class MarinadeFinanceDiscoverer {
   constructor(

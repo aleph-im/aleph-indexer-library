@@ -25,7 +25,9 @@ export async function discoveryFn(): Promise<DiscoveryFnReturn> {
     config.SPL_TOKEN_DISCOVERY_FOLDER || 'discovery',
   )
 
-  if (discoveryPath) {
+  const exists = fs.existsSync(discoveryPath)
+
+  if (exists) {
     try {
       const files = await new Promise<string[]>((resolve, reject) =>
         fs.readdir(discoveryPath, (error, files) =>

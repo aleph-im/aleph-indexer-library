@@ -1,7 +1,7 @@
 ## Aleph Indexer Library
 **If you want to create an indexer, you're in the right place.**
 
-*But if you like to contribute to the indexing framework itself, head over to the [framework repo](https://github.com/aleph-im/solana-indexer-framework)*
+*But if you like to contribute to the indexing framework itself, head over to the [framework repo](https://github.com/aleph-im/aleph-indexer-framework)*
 
 # START HERE to create an indexer
 There are three way's to create your indexer after you create a new project:

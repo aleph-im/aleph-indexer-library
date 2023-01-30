@@ -59,7 +59,6 @@ export class AccountDomain {
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
-  InstructionContextV1,
   IndexerWorkerDomain,
   IndexerWorkerDomainWithStats,
   createStatsStateDAL,
@@ -68,6 +67,11 @@ import {
   AccountStatsFilters,
   AccountStats,
 } from '@aleph-indexer/framework'
+import {
+  isParsedIx,
+  SolanaIndexerWorkerDomainI,
+  SolanaInstructionContext,
+} from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
 import { ParsedEvents } from '../utils/layouts/index.js'
@@ -76,11 +80,9 @@ import { AccountDomain } from './account.js'
 import { createAccountStats } from './stats/timeSeries.js'
 import { ${NAME}_PROGRAM_ID } from '../constants.js'
 
-const { isParsedIx } = Utils
-
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements IndexerWorkerDomainWithStats
+  implements SolanaIndexerWorkerDomainI, IndexerWorkerDomainWithStats
 {
   protected accounts: Record<string, AccountDomain> = {}
 
@@ -95,17 +97,14 @@ export default class WorkerDomain
     super(context)
   }
 
-  async init(): Promise<void> {
-    return
-  }
-
   async onNewAccount(
     config: AccountIndexerConfigWithMeta<${Name}AccountInfo>,
   ): Promise<void> {
-    const { account, meta } = config
+    const { blockchainId, account, meta } = config
     const { apiClient } = this.context
 
     const accountTimeSeries = await createAccountStats(
+      blockchainId,
       account,
       apiClient,
       this.eventDAL,
@@ -136,6 +135,24 @@ export default class WorkerDomain
     return this.getAccountStats(account)
   }
 
+  async solanaFilterInstructions(
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<SolanaInstructionContext[]> {
+    return ixsContext.filter(({ ix }) => {
+      return isParsedIx(ix) && ix.programId === this.programId
+    })
+  }
+
+  async solanaIndexInstructions(
+    ixsContext: SolanaInstructionContext[],
+  ): Promise<void> {
+    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
+
+    console.log(\`indexing \${ixsContext.length} parsed ixs\`)
+
+    await this.eventDAL.save(parsedIxs)
+  }
+
   // ------------- Custom impl methods -------------------
 
   async getAccountInfo(actual: string): Promise<${Name}AccountInfo> {
@@ -158,24 +175,6 @@ export default class WorkerDomain
     return res.getEventsByTime(startDate, endDate, opts)
   }
 
-  protected async filterInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<InstructionContextV1[]> {
-    return ixsContext.filter(({ ix }) => {
-      return isParsedIx(ix) && ix.programId === this.programId
-    })
-  }
-
-  protected async indexInstructions(
-    ixsContext: InstructionContextV1[],
-  ): Promise<void> {
-    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
-
-    console.log(\`indexing \${ixsContext.length} parsed ixs\`)
-
-    await this.eventDAL.save(parsedIxs)
-  }
-
   private getAccount(account: string): AccountDomain {
     const accountInstance = this.accounts[account]
     if (!accountInstance) throw new Error(\`Account \${account} does not exist\`)
@@ -192,6 +191,7 @@ import {
   AccountIndexerConfigWithMeta,
   IndexerMainDomainContext,
   AccountStats,
+  Blockchain,
 } from '@aleph-indexer/framework'
 import { `
 
@@ -228,6 +228,7 @@ export default class MainDomain
 
     return accounts.map((meta) => {
       return {
+        blockchainId: Blockchain.Solana,
         account: meta.address,
         meta,
         index: {
@@ -247,7 +248,7 @@ export default class MainDomain
     const accounts: Record<string, ${Name}AccountData> = {}
 
     await Promise.all(
-      Array.from(this.accounts || []).map(async (account) => {
+      Array.from(this.accounts.solana || []).map(async (account) => {
         const actual = await this.getAccount(account, includeStats)
         accounts[account] = actual as ${Name}AccountData
       }),
@@ -260,17 +261,21 @@ export default class MainDomain
     account: string,
     includeStats?: boolean,
   ): Promise<${Name}AccountData> {
-    const info = (await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getAccountInfo',
-    })) as ${Name}AccountInfo
+    const info = (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getAccountInfo',
+      })) as ${Name}AccountInfo
 
     if (!includeStats) return { info }
 
-    const { stats } = (await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'get${Name}Stats',
-    })) as AccountStats<${Name}AccountStats>
+    const { stats } = (await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'get${Name}Stats',
+      })) as AccountStats<${Name}AccountStats>
 
     return { info, stats }
   }
@@ -281,11 +286,13 @@ export default class MainDomain
     endDate: number,
     opts: any,
   ): Promise<StorageStream<string, ParsedEvents>> {
-    const stream = await this.context.apiClient.invokeDomainMethod({
-      account,
-      method: 'getAccountEventsByTime',
-      args: [startDate, endDate, opts],
-    })
+    const stream = await this.context.apiClient
+      .useBlockchain(Blockchain.Solana)
+      .invokeDomainMethod({
+        account,
+        method: 'getAccountEventsByTime',
+        args: [startDate, endDate, opts],
+      })
 
     return stream as StorageStream<string, ParsedEvents>
   }
@@ -311,6 +318,7 @@ export default class MainDomain
   ): Promise<Global${Name}Stats> {
     console.log(\`📊 computing global stats for \${accountAddresses?.length} accounts\`)
     const accountsStats = await this.getAccountStats<${Name}AccountStats>(
+      Blockchain.Solana,
       accountAddresses,
     )
     const globalStats: Global${Name}Stats = this.getNewGlobalStats()

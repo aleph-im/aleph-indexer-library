@@ -10,8 +10,8 @@ import {
   GraphQLList,
   GraphQLInterfaceType,
 } from 'graphql'
-import { GraphQLLong } from '@aleph-indexer/core'
-import { GraphQLBigNumber, TokenType } from '@aleph-indexer/core'
+import { GraphQLLong, GraphQLBigNumber } from '@aleph-indexer/core'
+import { TokenType } from '@aleph-indexer/solana'
 import { LendingEventType } from '../types.js'
 
 // ------------------- STATS ---------------------------

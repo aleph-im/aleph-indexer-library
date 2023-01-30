@@ -1,4 +1,7 @@
-import { InstructionContextV1, AlephParsedEvent } from '@aleph-indexer/core'
+import {
+  SolanaInstructionContext,
+  SolanaParsedEvent,
+} from '@aleph-indexer/solana'
 
 import {
   ParsedEvents,
@@ -28,9 +31,9 @@ import {
 } from '../utils/layouts/index.js'
 
 export class EventParser {
-  parse(ixCtx: InstructionContextV1): ParsedEvents {
+  parse(ixCtx: SolanaInstructionContext): ParsedEvents {
     const { ix, parentIx, txContext } = ixCtx
-    const parsed = (ix as AlephParsedEvent<InstructionType, ParsedEventsInfo>)
+    const parsed = (ix as SolanaParsedEvent<InstructionType, ParsedEventsInfo>)
       .parsed
 
     const id = `${txContext.tx.signature}${

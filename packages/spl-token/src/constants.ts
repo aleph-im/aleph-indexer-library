@@ -1,6 +1,5 @@
-import { constants } from '@aleph-indexer/core'
+import { TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID_PK } from '@aleph-indexer/solana'
 
-const { TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID_PK } = constants
 export { TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID_PK }
 
 export const ALEPH_MINT_ADDRESS = 'CsZ5LZkDS7h9TDKjrbL7VAwQZ9nsRu8vJLhRYfmGaN8K'

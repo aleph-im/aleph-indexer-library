@@ -7,8 +7,8 @@ import {
   GraphQLInterfaceType,
   GraphQLInt,
 } from 'graphql'
-import { GraphQLLong } from '@aleph-indexer/core'
-import { GraphQLBigNumber, TokenType } from '@aleph-indexer/core'
+import { GraphQLLong, GraphQLBigNumber } from '@aleph-indexer/core'
+import { TokenType } from '@aleph-indexer/solana'
 import { SPLTokenEventType } from '../types.js'
 
 // ------------------- TOKENS --------------------------

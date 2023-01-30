@@ -62,7 +62,7 @@ export const ACCOUNTS_DATA_LAYOUT: Record<
 
   let ixLayouts = ''
   if (instructionsView && instructionsView.instructions.length > 0) {
-    ixLayouts += `import { EventBase } from '@aleph-indexer/core'
+    ixLayouts += `import { EventBase } from '@aleph-indexer/framework'
 import * as solita from './solita/index.js'
 `
     for (const otherImport of instructionsView.imports.otherImports) {
