@@ -11,9 +11,6 @@ ARG INDEXER
 ENV INDEXER=$INDEXER
 WORKDIR /app
 
-COPY package*.json ./
-
-COPY --from=appbuild /app/node_modules ./node_modules
 COPY --from=appbuild /app/packages/${INDEXER}/dist ./packages/${INDEXER}/dist
 COPY --from=appbuild /app/packages/${INDEXER}/node_modules ./packages/${INDEXER}/node_modules
 COPY --from=appbuild /app/cmd.sh ./cmd.sh
