@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  indexer:
+    image: indexer-framework:latest
+    volumes:
+      - /opt/indexer.data:/app/data:rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - INDEXER=${INDEXER}
+      - LENDING_ID=${LENDING_ID}
+      - SPL_TOKEN_MINTS=${SPL_TOKEN_MINTS}
+      - SPL_TOKEN_ACCOUNTS=${SPL_TOKEN_ACCOUNTS}
+      - SOLANA_RPC=${SOLANA_RPC}
+      - INDEXER_DATA_PATH=${INDEXER_DATA_PATH}
+      - INDEXER_INSTANCES=${INDEXER_INSTANCES}
+      # - INDEXER_TCP_PORT=7900
+      # ports:
+      #   - 7900:7900
+      #   - 7901:7901
+    network_mode: bridge

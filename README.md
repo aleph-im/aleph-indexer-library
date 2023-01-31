@@ -30,22 +30,23 @@ There are three way's to create your indexer after you create a new project:
 - Label your PR with the `deploy` tag.
 - The GitHub action will be triggered, and you will be able to download the final root filesystem of your indexer, ready to be pushed to Aleph network.
 - You will find this rootfs file inside `Actions` -> `"Name of your last commit"` -> `Artifacts` -> `rootfs.squashfs`.
-- Download it, **upload this `rootfs.squashfs` runtime file to IPFS, pin it,** and you will be ready to proceed with the deployment.
+- This `rootfs.squashfs` runtime file will be used for the deployment.
 
 ### Deploying with GitHub Actions
 
 **_Using this method you will need to store you wallet private key's inside GitHub Secrets._**
 
 - Go to repository `Secrets` tab and add a new one like `WALLET_PRIVATE_KEY`.
-- Inside `.github/workflows/main.yml` file, uncomment the last action that is commented and ensure to replace `XXXXXX` with the IPFS hash of your `rootfs.squashfs` file uploaded:
+- Inside `.github/workflows/main.yml` file, uncomment the last action that is commented and ensure to replace `https://XXXXXXXXX/docker-compose.yml` with the URL of your `docker-compose.yml`
+file that you will use and also replace `https://XXXXXXXXX/.env` with the URL of your `.env` file to use :
 ```yml
 - uses: aleph-im/aleph-github-actions/publish-runtime@main
   id: publish-runtime
   with:
-    fs_path: ./rootfs.squashfs
+    runtime_filename: rootfs.squashfs
     private-key: ${{ secrets.WALLET_PRIVATE_KEY }}
-    runtime_hash: XXXXXX
-    indexer: spl-lending
+    docker_compose_url: https://XXXXXXXXX/docker-compose.yml
+    env_url: https://XXXXXXXXX/.env
 ```
 - Pushing this new changes with a PR or a simple commit to the repository, the GitHub action will be triggered.
 - Once the action finishes successfully, inside `Actions` -> `"Name of your last commit"` -> `Generate runtime` job -> `Publish runtime` step, you will be able to see the VM address:
@@ -65,12 +66,20 @@ https://aleph.sh/vm/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```shell
 aleph pin RUNTIME_HASH --private-key WALLET_PRIVATE_KEY
 ```
+- Get the `item_hash` field of the resulting message. We will use it in the next steps as `RUNTIME_ITEM_HASH`
 - Download the program files in the current directory through [here](https://github.com/aleph-im/aleph-github-actions/tree/main/publish-runtime).
-- Deploy the program inside a persistent VM at Aleph network (changing INDEXER by your indexer name):
+- Enter the folder just downloaded:
 ```shell
-aleph program ./program "run.sh INDEXER" --persistent --private-key WALLET_PRIVATE_KEY --runtime RUNTIME_HASH
+cd publish-runtime
 ```
+- Replace inside `program` folder the `.env` and `docker_compose.yml` files with the needed for your indexer. You can
+find some example here [here](https://github.com/aleph-im/aleph-github-actions/tree/main/publish-runtime/examples)
+- Deploy the program inside a persistent VM at Aleph network passing the needed parameters:
+```shell
+aleph program ./program "run.sh" --persistent --private-key WALLET_PRIVATE_KEY --runtime RUNTIME_ITEM_HASH
+```
+- When the console prompt to add a persistent volume, press `y` and specify the volume parameters.
 - Once command finishes, you will be able to see the VM address:
 ```
-https://aleph-vm-lab.aleph.cloud/vm/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+https://aleph.sh/vm/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```

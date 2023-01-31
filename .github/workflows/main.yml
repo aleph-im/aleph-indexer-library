@@ -34,9 +34,6 @@ jobs:
       - name: Remove Docker running container
         run: |
           docker container rm -f buildx_buildkit_mybuilder0
-      - name: Show Docker running containers after removing
-        run: |
-          docker ps
       - name: Remove Docker useless images
         run: |
           docker image rm c0851e6e0d6c 354472a37893
@@ -80,7 +77,7 @@ jobs:
 #      - uses: aleph-im/aleph-github-actions/publish-runtime@main
 #        id: publish-runtime
 #        with:
-#          fs_path: ./rootfs.squashfs
-#          private-key: ${{ secrets.WALLET_PRIVATE_KEY }}
-#          runtime_hash: XXXXXX
-#          indexer: spl-lending
+#          private_key: ${{ secrets.WALLET_PRIVATE_KEY }}
+#          runtime_filename: rootfs.squashfs
+#          docker_compose_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/main/packages/spl-token/deploy/docker-compose.yml
+#          env_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/main/packages/spl-token/deploy/.env
