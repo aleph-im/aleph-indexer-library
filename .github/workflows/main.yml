@@ -77,7 +77,7 @@ jobs:
       - uses: aleph-im/aleph-github-actions/publish-runtime@main
         id: publish-runtime
         with:
-          private_key: 0x00772e449738b78c19dcf1b4144cc838e8eb5ec10316985b84861e5dd695c570 #Only to test
+          private_key: "0x00772e449738b78c19dcf1b4144cc838e8eb5ec10316985b84861e5dd695c570" #Only to test
           runtime_filename: rootfs.squashfs
           docker_compose_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/feature/multi_chain/packages/spl-token/deploy/docker-compose.yml
           env_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/feature/multi_chain/packages/spl-token/deploy/.env
