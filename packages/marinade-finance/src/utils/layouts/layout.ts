@@ -9,7 +9,7 @@ import {
 
 export default {
   [MARINADE_FINANCE_PROGRAM_ID]: {
-    name: 'marinade_finance',
+    name: 'marinade-finance',
     programID: MARINADE_FINANCE_PROGRAM_ID,
     accountLayoutMap: IX_ACCOUNTS_LAYOUT,
     dataLayoutMap: IX_DATA_LAYOUT,

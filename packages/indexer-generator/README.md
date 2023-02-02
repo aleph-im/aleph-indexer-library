@@ -13,11 +13,11 @@ You can run the indexer generator (from solana-indexer-library's root):
     - Move a copy of the idl to the path: solana-indexer-library/packages/indexer-generator/idl
     - Run the npm script generate, including the idl name as argument:
       ```bash
-      npm run generate marinade_finance
+      npm run generate marinade-finance
       ```
     - Recommended to include as a second argument the address of your program:
       ```bash
-      npm run generate marinade_finance MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD
+      npm run generate marinade-finance MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD
       ``` 
   - Providing your program address:
       For this option you need to have anchor installed and your program published on [apr](https://www.apr.dev/)
@@ -34,7 +34,7 @@ npm run generate MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD
 - Run the indexer:
 ```bash
 npm i && npm run build
-npm run start marinade_finance
+npm run start marinade-finance
 ```
 
 If you wait for a moment you will see a message warning you that it is now running a GraphQL server on http://localhost:8080.

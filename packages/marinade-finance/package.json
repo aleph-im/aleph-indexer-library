@@ -1,5 +1,5 @@
 {
-  "name": "@aleph-indexer/marinade_finance",
+  "name": "@aleph-indexer/marinade-finance",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",

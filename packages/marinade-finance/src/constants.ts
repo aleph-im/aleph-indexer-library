@@ -2,7 +2,7 @@ import { PublicKey } from '@solana/web3.js'
 import { config } from '@aleph-indexer/core'
 
 export enum ProgramName {
-  MarinadeFinance = 'marinade_finance',
+  MarinadeFinance = 'marinade-finance',
 }
 
 const DAY = 1000 * 60 * 60 * 24

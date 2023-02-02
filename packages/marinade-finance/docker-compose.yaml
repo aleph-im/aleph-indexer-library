@@ -1,7 +1,7 @@
 version: '2'
 
 services:
-  marinade_finance:
+  marinade-finance:
     build: ../..
     volumes:
       - ~/indexer.data:/app/data:rw
@@ -11,9 +11,9 @@ services:
       - ../../.env
       - ./.env
     environment:
-      - INDEXER=marinade_finance
-      - LETSENCRYPT_HOST=marinade_finance.api.aleph.cloud
-      - VIRTUAL_HOST=marinade_finance.api.aleph.cloud
+      - INDEXER=marinade-finance
+      - LETSENCRYPT_HOST=marinade-finance.api.aleph.cloud
+      - VIRTUAL_HOST=marinade-finance.api.aleph.cloud
       - VIRTUAL_PORT=8080
       - SOLANA_RPC=
     network_mode: bridge
