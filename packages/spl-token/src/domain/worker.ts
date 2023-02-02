@@ -6,10 +6,11 @@ import {
   createStatsTimeSeriesDAL,
   IndexerDomainContext,
   IndexerWorkerDomain,
+  ParserContext,
 } from '@aleph-indexer/framework'
 import {
   SolanaIndexerWorkerDomainI,
-  SolanaInstructionContext,
+  SolanaParsedInstructionContext,
 } from '@aleph-indexer/solana'
 import {
   createEventParser,
@@ -133,19 +134,22 @@ export default class WorkerDomain
     return await mint.getTokenHoldings(filters)
   }
 
-  async solanaFilterInstructions(
-    ixsContext: SolanaInstructionContext[],
-  ): Promise<SolanaInstructionContext[]> {
-    return ixsContext.filter(({ ix }) => isSPLTokenInstruction(ix))
+  async solanaFilterInstruction(
+    context: ParserContext,
+    entity: SolanaParsedInstructionContext,
+  ): Promise<boolean> {
+    return isSPLTokenInstruction(entity.instruction)
   }
 
   async solanaIndexInstructions(
-    ixsContext: SolanaInstructionContext[],
+    context: { account: string; startDate: number; endDate: number },
+    entities: SolanaParsedInstructionContext[],
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
     const works: PendingWork<MintAccount>[] = []
-    const promises = ixsContext.map(async (ix) => {
-      const account = ix.txContext.parserContext.account
+
+    const promises = entities.map(async (ix) => {
+      const account = context.account
       if (this.mints[account]) {
         const parsedIx = this.mintParser.parse(ix, account)
         if (parsedIx) {
@@ -192,7 +196,7 @@ export default class WorkerDomain
 
     await Promise.all(promises)
 
-    console.log(`indexing ${ixsContext.length} parsed ixs`)
+    console.log(`indexing ${entities.length} parsed ixs`)
 
     if (parsedEvents.length > 0) {
       await this.eventDAL.save(parsedEvents)

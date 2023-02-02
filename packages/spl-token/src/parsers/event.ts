@@ -1,6 +1,6 @@
 import {
   getTokenBalance,
-  SolanaInstructionContext,
+  SolanaParsedInstructionContext,
   solanaPrivateRPCRoundRobin,
 } from '@aleph-indexer/solana'
 import { ParsedAccountData, PublicKey } from '@solana/web3.js'
@@ -21,26 +21,26 @@ export class EventParser {
   ) {}
 
   async parse(
-    ixCtx: SolanaInstructionContext,
+    ixCtx: SolanaParsedInstructionContext,
   ): Promise<SPLTokenEvent | undefined> {
-    const { ix, parentIx, txContext } = ixCtx
-    const { tx: parentTx } = txContext
+    const { instruction, parentInstruction, parentTransaction } = ixCtx
+    const parsed = (instruction as SLPTokenRawEvent).parsed
 
-    const parsed = (ix as SLPTokenRawEvent).parsed
+    const id = `${parentTransaction.signature}${
+      parentInstruction
+        ? `:${parentInstruction.index.toString().padStart(2, '0')}`
+        : ''
+    }:${instruction.index.toString().padStart(2, '0')}`
 
-    const id = `${parentTx.signature}${
-      parentIx ? `:${parentIx.index.toString().padStart(2, '0')}` : ''
-    }:${ix.index.toString().padStart(2, '0')}`
-
-    const timestamp = parentTx.blockTime
-      ? parentTx.blockTime * 1000
-      : parentTx.slot
+    const timestamp = parentTransaction.blockTime
+      ? parentTransaction.blockTime * 1000
+      : parentTransaction.slot
     const type = parsed.type
 
     switch (type) {
       case SPLTokenEventType.MintTo: {
         const account = parsed.info.account
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint, owner } = await this.getMintAndOwner(account)
 
         return {
@@ -56,7 +56,7 @@ export class EventParser {
       }
       case SPLTokenEventType.MintToChecked: {
         const { account, tokenAmount } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint, owner } = await this.getMintAndOwner(account)
 
         return {
@@ -72,7 +72,7 @@ export class EventParser {
       }
       case SPLTokenEventType.Burn: {
         const { account, amount } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint, owner } = await this.getMintAndOwner(account)
 
         return {
@@ -88,7 +88,7 @@ export class EventParser {
       }
       case SPLTokenEventType.BurnChecked: {
         const { account, tokenAmount } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint, owner } = await this.getMintAndOwner(account)
 
         return {
@@ -106,7 +106,7 @@ export class EventParser {
       case SPLTokenEventType.InitializeAccount2:
       case SPLTokenEventType.InitializeAccount3: {
         const { account, owner, mint } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
 
         return {
           id,
@@ -123,7 +123,7 @@ export class EventParser {
         const owner =
           'owner' in parsed.info ? parsed.info.owner : parsed.info.multisigOwner
 
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint } = await this.getMintAndOwner(account)
 
         return {
@@ -139,10 +139,13 @@ export class EventParser {
       }
       case SPLTokenEventType.Transfer: {
         const account = parsed.info.source
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
 
         const toAccount = parsed.info.destination
-        const toBalance = getTokenBalance(parentTx, toAccount) as string
+        const toBalance = getTokenBalance(
+          parentTransaction,
+          toAccount,
+        ) as string
 
         const { mint } = await this.getMintAndOwner(account)
         const { owner: toOwner } = await this.getMintAndOwner(toAccount)
@@ -168,10 +171,13 @@ export class EventParser {
       }
       case SPLTokenEventType.TransferChecked: {
         const account = parsed.info.source
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
 
         const toAccount = parsed.info.destination
-        const toBalance = getTokenBalance(parentTx, toAccount) as string
+        const toBalance = getTokenBalance(
+          parentTransaction,
+          toAccount,
+        ) as string
 
         const { mint } = await this.getMintAndOwner(account)
         const { owner: toOwner } = await this.getMintAndOwner(toAccount)
@@ -192,7 +198,7 @@ export class EventParser {
       }
       case SPLTokenEventType.SetAuthority: {
         const { account, authority, authorityType, newAuthority } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint, owner } = await this.getMintAndOwner(account)
 
         return {
@@ -209,7 +215,7 @@ export class EventParser {
       }
       case SPLTokenEventType.Approve: {
         const { source: account, owner, delegate, amount } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint } = await this.getMintAndOwner(account)
 
         return {
@@ -226,7 +232,7 @@ export class EventParser {
       }
       case SPLTokenEventType.ApproveChecked: {
         const { source: account, owner, delegate, tokenAmount } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint } = await this.getMintAndOwner(account)
 
         return {
@@ -243,7 +249,7 @@ export class EventParser {
       }
       case SPLTokenEventType.Revoke: {
         const { source: account, owner } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint } = await this.getMintAndOwner(account)
 
         return {
@@ -258,7 +264,7 @@ export class EventParser {
       }
       case SPLTokenEventType.SyncNative: {
         const { account } = parsed.info
-        const balance = getTokenBalance(parentTx, account) as string
+        const balance = getTokenBalance(parentTransaction, account) as string
         const { mint, owner } = await this.getMintAndOwner(account)
 
         return {

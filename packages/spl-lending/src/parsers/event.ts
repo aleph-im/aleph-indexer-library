@@ -5,7 +5,7 @@ import {
   getSubInstructions,
   getTokenBalance,
   getTransferedAmount,
-  SolanaInstructionContext,
+  SolanaParsedInstructionContext,
   SolanaParsedEvent,
   bufferLayouts,
 } from '@aleph-indexer/solana'
@@ -36,20 +36,22 @@ import {
 const { isMaxU64 } = bufferLayouts
 
 export class EventParser {
-  parse(ixCtx: SolanaInstructionContext): LendingEvent {
-    const { ix, parentIx, txContext } = ixCtx
-    const { tx: parentTx } = txContext
+  parse(ixCtx: SolanaParsedInstructionContext): LendingEvent {
+    const { instruction, parentInstruction, parentTransaction } = ixCtx
 
-    const parsed = (ix as SolanaParsedEvent<LendingEventType, LendingEventInfo>)
-      .parsed
+    const parsed = (
+      instruction as SolanaParsedEvent<LendingEventType, LendingEventInfo>
+    ).parsed
 
-    const id = `${parentTx.signature}${
-      parentIx ? `:${parentIx.index.toString().padStart(2, '0')}` : ''
-    }:${ix.index.toString().padStart(2, '0')}`
+    const id = `${parentTransaction.signature}${
+      parentInstruction
+        ? `:${parentInstruction.index.toString().padStart(2, '0')}`
+        : ''
+    }:${instruction.index.toString().padStart(2, '0')}`
 
-    const timestamp = parentTx.blockTime
-      ? parentTx.blockTime * 1000
-      : parentTx.slot
+    const timestamp = parentTransaction.blockTime
+      ? parentTransaction.blockTime * 1000
+      : parentTransaction.slot
 
     const baseEvent = {
       ...parsed.info,
@@ -79,7 +81,11 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(
+              parentTransaction,
+              info.reserveLiquidityVault,
+              true,
+            ) || 0,
           )
           return {
             ...baseEvent,
@@ -106,7 +112,11 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(
+              parentTransaction,
+              info.reserveLiquidityVault,
+              true,
+            ) || 0,
           )
           return {
             ...baseEvent,
@@ -160,7 +170,11 @@ export class EventParser {
               subIxs,
             )
             const reserveLiquidityAmount = new BN(
-              getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+              getTokenBalance(
+                parentTransaction,
+                info.reserveLiquidityVault,
+                true,
+              ) || 0,
             )
             return {
               ...baseEvent,
@@ -188,7 +202,11 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(
+              parentTransaction,
+              info.reserveLiquidityVault,
+              true,
+            ) || 0,
           )
           return {
             ...baseEvent,
@@ -210,7 +228,11 @@ export class EventParser {
             )
           }
           const reserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.reserveLiquidityVault, true) || 0,
+            getTokenBalance(
+              parentTransaction,
+              info.reserveLiquidityVault,
+              true,
+            ) || 0,
           )
           return {
             ...baseEvent,
@@ -234,8 +256,11 @@ export class EventParser {
             subIxs,
           )
           const repayReserveLiquidityAmount = new BN(
-            getTokenBalance(parentTx, info.repayReserveLiquidityVault, true) ||
-              0,
+            getTokenBalance(
+              parentTransaction,
+              info.repayReserveLiquidityVault,
+              true,
+            ) || 0,
           )
           return {
             ...baseEvent,
