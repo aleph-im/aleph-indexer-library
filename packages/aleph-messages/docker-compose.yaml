@@ -1,0 +1,19 @@
+version: '2'
+
+services:
+  aleph-messages:
+    build: ../..
+    volumes:
+      - ~/indexer.data:/app/data:rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    env_file:
+      - ../../.env
+      - ./.env
+    environment:
+      - INDEXER=messages
+      - LETSENCRYPT_HOST=messages.api.aleph.cloud
+      - VIRTUAL_HOST=messages.api.aleph.cloud
+      - VIRTUAL_PORT=8081
+      - SOLANA_RPC=http://solrpc1.aleph.cloud:7725/
+    network_mode: bridge

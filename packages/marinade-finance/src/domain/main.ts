@@ -15,7 +15,7 @@ import {
   MarinadeFinanceAccountData,
   MarinadeFinanceAccountInfo,
 } from '../types.js'
-import MarinadeFinanceDiscoverer from './discoverer/marinade_finance.js'
+import MarinadeFinanceDiscoverer from './discoverer/marinade-finance.js'
 
 export default class MainDomain
   extends IndexerMainDomain

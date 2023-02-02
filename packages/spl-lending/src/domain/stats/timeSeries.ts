@@ -1,6 +1,7 @@
 import {
   AccountTimeSeriesStatsManager,
   Blockchain,
+  IndexableEntityType,
   IndexerMsClient,
   StatsStateStorage,
   StatsTimeSeriesStorage,
@@ -53,6 +54,7 @@ export async function createAccountStats(
     new AccountTimeSeriesStatsManager<LendingReserveStats>(
       {
         blockchainId,
+        type: IndexableEntityType.Transaction,
         account,
         series: [LendingTimeSeries],
         aggregate(args) {
