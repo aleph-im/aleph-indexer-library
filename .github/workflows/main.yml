@@ -24,7 +24,7 @@ jobs:
           tags: indexer-framework:latest
           outputs: type=docker,dest=/tmp/indexer-framework.tar
           build-args: |
-            INDEXER=spl-token
+            INDEXER=XXXXXX
       - name: Load image
         run: |
           docker load --input /tmp/indexer-framework.tar
@@ -74,10 +74,10 @@ jobs:
           name: aleph-docker-runtime-rootfs
           path: rootfs.squashfs
           retention-days: 1
-      - uses: aleph-im/aleph-github-actions/publish-runtime@main
-        id: publish-runtime
-        with:
-          private_key: ${{ secrets.WALLET_PRIVATE_KEY }}
-          runtime_filename: rootfs.squashfs
-          docker_compose_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/feature/multi_chain/packages/spl-token/deploy/docker-compose.yml
-          env_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/feature/multi_chain/packages/spl-token/deploy/.env
+#      - uses: aleph-im/aleph-github-actions/publish-runtime@main
+#        id: publish-runtime
+#        with:
+#          private_key: ${{ secrets.WALLET_PRIVATE_KEY }}
+#          runtime_filename: rootfs.squashfs
+#          docker_compose_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/main/packages/spl-token/deploy/docker-compose.yml
+#          env_url: https://raw.githubusercontent.com/aleph-im/solana-indexer-library/main/packages/spl-token/deploy/.env
