@@ -3,7 +3,10 @@ import { ViewInstructions } from './types.js'
 export function renderParsersFiles(
   instructions: ViewInstructions | undefined,
 ): string[] {
-  let event = `import { InstructionContextV1, AlephParsedEvent } from '@aleph-indexer/core'
+  let event = `import {
+  SolanaInstructionContext,
+  SolanaParsedEvent,
+} from '@aleph-indexer/solana'
 
 import {
   ParsedEvents,
@@ -21,9 +24,9 @@ import {
 } from '../utils/layouts/index.js'
 
 export class EventParser {
-  parse(ixCtx: InstructionContextV1): ParsedEvents {
+  parse(ixCtx: SolanaInstructionContext): ParsedEvents {
     const { ix, parentIx, txContext } = ixCtx
-    const parsed = (ix as AlephParsedEvent<InstructionType, ParsedEventsInfo>)
+    const parsed = (ix as SolanaParsedEvent<InstructionType, ParsedEventsInfo>)
       .parsed
 
     const id = \`\${txContext.tx.signature}\${

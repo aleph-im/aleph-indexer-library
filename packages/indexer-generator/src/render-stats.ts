@@ -8,12 +8,13 @@ export function renderStatsFiles(
   const NAME = filename.toUpperCase()
 
   const timeSeries = `import {
-    AccountTimeSeriesStatsManager,
-    IndexerMsI,
-    StatsStateStorage,
-    StatsTimeSeriesStorage,
-    TimeFrame,
-    TimeSeriesStats,
+  AccountTimeSeriesStatsManager,
+  Blockchain,
+  IndexerMsClient,
+  StatsStateStorage,
+  StatsTimeSeriesStorage,
+  TimeFrame,
+  TimeSeriesStats,
 } from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../../dal/event.js'
 import { ParsedEvents } from '../../utils/layouts/index.js'
@@ -22,12 +23,13 @@ import statsAggregator from './statsAggregator.js'
 import accessAggregator from './timeSeriesAggregator.js'
 
 export async function createAccountStats(
-    account: string,
-    indexerApi: IndexerMsI,
-    eventDAL: EventStorage,
-    statsStateDAL: StatsStateStorage,
-    statsTimeSeriesDAL: StatsTimeSeriesStorage,
-  ): Promise<AccountTimeSeriesStatsManager<${Name}AccountStats>> {
+  blockchainId: Blockchain,
+  account: string,
+  indexerApi: IndexerMsClient,
+  eventDAL: EventStorage,
+  statsStateDAL: StatsStateStorage,
+  statsTimeSeriesDAL: StatsTimeSeriesStorage,
+): Promise<AccountTimeSeriesStatsManager<${Name}AccountStats>> {
     
   // @note: this aggregator is used to aggregate usage stats for the account
   const accessTimeSeries = new TimeSeriesStats<ParsedEvents, AccessTimeStats>(
@@ -57,11 +59,12 @@ export async function createAccountStats(
 
   return new AccountTimeSeriesStatsManager<${Name}AccountStats>(
     {
-        account,
-        series: [accessTimeSeries],  // place your other aggregated stats here
-        aggregate(args) {
-          return statsAggregator.aggregate(args)
-        },
+      blockchainId,
+      account,
+      series: [accessTimeSeries],  // place your other aggregated stats here
+      aggregate(args) {
+        return statsAggregator.aggregate(args)
+      },
     },
     indexerApi,
     statsStateDAL,
