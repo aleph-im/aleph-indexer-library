@@ -17,9 +17,9 @@ async function main() {
   const natsUrl = config.INDEXER_NATS_URL || undefined
 
   const projectId = config.INDEXER_NAMESPACE || 'aleph-messages'
-  const supportedBlockchains = (
-    config.INDEXER_FRAMEWORK_BLOCKCHAINS || 'ethereum'
-  ).split(',') as Blockchain[]
+  const supportedBlockchains = (config.INDEXER_BLOCKCHAINS || 'ethereum').split(
+    ',',
+  ) as Blockchain[]
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const transport =
     (config.INDEXER_TRANSPORT as TransportType) || TransportType.LocalNet
