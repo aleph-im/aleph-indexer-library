@@ -13,7 +13,7 @@ services:
     ports:
       - 8081:8081
     environment:
-      - INDEXER=messages
+      - INDEXER=aleph-messages
       - LETSENCRYPT_HOST=messages.api.aleph.cloud
       - VIRTUAL_HOST=messages.api.aleph.cloud
       - VIRTUAL_PORT=8081
