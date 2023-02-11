@@ -1,6 +1,13 @@
-import { GraphQLFloat, GraphQLInt, GraphQLBoolean } from 'graphql'
+import {
+  GraphQLFloat,
+  GraphQLInt,
+  GraphQLBoolean,
+  GraphQLNonNull,
+} from 'graphql'
+import { GraphQLBlockchain } from '@aleph-indexer/framework'
 
 export const MessageEventQueryArgs = {
+  blockchain: { type: new GraphQLNonNull(GraphQLBlockchain) },
   startDate: { type: GraphQLFloat },
   endDate: { type: GraphQLFloat },
   startHeight: { type: GraphQLFloat },
@@ -11,6 +18,7 @@ export const MessageEventQueryArgs = {
 }
 
 export const SyncEventQueryArgs = {
+  blockchain: { type: new GraphQLNonNull(GraphQLBlockchain) },
   startDate: { type: GraphQLFloat },
   endDate: { type: GraphQLFloat },
   startHeight: { type: GraphQLFloat },

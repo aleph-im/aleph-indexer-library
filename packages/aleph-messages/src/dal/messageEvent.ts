@@ -4,8 +4,8 @@ import { MessageEvent } from '../types.js'
 export type MessageEventStorage = EntityStorage<MessageEvent>
 
 export enum MessageEventDALIndex {
-  Timestamp = 'timestamp',
-  Height = 'height',
+  BlockchainTimestamp = 'blockchain_timestamp',
+  BlockchainHeight = 'blockchain_height',
 }
 
 const idKey = {
@@ -13,13 +13,8 @@ const idKey = {
   length: EntityStorage.VariableLength,
 }
 
-const addressKey = {
-  get: (e: MessageEvent) => e.address,
-  length: EntityStorage.EthereumAddressLength,
-}
-
-const typeKey = {
-  get: (e: MessageEvent) => e.type,
+const blockchainKey = {
+  get: (e: MessageEvent) => e.blockchain,
   length: EntityStorage.VariableLength,
 }
 
@@ -41,12 +36,12 @@ export function createMessageEventDAL(path: string): MessageEventStorage {
     key: [idKey],
     indexes: [
       {
-        name: MessageEventDALIndex.Timestamp,
-        key: [timestampKey],
+        name: MessageEventDALIndex.BlockchainTimestamp,
+        key: [blockchainKey, timestampKey],
       },
       {
-        name: MessageEventDALIndex.Height,
-        key: [heightKey],
+        name: MessageEventDALIndex.BlockchainHeight,
+        key: [blockchainKey, heightKey],
       },
     ],
   })

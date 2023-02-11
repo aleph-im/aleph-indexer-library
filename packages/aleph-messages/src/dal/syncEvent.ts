@@ -4,8 +4,8 @@ import { SyncEvent } from '../types.js'
 export type SyncEventStorage = EntityStorage<SyncEvent>
 
 export enum SyncEventDALIndex {
-  Timestamp = 'timestamp',
-  Height = 'height',
+  BlockchainTimestamp = 'blockchain_timestamp',
+  BlockchainHeight = 'blockchain_height',
 }
 
 const idKey = {
@@ -13,9 +13,9 @@ const idKey = {
   length: EntityStorage.VariableLength,
 }
 
-const addressKey = {
-  get: (e: SyncEvent) => e.address,
-  length: EntityStorage.EthereumAddressLength,
+const blockchainKey = {
+  get: (e: SyncEvent) => e.blockchain,
+  length: EntityStorage.VariableLength,
 }
 
 const timestampKey = {
@@ -36,12 +36,12 @@ export function createSyncEventDAL(path: string): SyncEventStorage {
     key: [idKey],
     indexes: [
       {
-        name: SyncEventDALIndex.Timestamp,
-        key: [timestampKey],
+        name: SyncEventDALIndex.BlockchainTimestamp,
+        key: [blockchainKey, timestampKey],
       },
       {
-        name: SyncEventDALIndex.Height,
-        key: [heightKey],
+        name: SyncEventDALIndex.BlockchainHeight,
+        key: [blockchainKey, heightKey],
       },
     ],
   })

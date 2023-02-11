@@ -8,26 +8,31 @@ import {
 } from '../types.js'
 
 export default class MainDomain extends IndexerMainDomain {
-  protected alephMessagesContract = '0x166fd4299364B21c7567e163d85D78d2fb2f8Ad5'
-
   async init(): Promise<void> {
     await super.init()
 
     await this.indexAccounts([
       {
         blockchainId: Blockchain.Ethereum,
-        account: this.alephMessagesContract,
-        meta: undefined,
+        account: '0x166fd4299364B21c7567e163d85D78d2fb2f8Ad5',
+        index: { logs: true },
+      },
+      {
+        blockchainId: Blockchain.Bsc,
+        account: '0xdF270752C8C71D08acbae4372687DA65AECe2D5D',
         index: { logs: true },
       },
     ])
   }
 
   async getMessageEvents(args: MessageEventQueryArgs): Promise<MessageEvent[]> {
+    const { blockchain } = args
+    const [alephMessagesSC] = this.accounts[blockchain].values()
+
     const response = await this.context.apiClient
-      .useBlockchain(Blockchain.Ethereum)
+      .useBlockchain(blockchain)
       .invokeDomainMethod({
-        account: this.alephMessagesContract,
+        account: alephMessagesSC,
         method: 'getMessageEvents',
         args: [args],
       })
@@ -36,10 +41,13 @@ export default class MainDomain extends IndexerMainDomain {
   }
 
   async getSyncEvents(args: SyncEventQueryArgs): Promise<SyncEvent[]> {
+    const { blockchain } = args
+    const [alephMessagesSC] = this.accounts[blockchain].values()
+
     const response = await this.context.apiClient
-      .useBlockchain(Blockchain.Ethereum)
+      .useBlockchain(blockchain)
       .invokeDomainMethod({
-        account: this.alephMessagesContract,
+        account: alephMessagesSC,
         method: 'getSyncEvents',
         args: [args],
       })

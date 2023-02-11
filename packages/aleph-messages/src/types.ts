@@ -1,4 +1,7 @@
+import { Blockchain } from '@aleph-indexer/framework'
+
 export type MessageEvent = {
+  blockchain: Blockchain
   id: string
   timestamp: number
   height: number
@@ -8,6 +11,7 @@ export type MessageEvent = {
 }
 
 export type SyncEvent = {
+  blockchain: Blockchain
   id: string
   timestamp: number
   height: number
@@ -21,8 +25,10 @@ export enum EventType {
 }
 
 export type MessageEventQueryArgs = {
+  // @todo: Implement this query filters
   // address?: string
   // types?: string[]
+  blockchain: Blockchain
   startDate?: number
   endDate?: number
   startHeight?: number

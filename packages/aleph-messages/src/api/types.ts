@@ -6,9 +6,11 @@ import {
 } from 'graphql'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import { GraphQLLong } from '@aleph-indexer/core'
+import { GraphQLBlockchain } from '@aleph-indexer/framework'
 
 const commonFields = {
   id: { type: new GraphQLNonNull(GraphQLString) },
+  blockchain: { type: new GraphQLNonNull(GraphQLBlockchain) },
   timestamp: { type: new GraphQLNonNull(GraphQLLong) },
   address: { type: new GraphQLNonNull(GraphQLString) },
   height: { type: new GraphQLNonNull(GraphQLLong) },

@@ -5,11 +5,13 @@ import {
   IndexerWorkerDomain,
   AccountIndexerRequestArgs,
   ParserContext,
+  Blockchain,
 } from '@aleph-indexer/framework'
 import {
   EthereumLogIndexerWorkerDomainI,
   EthereumParsedLog,
 } from '@aleph-indexer/ethereum'
+import { BscLogIndexerWorkerDomainI, BscParsedLog } from '@aleph-indexer/bsc'
 import {
   EventType,
   MessageEvent,
@@ -23,7 +25,7 @@ import { EventParser } from './parser.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements EthereumLogIndexerWorkerDomainI
+  implements EthereumLogIndexerWorkerDomainI, BscLogIndexerWorkerDomainI
 {
   constructor(
     protected context: IndexerDomainContext,
@@ -44,17 +46,50 @@ export default class WorkerDomain
     context: ParserContext,
     entity: EthereumParsedLog,
   ): Promise<boolean> {
-    const eventSignature = entity.parsed?.signature
-    return (
-      eventSignature === EventType.Message || eventSignature === EventType.Sync
-    )
+    return this.filterEVMLog(Blockchain.Ethereum, context, entity)
+  }
+
+  async bscFilterLog(
+    context: ParserContext,
+    entity: EthereumParsedLog,
+  ): Promise<boolean> {
+    return this.filterEVMLog(Blockchain.Bsc, context, entity)
   }
 
   async ethereumIndexLogs(
     context: ParserContext,
     entities: EthereumParsedLog[],
   ): Promise<void> {
-    console.log('Index ethereum logs', JSON.stringify(entities, null, 2))
+    return this.indexEVMLogs(Blockchain.Ethereum, context, entities)
+  }
+
+  async bscIndexLogs(
+    context: ParserContext,
+    entities: BscParsedLog[],
+  ): Promise<void> {
+    return this.indexEVMLogs(Blockchain.Bsc, context, entities)
+  }
+
+  protected async filterEVMLog(
+    blockchainId: Blockchain,
+    context: ParserContext,
+    entity: EthereumParsedLog,
+  ): Promise<boolean> {
+    const eventSignature = entity.parsed?.signature
+
+    console.log(`Filter ${blockchainId} logs`, eventSignature)
+
+    return (
+      eventSignature === EventType.Message || eventSignature === EventType.Sync
+    )
+  }
+
+  protected async indexEVMLogs(
+    blockchainId: Blockchain,
+    context: ParserContext,
+    entities: BscParsedLog[],
+  ): Promise<void> {
+    console.log(`Index ${blockchainId} logs`, JSON.stringify(entities, null, 2))
 
     const parsedMessageEvents: MessageEvent[] = []
     const parsedSyncEvents: SyncEvent[] = []
@@ -63,10 +98,10 @@ export default class WorkerDomain
       const eventSignature = entity.parsed?.signature
 
       if (eventSignature === EventType.Message) {
-        const parsed = this.parser.parseMessageEvent(entity)
+        const parsed = this.parser.parseMessageEvent(blockchainId, entity)
         parsedMessageEvents.push(parsed)
       } else {
-        const parsed = this.parser.parseSyncEvent(entity)
+        const parsed = this.parser.parseSyncEvent(blockchainId, entity)
         parsedSyncEvents.push(parsed)
       }
     }
@@ -100,7 +135,9 @@ export default class WorkerDomain
     Args extends MessageEventQueryArgs | SyncEventQueryArgs,
     Event extends MessageEvent | SyncEvent,
   >(args: Args, dal: EntityStorage<Event>): Promise<Event[]> {
-    let { startDate, endDate, startHeight, endHeight, ...opts } = args
+    let { startDate, endDate, startHeight, endHeight, blockchain, ...opts } =
+      args
+
     opts.reverse = opts.reverse !== undefined ? opts.reverse : true
 
     let skip = opts.skip || 0
@@ -114,8 +151,12 @@ export default class WorkerDomain
       endDate = endDate !== undefined ? endDate : Date.now()
 
       events = await dal
-        .useIndex(SyncEventDALIndex.Timestamp)
-        .getAllValuesFromTo([startDate], [endDate], opts)
+        .useIndex(SyncEventDALIndex.BlockchainTimestamp)
+        .getAllValuesFromTo(
+          [blockchain, startDate],
+          [blockchain, endDate],
+          opts,
+        )
     }
 
     if (!events && (startHeight !== undefined || endDate !== undefined)) {
@@ -123,12 +164,18 @@ export default class WorkerDomain
       endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
       events = await dal
-        .useIndex(SyncEventDALIndex.Height)
-        .getAllValuesFromTo([startHeight], [endHeight], opts)
+        .useIndex(SyncEventDALIndex.BlockchainHeight)
+        .getAllValuesFromTo(
+          [blockchain, startHeight],
+          [blockchain, endHeight],
+          opts,
+        )
     }
 
     if (!events) {
-      events = await dal.getAllValues(opts)
+      events = await dal
+        .useIndex(SyncEventDALIndex.BlockchainHeight)
+        .getAllValuesFromTo([blockchain], [blockchain], opts)
     }
 
     for await (const message of events) {
