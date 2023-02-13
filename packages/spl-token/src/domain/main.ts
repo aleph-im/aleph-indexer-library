@@ -68,6 +68,7 @@ export default class MainDomain
 
         const options = {
           account,
+          blockchainId: Blockchain.Solana,
           meta: { type: SPLTokenType.Account, mint: mint },
           index: {
             transactions: {
@@ -88,6 +89,7 @@ export default class MainDomain
         await this.addToken(mint)
         const options = {
           account: mint,
+          blockchainId: Blockchain.Solana,
           meta: { type: SPLTokenType.Mint, mint },
           index: {
             transactions: {
