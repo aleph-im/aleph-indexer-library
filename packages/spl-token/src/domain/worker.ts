@@ -43,7 +43,6 @@ import {
 import { createBalanceHistoryDAL } from '../dal/balanceHistory.js'
 import { createBalanceStateDAL } from '../dal/balanceState.js'
 import { createAccountMintDAL } from '../dal/accountMints.js'
-import { createOwnerMintDAL } from '../dal/ownerMints.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -63,7 +62,6 @@ export default class WorkerDomain
     protected balanceHistoryDAL = createBalanceHistoryDAL(context.dataPath),
     protected balanceStateDAL = createBalanceStateDAL(context.dataPath),
     protected accountMintDAL = createAccountMintDAL(context.dataPath),
-    protected ownerMintDAL = createOwnerMintDAL(context.dataPath),
     protected programId = TOKEN_PROGRAM_ID,
   ) {
     super(context)
@@ -98,7 +96,6 @@ export default class WorkerDomain
           this.balanceStateDAL,
           this.balanceHistoryDAL,
           this.accountMintDAL,
-          this.ownerMintDAL
         )
       }
       await this.mints[mint].addAccount(account)

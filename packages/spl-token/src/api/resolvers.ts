@@ -24,6 +24,7 @@ export type TokenEventsFilters = {
 export type AccountHoldingsFilters = {
   mint: string
   account?: string
+  owner?: string
   startDate?: number
   endDate?: number
   gte?: string
@@ -49,12 +50,14 @@ export class APIResolver {
   async getAccountHoldings({
     mint,
     account,
+    owner,
     startDate,
     endDate,
     gte,
   }: AccountHoldingsFilters): Promise<SPLAccountHoldings[]> {
     const accountHoldings = await this.domain.getAccountHoldings(mint, {
       account,
+      owner,
       startDate,
       endDate,
       gte,

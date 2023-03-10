@@ -19,15 +19,6 @@ export type AccountEventsFilters = {
   skip?: number
 }
 
-export type OwnerEventsFilters = {
-  startDate?: number
-  endDate?: number
-  types?: string[]
-  limit?: number
-  reverse?: boolean
-  skip?: number
-}
-
 export type TokenHoldersFilters = {
   limit?: number
   skip?: number
@@ -38,6 +29,7 @@ export type TokenHoldersFilters = {
 
 export type AccountHoldingsFilters = {
   account?: string
+  owner?: string
   startDate?: number
   endDate?: number
   gte?: string
@@ -60,10 +52,5 @@ export type MintAccount = {
 
 export type AccountMint = {
   account: string
-  mint: string
-}
-
-export type OwnerMint = {
-  owner: string
   mint: string
 }

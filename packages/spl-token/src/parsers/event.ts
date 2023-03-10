@@ -147,13 +147,8 @@ export class EventParser {
           toAccount,
         ) as string
 
-        const { mint } = await this.getMintAndOwner(account)
+        const { mint, owner } = await this.getMintAndOwner(account)
         const { owner: toOwner } = await this.getMintAndOwner(toAccount)
-
-        const owner =
-          'authority' in parsed.info
-            ? parsed.info.authority
-            : parsed.info.multisigAuthority
 
         return {
           id,
@@ -179,7 +174,7 @@ export class EventParser {
           toAccount,
         ) as string
 
-        const { mint } = await this.getMintAndOwner(account)
+        const { mint, owner } = await this.getMintAndOwner(account)
         const { owner: toOwner } = await this.getMintAndOwner(toAccount)
 
         return {
@@ -189,7 +184,7 @@ export class EventParser {
           amount: parsed.info.tokenAmount.amount,
           balance,
           account,
-          owner: parsed.info.authority,
+          owner: owner,
           toBalance,
           toAccount,
           toOwner,

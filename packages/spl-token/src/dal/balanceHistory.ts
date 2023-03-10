@@ -6,6 +6,16 @@ const mappedProps = ['balance']
 
 export type AccountBalanceHistoryStorage = EntityStorage<SPLAccountBalance>
 
+const ownerKey = {
+  get: (e: SPLAccountBalance) => e.owner,
+  length: EntityStorage.AddressLength,
+}
+
+const mintKey = {
+  get: (e: SPLAccountBalance) => e.mint,
+  length: EntityStorage.AddressLength,
+}
+
 const accountKey = {
   get: (e: SPLAccountBalance) => e.account,
   length: EntityStorage.AddressLength,
@@ -23,6 +33,12 @@ export function createBalanceHistoryDAL(
     name: 'account_balance_history',
     path,
     key: [accountKey, timestampKey],
+    indexes: [
+      {
+        name: 'mint_owner',
+        key: [mintKey, ownerKey]
+      }
+    ],
     mapFn: async function (entry: { key: any; value: any }) {
       const { key, value } = entry
 
