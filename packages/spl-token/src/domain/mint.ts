@@ -129,11 +129,10 @@ export class Mint {
       await this.getMintAccounts(account)
 
     for await (const { account } of accountMints) {
-
       const balances = await this.balanceHistoryDAL.getAllFromTo(
-          [account, startDate],
-          [account, endDate],
-          opts,
+        [account, startDate],
+        [account, endDate],
+        opts,
       )
 
       for await (const { value: accountBalance } of balances) {
