@@ -1,6 +1,6 @@
 import { Blockchain } from '@aleph-indexer/framework'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
-import { MessageEvent, SyncEvent } from '../types'
+import { AlephEvent, MessageEvent, SyncEvent } from '../types'
 
 export class EventParser {
   parseMessageEvent(
@@ -37,11 +37,11 @@ export class EventParser {
   protected parseCommonSchemma(
     blockchain: Blockchain,
     entity: EthereumParsedLog,
-  ): any {
+  ): AlephEvent {
     const [rawTimestamp, address] = entity.parsed?.args || []
     const id = `${blockchain}_${entity.id}`
-    const height = entity.height
     const timestamp = this.parseTimestampBN(rawTimestamp)
+    const { height, transactionHash: transaction } = entity
 
     return {
       blockchain,
@@ -49,6 +49,7 @@ export class EventParser {
       timestamp,
       height,
       address,
+      transaction,
     }
   }
 
