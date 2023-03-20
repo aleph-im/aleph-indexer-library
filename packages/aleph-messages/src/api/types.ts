@@ -14,6 +14,7 @@ const commonFields = {
   timestamp: { type: new GraphQLNonNull(GraphQLLong) },
   address: { type: new GraphQLNonNull(GraphQLString) },
   height: { type: new GraphQLNonNull(GraphQLLong) },
+  transaction: { type: new GraphQLNonNull(GraphQLString) },
 }
 
 export const MessageEvent = new GraphQLObjectType({

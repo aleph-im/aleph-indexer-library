@@ -1,21 +1,20 @@
 import { Blockchain } from '@aleph-indexer/framework'
 
-export type MessageEvent = {
+export type AlephEvent = {
   blockchain: Blockchain
   id: string
   timestamp: number
   height: number
   address: string
+  transaction: string
+}
+
+export type MessageEvent = AlephEvent & {
   type: string
   content: string | object
 }
 
-export type SyncEvent = {
-  blockchain: Blockchain
-  id: string
-  timestamp: number
-  height: number
-  address: string
+export type SyncEvent = AlephEvent & {
   message: string | object
 }
 
