@@ -4,7 +4,6 @@ import {
   GraphQLObjectType,
   GraphQLList,
 } from 'graphql'
-import { GraphQLJSONObject } from 'graphql-type-json'
 import { GraphQLLong } from '@aleph-indexer/core'
 import { GraphQLBlockchain } from '@aleph-indexer/framework'
 
@@ -22,7 +21,7 @@ export const MessageEvent = new GraphQLObjectType({
   fields: {
     ...commonFields,
     type: { type: new GraphQLNonNull(GraphQLString) },
-    content: { type: new GraphQLNonNull(GraphQLJSONObject) },
+    content: { type: new GraphQLNonNull(GraphQLString) },
   },
 })
 
@@ -32,7 +31,7 @@ export const SyncEvent = new GraphQLObjectType({
   name: 'SyncEvent',
   fields: {
     ...commonFields,
-    message: { type: new GraphQLNonNull(GraphQLJSONObject) },
+    message: { type: new GraphQLNonNull(GraphQLString) },
   },
 })
 

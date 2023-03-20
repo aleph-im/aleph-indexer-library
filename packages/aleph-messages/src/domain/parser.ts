@@ -10,7 +10,7 @@ export class EventParser {
     const parsedEvent = this.parseCommonSchemma(blockchainId, entity)
 
     const [, , type, rawContent] = entity.parsed?.args || []
-    const content = this.parseJsonContentOrString(rawContent)
+    const content = String(rawContent)
 
     return {
       ...parsedEvent,
@@ -26,7 +26,7 @@ export class EventParser {
     const parsedEvent = this.parseCommonSchemma(blockchainId, entity)
 
     const [, , rawMessage] = entity.parsed?.args || []
-    const message = this.parseJsonContentOrString(rawMessage)
+    const message = String(rawMessage)
 
     return {
       ...parsedEvent,
@@ -51,18 +51,6 @@ export class EventParser {
       address,
       transaction,
     }
-  }
-
-  protected parseJsonContentOrString(rawContent: string): object {
-    let parsedContent: object
-
-    try {
-      parsedContent = JSON.parse(rawContent)
-    } catch (e) {
-      parsedContent = { value: String(rawContent) }
-    }
-
-    return parsedContent
   }
 
   protected parseTimestampBN(rawTimestamp: { hex: string }): number {

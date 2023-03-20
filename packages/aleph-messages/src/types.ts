@@ -11,11 +11,11 @@ export type AlephEvent = {
 
 export type MessageEvent = AlephEvent & {
   type: string
-  content: object
+  content: string
 }
 
 export type SyncEvent = AlephEvent & {
-  message: object
+  message: string
 }
 
 export enum EventType {
