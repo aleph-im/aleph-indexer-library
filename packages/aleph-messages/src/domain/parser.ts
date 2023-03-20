@@ -53,13 +53,13 @@ export class EventParser {
     }
   }
 
-  protected parseJsonContentOrString(rawContent: string): string | object {
-    let parsedContent: string | object
+  protected parseJsonContentOrString(rawContent: string): object {
+    let parsedContent: object
 
     try {
       parsedContent = JSON.parse(rawContent)
     } catch (e) {
-      parsedContent = String(rawContent)
+      parsedContent = { value: String(rawContent) }
     }
 
     return parsedContent
