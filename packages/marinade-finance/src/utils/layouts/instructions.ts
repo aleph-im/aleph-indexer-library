@@ -1,7 +1,7 @@
-import BN from 'bn.js'
-import { PublicKey } from '@solana/web3.js'
 import { EventBase } from '@aleph-indexer/framework'
 import * as solita from './solita/index.js'
+import BN from 'bn.js'
+import { PublicKey } from '@solana/web3.js'
 
 export enum InstructionType {
   Initialize = 'InitializeEvent',
@@ -15,7 +15,7 @@ export enum InstructionType {
   LiquidUnstake = 'LiquidUnstakeEvent',
   AddLiquidity = 'AddLiquidityEvent',
   RemoveLiquidity = 'RemoveLiquidityEvent',
-  SetLpParams = 'SetLpParamsEvent',
+  ConfigLp = 'ConfigLpEvent',
   ConfigMarinade = 'ConfigMarinadeEvent',
   OrderUnstake = 'OrderUnstakeEvent',
   Claim = 'ClaimEvent',
@@ -24,6 +24,7 @@ export enum InstructionType {
   UpdateDeactivated = 'UpdateDeactivatedEvent',
   DeactivateStake = 'DeactivateStakeEvent',
   EmergencyUnstake = 'EmergencyUnstakeEvent',
+  PartialUnstake = 'PartialUnstakeEvent',
   MergeStakes = 'MergeStakesEvent',
 }
 
@@ -206,14 +207,14 @@ export type RemoveLiquidityEvent = InstructionBase &
 
 /*----------------------------------------------------------------------*/
 
-export type SetLpParamsInfo = {
-  data: solita.SetLpParamsInstructionArgs
-  accounts: solita.SetLpParamsInstructionAccounts
+export type ConfigLpInfo = {
+  data: solita.ConfigLpParams
+  accounts: solita.ConfigLpInstructionAccounts
 }
 
-export type SetLpParamsEvent = InstructionBase &
-  SetLpParamsInfo & {
-    type: InstructionType.SetLpParams
+export type ConfigLpEvent = InstructionBase &
+  ConfigLpInfo & {
+    type: InstructionType.ConfigLp
   }
 
 /*----------------------------------------------------------------------*/
@@ -340,6 +341,24 @@ export type EmergencyUnstakeEvent = InstructionBase &
 
 /*----------------------------------------------------------------------*/
 
+export type PartialUnstakeEventData = {
+  stakeIndex: number
+  validatorIndex: number
+  desiredUnstakeAmount: BN
+}
+
+export type PartialUnstakeInfo = {
+  data: PartialUnstakeEventData
+  accounts: solita.PartialUnstakeInstructionAccounts
+}
+
+export type PartialUnstakeEvent = InstructionBase &
+  PartialUnstakeInfo & {
+    type: InstructionType.PartialUnstake
+  }
+
+/*----------------------------------------------------------------------*/
+
 export type MergeStakesEventData = {
   destinationStakeIndex: number
   sourceStakeIndex: number
@@ -424,8 +443,8 @@ export const IX_METHOD_CODE: Map<string, InstructionType | undefined> = new Map<
     InstructionType.RemoveLiquidity,
   ],
   [
-    Buffer.from(solita.setLpParamsInstructionDiscriminator).toString('ascii'),
-    InstructionType.SetLpParams,
+    Buffer.from(solita.configLpInstructionDiscriminator).toString('ascii'),
+    InstructionType.ConfigLp,
   ],
   [
     Buffer.from(solita.configMarinadeInstructionDiscriminator).toString(
@@ -468,6 +487,12 @@ export const IX_METHOD_CODE: Map<string, InstructionType | undefined> = new Map<
     InstructionType.EmergencyUnstake,
   ],
   [
+    Buffer.from(solita.partialUnstakeInstructionDiscriminator).toString(
+      'ascii',
+    ),
+    InstructionType.PartialUnstake,
+  ],
+  [
     Buffer.from(solita.mergeStakesInstructionDiscriminator).toString('ascii'),
     InstructionType.MergeStakes,
   ],
@@ -484,7 +509,7 @@ export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.LiquidUnstake]: solita.liquidUnstakeStruct,
   [InstructionType.AddLiquidity]: solita.addLiquidityStruct,
   [InstructionType.RemoveLiquidity]: solita.removeLiquidityStruct,
-  [InstructionType.SetLpParams]: solita.setLpParamsStruct,
+  [InstructionType.ConfigLp]: solita.configLpStruct,
   [InstructionType.ConfigMarinade]: solita.configMarinadeStruct,
   [InstructionType.OrderUnstake]: solita.orderUnstakeStruct,
   [InstructionType.Claim]: solita.claimStruct,
@@ -493,6 +518,7 @@ export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.UpdateDeactivated]: solita.updateDeactivatedStruct,
   [InstructionType.DeactivateStake]: solita.deactivateStakeStruct,
   [InstructionType.EmergencyUnstake]: solita.emergencyUnstakeStruct,
+  [InstructionType.PartialUnstake]: solita.partialUnstakeStruct,
   [InstructionType.MergeStakes]: solita.mergeStakesStruct,
 }
 
@@ -508,7 +534,7 @@ export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.LiquidUnstake]: solita.LiquidUnstakeAccounts,
   [InstructionType.AddLiquidity]: solita.AddLiquidityAccounts,
   [InstructionType.RemoveLiquidity]: solita.RemoveLiquidityAccounts,
-  [InstructionType.SetLpParams]: solita.SetLpParamsAccounts,
+  [InstructionType.ConfigLp]: solita.ConfigLpAccounts,
   [InstructionType.ConfigMarinade]: solita.ConfigMarinadeAccounts,
   [InstructionType.OrderUnstake]: solita.OrderUnstakeAccounts,
   [InstructionType.Claim]: solita.ClaimAccounts,
@@ -517,6 +543,7 @@ export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.UpdateDeactivated]: solita.UpdateDeactivatedAccounts,
   [InstructionType.DeactivateStake]: solita.DeactivateStakeAccounts,
   [InstructionType.EmergencyUnstake]: solita.EmergencyUnstakeAccounts,
+  [InstructionType.PartialUnstake]: solita.PartialUnstakeAccounts,
   [InstructionType.MergeStakes]: solita.MergeStakesAccounts,
 }
 
@@ -532,7 +559,7 @@ export type ParsedEventsInfo =
   | LiquidUnstakeInfo
   | AddLiquidityInfo
   | RemoveLiquidityInfo
-  | SetLpParamsInfo
+  | ConfigLpInfo
   | ConfigMarinadeInfo
   | OrderUnstakeInfo
   | ClaimInfo
@@ -541,6 +568,7 @@ export type ParsedEventsInfo =
   | UpdateDeactivatedInfo
   | DeactivateStakeInfo
   | EmergencyUnstakeInfo
+  | PartialUnstakeInfo
   | MergeStakesInfo
 
 export type ParsedEvents =
@@ -555,7 +583,7 @@ export type ParsedEvents =
   | LiquidUnstakeEvent
   | AddLiquidityEvent
   | RemoveLiquidityEvent
-  | SetLpParamsEvent
+  | ConfigLpEvent
   | ConfigMarinadeEvent
   | OrderUnstakeEvent
   | ClaimEvent
@@ -564,4 +592,5 @@ export type ParsedEvents =
   | UpdateDeactivatedEvent
   | DeactivateStakeEvent
   | EmergencyUnstakeEvent
+  | PartialUnstakeEvent
   | MergeStakesEvent

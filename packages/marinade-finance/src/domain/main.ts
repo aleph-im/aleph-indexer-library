@@ -138,7 +138,6 @@ export default class MainDomain
         Blockchain.Solana,
         accountAddresses,
       )
-
     const globalStats: GlobalMarinadeFinanceStats = this.getNewGlobalStats()
 
     for (const accountStats of accountsStats) {

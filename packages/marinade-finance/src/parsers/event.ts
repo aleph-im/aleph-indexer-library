@@ -18,7 +18,7 @@ import {
   LiquidUnstakeEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
-  SetLpParamsEvent,
+  ConfigLpEvent,
   ConfigMarinadeEvent,
   OrderUnstakeEvent,
   ClaimEvent,
@@ -27,6 +27,7 @@ import {
   UpdateDeactivatedEvent,
   DeactivateStakeEvent,
   EmergencyUnstakeEvent,
+  PartialUnstakeEvent,
   MergeStakesEvent,
 } from '../utils/layouts/index.js'
 
@@ -105,10 +106,10 @@ export class EventParser {
           return {
             ...baseEvent,
           } as RemoveLiquidityEvent
-        case InstructionType.SetLpParams:
+        case InstructionType.ConfigLp:
           return {
             ...baseEvent,
-          } as SetLpParamsEvent
+          } as ConfigLpEvent
         case InstructionType.ConfigMarinade:
           return {
             ...baseEvent,
@@ -141,6 +142,10 @@ export class EventParser {
           return {
             ...baseEvent,
           } as EmergencyUnstakeEvent
+        case InstructionType.PartialUnstake:
+          return {
+            ...baseEvent,
+          } as PartialUnstakeEvent
         case InstructionType.MergeStakes:
           return {
             ...baseEvent,

@@ -1,4 +1,4 @@
-import { StorageStream } from '@aleph-indexer/core'
+import { StorageStream, Utils } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,

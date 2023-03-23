@@ -11,7 +11,7 @@ const mappedBNProps: string[] = [
   'lamports',
   'msolAmount',
   'tokens',
-  'liquidityTarget',
+  'desiredUnstakeAmount',
 ]
 
 // in this vector you can include the properties of several

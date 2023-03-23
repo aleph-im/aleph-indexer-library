@@ -10,6 +10,7 @@ export function renderStatsFiles(
   const timeSeries = `import {
   AccountTimeSeriesStatsManager,
   Blockchain,
+  IndexableEntityType,
   IndexerMsClient,
   StatsStateStorage,
   StatsTimeSeriesStorage,
@@ -60,6 +61,7 @@ export async function createAccountStats(
   return new AccountTimeSeriesStatsManager<${Name}AccountStats>(
     {
       blockchainId,
+      type: IndexableEntityType.Transaction,
       account,
       series: [accessTimeSeries],  // place your other aggregated stats here
       aggregate(args) {

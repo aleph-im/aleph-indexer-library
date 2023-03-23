@@ -53,7 +53,8 @@ export default async function generate(
   toGenerate: TemplateType[],
   address?: string,
 ): Promise<void> {
-  const Name = toCamelCase(idl.name)
+  const name = dashToUnderscore(idl.name)
+  const Name = toCamelCase(name)
   if (idl.metadata.address) address = idl.metadata.address
   processIdl(idl)
 
@@ -69,7 +70,7 @@ export default async function generate(
 
   if (!existsSync(paths.projectDir)) mkdirSync(paths.projectDir)
 
-  const [docker, pkg, run, tsconfig, typesdts, cmd] = renderRootFiles(idl.name)
+  const [docker, pkg, run, tsconfig, typesdts, cmd] = renderRootFiles(name)
   writeFileSync(paths.projectFile('docker-compose.yaml'), docker)
   writeFileSync(paths.projectFile('package.json'), pkg)
   writeFileSync(paths.projectFile('run.ts'), run)
@@ -81,7 +82,7 @@ export default async function generate(
 
   const [constants, types] = renderSrcFiles(
     Name,
-    idl.name,
+    name,
     instructionsView,
     address,
   )
@@ -136,7 +137,7 @@ export default async function generate(
     txV0,
     tx,
     layoutTest,
-  ] = renderLayoutsFiles(idl.name, instructionsView, accountsView)
+  ] = renderLayoutsFiles(name, instructionsView, accountsView)
   try {
     if (accountLayouts) {
       writeFileSync(
@@ -232,7 +233,7 @@ export default async function generate(
 
   const [account, worker, mainDomain] = renderDomainFiles(
     Name,
-    idl.name,
+    name,
     accountsView,
   )
   try {
@@ -266,7 +267,7 @@ export default async function generate(
     mockDAL,
     mockIndexer,
     timeSeriesTest,
-  ] = renderStatsFiles(Name, instructionsView, idl.name)
+  ] = renderStatsFiles(Name, instructionsView, name)
   try {
     writeFileSync(
       paths.statsFile('timeSeries'),
@@ -300,10 +301,10 @@ export default async function generate(
 
   if (!existsSync(paths.discovererDir)) mkdirSync(paths.discovererDir)
 
-  const discoverer = renderDiscovererFiles(Name, idl.name)
+  const discoverer = renderDiscovererFiles(Name, name)
   try {
     writeFileSync(
-      paths.discovererFile(idl.name),
+      paths.discovererFile(name),
       format(discoverer, DEFAULT_FORMAT_OPTS),
     )
   } catch (err) {
@@ -371,6 +372,10 @@ async function generateSolitaTypeScript(paths: Paths, idl: Idl) {
   await gen.renderAndWriteTo(paths.tsSolitaDir)
 
   console.log('Success on TS generation!')
+}
+
+function dashToUnderscore(str: string) {
+  return str.replace(/-/g, '_')
 }
 
 function toCamelCase(str: string) {

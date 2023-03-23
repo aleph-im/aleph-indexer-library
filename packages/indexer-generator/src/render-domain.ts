@@ -66,11 +66,12 @@ import {
   AccountTimeSeriesStats,
   AccountStatsFilters,
   AccountStats,
+  ParserContext,
 } from '@aleph-indexer/framework'
 import {
   isParsedIx,
   SolanaIndexerWorkerDomainI,
-  SolanaInstructionContext,
+  SolanaParsedInstructionContext,
 } from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
@@ -135,20 +136,25 @@ export default class WorkerDomain
     return this.getAccountStats(account)
   }
 
-  async solanaFilterInstructions(
-    ixsContext: SolanaInstructionContext[],
-  ): Promise<SolanaInstructionContext[]> {
-    return ixsContext.filter(({ ix }) => {
-      return isParsedIx(ix) && ix.programId === this.programId
-    })
+  async solanaFilterInstruction(
+    context: ParserContext,
+    entity: SolanaParsedInstructionContext,
+  ): Promise<boolean> {
+    return (
+      isParsedIx(entity.instruction) &&
+      entity.instruction.programId === this.programId
+    )
   }
 
   async solanaIndexInstructions(
-    ixsContext: SolanaInstructionContext[],
+    context: { account: string; startDate: number; endDate: number },
+    entities: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
+    const parsedIxs = entities.map((entity) =>
+      this.eventParser.parse(entity, context),
+    )
 
-    console.log(\`indexing \${ixsContext.length} parsed ixs\`)
+    console.log(\`indexing \${entities.length} parsed ixs\`)
 
     await this.eventDAL.save(parsedIxs)
   }
@@ -165,7 +171,7 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  getAccountEventsByTime(
+  async getAccountEventsByTime(
     account: string,
     startDate: number,
     endDate: number,

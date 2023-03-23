@@ -16,10 +16,11 @@
   "license": "ISC",
   "dependencies": {
     "@aleph-indexer/core": "^1.0.33",
-    "@aleph-indexer/framework": "^1.0.35",
-    "@aleph-indexer/solana": "^1.0.35",
+    "@aleph-indexer/framework": "^1.0.40",
+    "@aleph-indexer/solana": "^1.0.40",
     "@metaplex-foundation/beet": "0.7.1",
     "@metaplex-foundation/beet-solana": "0.4.0",
+    "@project-serum/borsh": "^0.2.5",
     "@solana/spl-token": "0.3.5",
     "@solana/web3.js": "^1.66.2",
     "bs58": "5.0.0"
