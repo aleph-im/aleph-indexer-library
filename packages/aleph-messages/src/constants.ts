@@ -1,69 +1,13 @@
-import { Blockchain } from '@aleph-indexer/framework'
-import { PublicKey } from '@solana/web3.js'
+import { PublicKey } from "@solana/web3.js"
+import { AlephSolanaContract } from "./types"
 
-export type AlephEvent = {
-  blockchain: Blockchain
-  id: string
-  timestamp: number
-  height: number
-  address: string
-  transaction: string
-}
+export const SOLANA_MESSAGES_PROGRAM_ID =
+  'ALepH1n9jxScbz45aZhBYVa35zxBNbKSvL6rWQpb4snc'
+export const SOLANA_MESSAGES_PROGRAM_ID_PK = new PublicKey(
+    SOLANA_MESSAGES_PROGRAM_ID,
+)
 
-export type MessageEvent = AlephEvent & {
-  type: string
-  content: string
-}
-
-export type SyncEvent = AlephEvent & {
-  message: string
-}
-
-export enum EventType {
-  Sync = 'SyncEvent(uint256,address,string)',
-  Message = 'MessageEvent(uint256,address,string,string)',
-}
-
-export type MessageEventQueryArgs = {
-  // @todo: Implement this query filters
-  // address?: string
-  // types?: string[]
-  blockchain: Blockchain
-  startDate?: number
-  endDate?: number
-  startHeight?: number
-  endHeight?: number
-  limit?: number
-  skip?: number
-  reverse?: boolean
-}
-
-export type SyncEventQueryArgs = MessageEventQueryArgs
-
-export type SolanaMessage = {
-  address: PublicKey,
-  msgtype: string,
-  msgcontent: string,
-}
-
-export type SolanaMessageEvent = {
-  name: string,
-  data: SolanaMessage,
-}
-
-export type SolanaMessageSync = {
-  address: PublicKey,
-  message: string,
-}
-
-export type SolanaMessageSyncEvent = {
-  name: string,
-  data: SolanaMessageSync,
-}
-
-export type SolanaEvents = SolanaMessageEvent | SolanaMessageSyncEvent
-
-export type AlephSolanaContract = {
+export const SOLANA_MESSAGES_PROGRAM_IDL: AlephSolanaContract = {
   "version": "0.1.0",
   "name": "aleph_solana_contract",
   "instructions": [

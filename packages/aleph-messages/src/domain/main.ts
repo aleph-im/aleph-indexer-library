@@ -22,6 +22,11 @@ export default class MainDomain extends IndexerMainDomain {
         account: '0xdF270752C8C71D08acbae4372687DA65AECe2D5D',
         index: { logs: true },
       },
+      {
+        blockchainId: Blockchain.Solana,
+        account: 'ALepH1n9jxScbz45aZhBYVa35zxBNbKSvL6rWQpb4snc',
+        index: { transactions: true },
+      },
     ])
   }
 

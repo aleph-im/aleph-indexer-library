@@ -29,6 +29,7 @@
     "docs": "typedoc --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@project-serum/borsh": "^0.2.5",
     "@solana/spl-token-registry": "^0.2.7",
     "@solana/web3.js": "^1.42.0",
     "bn.js": "^5.2.0",

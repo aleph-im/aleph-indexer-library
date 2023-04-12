@@ -19,7 +19,10 @@
   "dependencies": {
     "@aleph-indexer/bsc": "^1.0.40",
     "@aleph-indexer/core": "^1.0.33",
+    "@aleph-indexer/solana": "^1.0.40",
     "@aleph-indexer/ethereum": "^1.0.40",
-    "@aleph-indexer/framework": "^1.0.40"
+    "@aleph-indexer/framework": "^1.0.40",
+    "@coral-xyz/anchor": "^0.27.0",
+    "@project-serum/borsh": "0.2.5"
   }
 }
