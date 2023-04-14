@@ -124,7 +124,7 @@ export default class WorkerDomain
     context: ParserContext,
     entity: SolanaParsedInstructionContext,
   ): Promise<boolean> {
-    return isParsedIx(entity.instruction)
+    return true
   }
 
   async solanaIndexInstructions(
