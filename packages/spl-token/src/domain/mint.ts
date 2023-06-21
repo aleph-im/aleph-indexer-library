@@ -37,6 +37,14 @@ export class Mint {
     return await this.accountMintDAL.getAllValuesFromTo(range, range)
   }
 
+  async getAccountsByOwner(
+    owner: string,
+  ): Promise<StorageValueStream<AccountMint>> {
+    const range = [this.address, owner]
+    return await this.balanceHistoryDAL.useIndex('mint_owner')
+      .getAllValuesFromTo(range, range)
+  }
+
   async addAccount(account: string): Promise<void> {
     const accountMint: AccountMint = {
       mint: this.address,
@@ -106,6 +114,7 @@ export class Mint {
 
   async getTokenHoldings({
     account,
+    owner,
     startDate,
     endDate,
     gte,
@@ -116,7 +125,8 @@ export class Mint {
     }
     const gteBn = gte ? new BN(gte) : undefined
 
-    const accountMints = await this.getMintAccounts(account)
+    const accountMints = owner ? await this.getAccountsByOwner(owner) :
+      await this.getMintAccounts(account)
 
     for await (const { account } of accountMints) {
       const balances = await this.balanceHistoryDAL.getAllFromTo(
@@ -124,6 +134,7 @@ export class Mint {
         [account, endDate],
         opts,
       )
+
       for await (const { value: accountBalance } of balances) {
         const balance = new BN(accountBalance.balance)
         const holding = (accountsHoldingsMap[account] = accountsHoldingsMap[

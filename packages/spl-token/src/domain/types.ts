@@ -29,6 +29,7 @@ export type TokenHoldersFilters = {
 
 export type AccountHoldingsFilters = {
   account?: string
+  owner?: string
   startDate?: number
   endDate?: number
   gte?: string

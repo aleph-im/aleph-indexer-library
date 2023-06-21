@@ -38,6 +38,7 @@ export default class APISchema extends IndexerAPISchema {
             args: {
               mint: { type: new GraphQLNonNull(GraphQLString) },
               account: { type: GraphQLString },
+              owner: { type: GraphQLString },
               startDate: { type: GraphQLFloat },
               endDate: { type: GraphQLFloat },
               gte: { type: GraphQLString },
