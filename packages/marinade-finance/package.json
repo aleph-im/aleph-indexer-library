@@ -15,19 +15,20 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.33",
-    "@aleph-indexer/framework": "^1.0.35",
-    "@aleph-indexer/solana": "^1.0.35",
+    "@aleph-indexer/core": "^1.0.42",
+    "@aleph-indexer/framework": "^1.0.43",
+    "@aleph-indexer/solana": "^1.0.43",
+    "@coral-xyz/borsh": "^0.28.0",
     "@metaplex-foundation/beet": "0.7.1",
     "@metaplex-foundation/beet-solana": "0.4.0",
     "@solana/spl-token": "0.3.5",
-    "@solana/web3.js": "^1.66.2",
+    "@solana/web3.js": "^1.78.0",
     "bs58": "5.0.0"
   },
   "devDependencies": {
-    "@types/bn.js": "^5.1.0",
     "@types/luxon": "^3.0.1",
     "@types/node": "^18.7.18",
-    "typescript": "^4.8.3"
+    "typescript": "^4.8.3",
+    "@types/bn.js": "^5.1.0"
   }
 }

@@ -1,7 +1,6 @@
 import {
   AccountTimeSeriesStatsManager,
   Blockchain,
-  IndexableEntityType,
   IndexerMsClient,
   StatsStateStorage,
   StatsTimeSeriesStorage,

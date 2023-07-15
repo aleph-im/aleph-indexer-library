@@ -1,7 +1,7 @@
-import BN from 'bn.js'
-import { PublicKey } from '@solana/web3.js'
 import { EventBase } from '@aleph-indexer/framework'
 import * as solita from './solita/index.js'
+import BN from 'bn.js'
+import { PublicKey } from '@solana/web3.js'
 
 export enum InstructionType {
   Initialize = 'InitializeEvent',

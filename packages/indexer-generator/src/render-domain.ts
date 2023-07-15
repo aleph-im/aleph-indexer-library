@@ -4,10 +4,18 @@ export function renderDomainFiles(
   Name: string,
   filename: string,
   accounts: ViewAccounts | undefined,
-): string[] {
-  const NAME = filename.toUpperCase()
+): [string, string][] {
+  const files: [string, string][] = [];
 
-  const account = `import { StorageStream } from '@aleph-indexer/core'
+  files.push(['account', createAccountDomain(Name)]);
+  files.push(['worker', createWorkerDomain(Name, filename)]);
+  files.push(['main', createMainDomain(Name, filename, accounts)]);
+
+  return files;
+}
+
+function createAccountDomain(Name: string): string {
+  return `import { StorageStream } from '@aleph-indexer/core'
 import {
   AccountTimeSeriesStatsManager,
   AccountTimeSeriesStats,
@@ -55,7 +63,12 @@ export class AccountDomain {
   }
 }
 `
-  const worker = `import { StorageStream, Utils } from '@aleph-indexer/core'
+}
+
+function createWorkerDomain(Name: string, filename: string): string {
+  const NAME = filename.toUpperCase().replace(/-/g, "_");
+
+  return `import { StorageStream, Utils } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
@@ -182,7 +195,9 @@ export default class WorkerDomain
   }
 }
 `
+}
 
+function createMainDomain(Name: string, filename: string, accounts: ViewAccounts | undefined): string {
   let mainDomain = `import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerMainDomain,
@@ -321,6 +336,7 @@ export default class MainDomain
       Blockchain.Solana,
       accountAddresses,
     )
+
     const globalStats: Global${Name}Stats = this.getNewGlobalStats()
 
     for (const accountStats of accountsStats) {
@@ -370,6 +386,5 @@ export default class MainDomain
   }
 }
 `
-
-  return [account, worker, mainDomain]
+  return mainDomain;
 }

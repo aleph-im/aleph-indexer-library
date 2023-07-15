@@ -4,17 +4,31 @@ import {
   ViewTypes,
   ViewStruct,
 } from './types.js'
+
 export function renderApiFiles(
   Name: string,
   instructions: ViewInstructions | undefined,
   accounts: ViewAccounts | undefined,
   types: ViewTypes | undefined,
-): string[] {
-  const indexApi = `export { default } from './schema.js'`
+): [string, string][] {
+  const files: [string, string][] = [];
 
-  checkOrder(types)
+  files.push(['index', createIndexApi()]);
+  files.push(['resolvers', createResolversApi(Name)]);
+  files.push(['schema', createSchemaApi(Name)]);
+  if (accounts && instructions && types) {
+    files.push(['types', createTypesApi(Name, accounts, instructions, types)]);
+  }
 
-  const resolversApi = `import MainDomain from '../domain/main.js'
+  return files;
+}
+
+function createIndexApi(): string {
+  return `export { default } from './schema.js'`;
+}
+
+function createResolversApi(Name: string): string {
+  return `import MainDomain from '../domain/main.js'
 import {
   AccountType,
   ParsedEvents,
@@ -132,7 +146,10 @@ export class APIResolvers {
   }
 }`
 
-  const schemaApi = `import {
+}
+
+function createSchemaApi(Name: string): string {
+  return `import {
   GraphQLObjectType,
   GraphQLString,
   GraphQLList,
@@ -212,6 +229,17 @@ export default class APISchema extends IndexerAPISchema {
   }
 }
 `
+}
+
+function createTypesApi(
+  Name: string,
+  accounts: ViewAccounts,
+  instructions: ViewInstructions,
+  types: ViewTypes,
+): string {
+  // this function mutates types var to get the correct types order 
+  checkOrder(types);
+
   let apiTypes = `import { GraphQLBoolean, GraphQLInt } from 'graphql'
 import {
   GraphQLObjectType,
@@ -526,7 +554,7 @@ export const types = [`
 `
   }
 
-  return [indexApi, resolversApi, schemaApi, apiTypes]
+  return apiTypes;
 }
 
 function checkOrder(types: ViewTypes | undefined) {

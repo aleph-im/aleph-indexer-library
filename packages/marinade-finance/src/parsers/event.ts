@@ -1,5 +1,5 @@
 import {
-  SolanaParsedInstructionContext,
+  SolanaInstructionContext,
   SolanaParsedEvent,
 } from '@aleph-indexer/solana'
 
@@ -31,32 +31,26 @@ import {
 } from '../utils/layouts/index.js'
 
 export class EventParser {
-  parse(
-    ixCtx: SolanaParsedInstructionContext,
-    ctx: { account: string; startDate: number; endDate: number },
-  ): ParsedEvents {
-    const { instruction, parentInstruction, parentTransaction } = ixCtx
-    const parsed = (
-      instruction as SolanaParsedEvent<InstructionType, ParsedEventsInfo>
-    ).parsed
+  parse(ixCtx: SolanaInstructionContext): ParsedEvents {
+    const { ix, parentIx, txContext } = ixCtx
+    const parsed = (ix as SolanaParsedEvent<InstructionType, ParsedEventsInfo>)
+      .parsed
 
-    const id = `${parentTransaction.signature}${
-      parentInstruction
-        ? ` :${parentInstruction.index.toString().padStart(2, '0')}`
-        : ''
-    }:${instruction.index.toString().padStart(2, '0')}`
+    const id = `${txContext.tx.signature}${
+      parentIx ? ` :${parentIx.index.toString().padStart(2, '0')}` : ''
+    }:${ix.index.toString().padStart(2, '0')}`
 
-    const timestamp = parentTransaction.blockTime
-      ? parentTransaction.blockTime * 1000
-      : parentTransaction.slot
+    const timestamp = txContext.tx.blockTime
+      ? txContext.tx.blockTime * 1000
+      : txContext.tx.slot
 
     const baseEvent = {
       ...parsed.info,
       id,
       timestamp,
       type: parsed.type,
-      account: ctx.account,
-      signer: parentTransaction.parsed.message.accountKeys[0].pubkey,
+      account: txContext.parserContext.account,
+      signer: txContext.tx.parsed.message.accountKeys[0].pubkey,
     }
 
     try {

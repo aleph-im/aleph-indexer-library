@@ -69,7 +69,6 @@ export function createEventDAL(path: string): EventStorage {
       }
 
       for (const prop of mappedPublicKeyProps) {
-        console.log(value, prop in value)
         if (!(prop in value)) continue
         if ((value as any)[prop] instanceof PublicKey) continue
         ;(value as any)[prop] = new PublicKey((value as any)[prop])
