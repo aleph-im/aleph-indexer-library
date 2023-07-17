@@ -34,12 +34,12 @@ export class AccountDomain {
     return this.timeSeriesStats.getStats()
   }
 
-  getEventsByTime(
+  async getEventsByTime(
     startDate: number,
     endDate: number,
     opts: any,
   ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
-    return this.eventDAL
+    return await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
       .getAllFromTo(
         [this.info.address, startDate],

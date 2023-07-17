@@ -126,14 +126,14 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  getAccountEventsByTime(
+  async getAccountEventsByTime(
     account: string,
     startDate: number,
     endDate: number,
     opts: any,
   ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
     const res = this.getAccount(account)
-    return res.getEventsByTime(startDate, endDate, opts)
+    return await res.getEventsByTime(startDate, endDate, opts)
   }
 
   private getAccount(account: string): AccountDomain {
