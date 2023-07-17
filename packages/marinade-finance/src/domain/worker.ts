@@ -1,4 +1,4 @@
-import { StorageStream, Utils } from '@aleph-indexer/core'
+import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
@@ -9,15 +9,16 @@ import {
   AccountTimeSeriesStats,
   AccountStatsFilters,
   AccountStats,
+  ParserContext,
 } from '@aleph-indexer/framework'
 import {
   isParsedIx,
   SolanaIndexerWorkerDomainI,
-  SolanaInstructionContext,
+  SolanaParsedInstructionContext,
 } from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
-import { ParsedEvents } from '../utils/layouts/index.js'
+import { MarinadeFinanceEvent } from '../utils/layouts/index.js'
 import {
   MarinadeFinanceAccountStats,
   MarinadeFinanceAccountInfo,
@@ -87,22 +88,28 @@ export default class WorkerDomain
     return this.getAccountStats(account)
   }
 
-  async solanaFilterInstructions(
-    ixsContext: SolanaInstructionContext[],
-  ): Promise<SolanaInstructionContext[]> {
-    return ixsContext.filter(({ ix }) => {
-      return isParsedIx(ix) && ix.programId === this.programId
-    })
+  async solanaFilterInstruction(
+    context: ParserContext,
+    entity: SolanaParsedInstructionContext,
+  ): Promise<boolean> {
+    return (
+      isParsedIx(entity.instruction) &&
+      entity.instruction.programId === this.programId
+    )
   }
 
   async solanaIndexInstructions(
-    ixsContext: SolanaInstructionContext[],
+    context: ParserContext,
+    ixsContext: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
+    if ('account' in context) {
+      const parsedIxs = ixsContext.map((ix) =>
+        this.eventParser.parse(ix, context.account),
+      )
+      console.log(`indexing ${ixsContext.length} parsed ixs`)
 
-    console.log(`indexing ${ixsContext.length} parsed ixs`)
-
-    await this.eventDAL.save(parsedIxs)
+      await this.eventDAL.save(parsedIxs)
+    }
   }
 
   // ------------- Custom impl methods -------------------
@@ -124,7 +131,7 @@ export default class WorkerDomain
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, ParsedEvents>> {
+  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
     const res = this.getAccount(account)
     return res.getEventsByTime(startDate, endDate, opts)
   }

@@ -70,9 +70,9 @@ export default async function generate(
   writeFiles(paths.apiDir, renderApiFiles(Name, instructionsView, accountsView, typesView), (filename) => paths.apiFile(filename));
   ensureDirExists(paths.utilsDir);
   await generateSolitaTypeScript(paths, idl, instructionsView, accountsView, typesView, DEFAULT_FORMAT_OPTS);
-  writeFiles(paths.layoutsDir, renderLayoutsFiles(idl.name, instructionsView, accountsView), (filename) => paths.layoutsFile(filename));
-  writeFiles(paths.parsersDir, renderParsersFiles(instructionsView), (filename) => paths.parsersFile(filename));
-  writeFiles(paths.dalDir, renderDALFiles(instructionsView), (filename) => paths.dalFile(filename));
+  writeFiles(paths.layoutsDir, renderLayoutsFiles(Name, idl.name, instructionsView, accountsView), (filename) => paths.layoutsFile(filename));
+  writeFiles(paths.parsersDir, renderParsersFiles(Name), (filename) => paths.parsersFile(filename));
+  writeFiles(paths.dalDir, renderDALFiles(Name, instructionsView), (filename) => paths.dalFile(filename));
   writeFiles(paths.domainDir, renderDomainFiles(Name, idl.name, accountsView), (filename) => paths.domainFile(filename));
   writeFiles(paths.statsDir, renderStatsFiles(Name), (filename) => paths.statsFile(filename));
   writeFiles(paths.discovererDir, renderDiscovererFiles(Name, idl.name), (filename) => paths.discovererFile(filename));

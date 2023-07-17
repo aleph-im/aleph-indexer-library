@@ -1,9 +1,9 @@
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { EntityStorage } from '@aleph-indexer/core'
-import { ParsedEvents } from '../utils/layouts/index.js'
+import { MarinadeFinanceEvent } from '../utils/layouts/index.js'
 
-export type EventStorage = EntityStorage<ParsedEvents>
+export type EventStorage = EntityStorage<MarinadeFinanceEvent>
 
 // in this vector you can include the properties of several
 // events that are BN in order to be able to cast them
@@ -24,27 +24,27 @@ export enum EventDALIndex {
 }
 
 const idKey = {
-  get: (e: ParsedEvents) => e.id,
+  get: (e: MarinadeFinanceEvent) => e.id,
   length: EntityStorage.VariableLength,
 }
 
 const accountKey = {
-  get: (e: ParsedEvents) => e.account,
+  get: (e: MarinadeFinanceEvent) => e.account,
   length: EntityStorage.AddressLength,
 }
 
 const typeKey = {
-  get: (e: ParsedEvents) => e.type,
+  get: (e: MarinadeFinanceEvent) => e.type,
   length: EntityStorage.VariableLength,
 }
 
 const timestampKey = {
-  get: (e: ParsedEvents) => e.timestamp,
+  get: (e: MarinadeFinanceEvent) => e.timestamp,
   length: EntityStorage.TimestampLength,
 }
 
 export function createEventDAL(path: string): EventStorage {
-  return new EntityStorage<ParsedEvents>({
+  return new EntityStorage<MarinadeFinanceEvent>({
     name: 'event',
     path,
     key: [idKey],

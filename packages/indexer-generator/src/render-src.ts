@@ -49,7 +49,7 @@ export const ${NAME}_PROGRAM_ID_PK = new PublicKey(${NAME}_PROGRAM_ID)
 }
 
 function renderTypes(Name: string, NAME: string, name: string): [string, string] {
-  const content = `import { AccountType, ParsedEvents, ParsedAccountsData } from './utils/layouts/index.js'
+  const content = `import { AccountType, ${Name}Event, ParsedAccountsData } from './utils/layouts/index.js'
 
   export type ${Name}AccountInfo = {
     name: string
@@ -92,7 +92,7 @@ function renderTypes(Name: string, NAME: string, name: string): [string, string]
     last7d: AccessTimeStats
     total: AccessTimeStats
     accessingPrograms: Set<string>
-    lastRequest?: ParsedEvents
+    lastRequest?: ${Name}Event
   }
   
   export type HourlyStats = {

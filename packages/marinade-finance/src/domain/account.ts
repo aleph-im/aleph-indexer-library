@@ -6,7 +6,7 @@ import {
   AccountStats,
 } from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
-import { ParsedEvents } from '../utils/layouts/index.js'
+import { MarinadeFinanceEvent } from '../utils/layouts/index.js'
 import {
   MarinadeFinanceAccountInfo,
   MarinadeFinanceAccountStats,
@@ -38,7 +38,7 @@ export class AccountDomain {
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, ParsedEvents>> {
+  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
     return this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
       .getAllFromTo(

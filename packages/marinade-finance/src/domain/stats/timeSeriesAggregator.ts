@@ -1,9 +1,9 @@
 import { AccessTimeStats } from '../../types.js'
-import { ParsedEvents } from '../../utils/layouts/index.js'
+import { MarinadeFinanceEvent } from '../../utils/layouts/index.js'
 
 export class AccessTimeSeriesAggregator {
   aggregate(
-    curr: ParsedEvents | AccessTimeStats,
+    curr: MarinadeFinanceEvent | AccessTimeStats,
     prev?: AccessTimeStats,
   ): AccessTimeStats {
     prev = this.prepareAccessStats(prev)
@@ -28,10 +28,10 @@ export class AccessTimeSeriesAggregator {
   // @note: We assume that curr data is sorted by time
   protected processAccessStats(
     acc: AccessTimeStats,
-    curr: ParsedEvents | AccessTimeStats,
+    curr: MarinadeFinanceEvent | AccessTimeStats,
   ): AccessTimeStats {
-    if ((curr as ParsedEvents).timestamp) {
-      const event = curr as ParsedEvents
+    if ((curr as MarinadeFinanceEvent).timestamp) {
+      const event = curr as MarinadeFinanceEvent
       let signer: string
       signer = event.signer as unknown as string
       acc.accesses++
@@ -79,8 +79,8 @@ export class AccessTimeSeriesAggregator {
   }
 
   protected isMarinadeFinanceEvent(
-    event: ParsedEvents | AccessTimeStats,
-  ): event is ParsedEvents {
+    event: MarinadeFinanceEvent | AccessTimeStats,
+  ): event is MarinadeFinanceEvent {
     return 'type' in event
   }
 }

@@ -1,6 +1,7 @@
 import { ViewInstructions, ViewAccounts } from './types.js'
 
 export function renderLayoutsFiles(
+  Name: string,
   filename: string,
   instructionsView: ViewInstructions | undefined,
   accountsView: ViewAccounts | undefined,
@@ -14,7 +15,7 @@ export function renderLayoutsFiles(
   }
 
   if (instructionsView && instructionsView.instructions.length > 0) {
-    files.push(renderIxLayouts(instructionsView));
+    files.push(renderIxLayouts(Name, instructionsView));
   }
 
   files.push(renderIndexLayouts(accountsView));
@@ -78,171 +79,146 @@ export const ACCOUNTS_DATA_LAYOUT: Record<
   return ['accounts', accountLayouts];
 }
 
-function renderIxLayouts(instructionsView: ViewInstructions): [string, string] {
-  let ixLayouts = ''
-  if (instructionsView && instructionsView.instructions.length > 0) {
-    ixLayouts += `import { EventBase } from '@aleph-indexer/framework'
+function renderIxLayouts(Name: string, instructionsView: ViewInstructions): [string, string] {
+  let ixLayouts = `import { EventBase } from '@aleph-indexer/framework';
 import * as solita from './solita/index.js'
-`
-    for (const otherImport of instructionsView.imports.otherImports) {
-      if (isBN(otherImport))
-        ixLayouts += `import { PublicKey } from '@solana/web3.js'
-`
-      if (isPubkey(otherImport))
-        ixLayouts += `import BN from 'bn.js'
-`
-    }
+`;
+  for (const otherImport of instructionsView.imports.otherImports) {
+    if (isPubkey(otherImport))
+      ixLayouts += `import { PublicKey } from '@solana/web3.js'
+`;
+    if (isBN(otherImport))
+      ixLayouts += `import BN from 'bn.js'
+`;
+  }
 
-    ixLayouts += `
+  ixLayouts += `
 export enum InstructionType { 
-`
-    for (const instruction of instructionsView.instructions) {
-      ixLayouts += `   ${instruction.name} = '${instruction.name}Event',
-`
-    }
-    ixLayouts += `}
-
-export type InstructionBase = EventBase<InstructionType> & {
-        programId: string
-        signer: string
-        account: string
+`;
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `   ${instruction.name} = '${instruction.name}',
+`;
+  }
+  ixLayouts += `}
+  
+export type RawInstructionBase = {
+  parsed: unknown
+  program: string
+  programId: string
 }
-
-/*-----------------------* CUSTOM EVENTS TYPES *-----------------------*/
-
-`
-    for (const instruction of instructionsView.instructions) {
-      let definedData = false
-
-      if (instruction.args.length > 0) {
-        for (const arg of instruction.args) {
-          for (const definedImport of instructionsView.imports.definedImports) {
-            if (arg.tsType === definedImport) definedData = true
-          }
-        }
-        if (definedData) {
-          ixLayouts += `
-
-export type ${instruction.name}Info = {`
-          if (instruction.args.length > 0) {
-            if (instruction.args.length === 1) {
-              ixLayouts += ` 
-        data: solita.${instruction.args[0].tsType}
-`
-            } else {
-              ixLayouts += ` 
-        data: solita.${instruction.name}InstructionArgs
-`
-            }
-          }
-          if (instruction.accounts.length > 0) {
-            ixLayouts += `accounts: solita.${instruction.name}InstructionAccounts
-`
-          }
-
-          ixLayouts += `}`
-        } else {
-          ixLayouts += `export type ${instruction.name}EventData = {`
-          for (const arg of instruction.args) {
-            ixLayouts += ` 
-        ${arg.name}: ${arg.tsType}`
-          }
-          ixLayouts += `}
-
-export type ${instruction.name}Info = {
-        data: ${instruction.name}EventData
-`
-
-          if (instruction.accounts.length > 0) {
-            ixLayouts += `accounts: solita.${instruction.name}InstructionAccounts
-`
-          }
-
-          ixLayouts += `}`
-        }
-      } else {
+  
+/*-----------------------* CUSTOM RAW INSTRUCTION TYPES *-----------------------*/
+  
+`;
+  for (const instruction of instructionsView.instructions) {
+    if (instruction.accounts.length > 0) {
+      ixLayouts += `export type ${instruction.name}AccountsInstruction = {`;
+      for (const account of instruction.accounts) {
         ixLayouts += `
-
-export type ${instruction.name}Info = {
-`
-        if (instruction.accounts.length > 0) {
-          ixLayouts += `accounts: solita.${instruction.name}InstructionAccounts
-`
-        }
-        ixLayouts += `}`
+  ${account.name}: string`;
       }
       ixLayouts += `
-
-export type ${instruction.name}Event = InstructionBase &
-        ${instruction.name}Info & {
-                type: InstructionType.${instruction.name}
-        }
-
-/*----------------------------------------------------------------------*/
-
-`
+}
+  
+`;
     }
 
     ixLayouts += `
+export type ${instruction.name}Info = `;
+    if (instruction.args.length > 0) ixLayouts += `solita.${instruction.name}InstructionArgs`;
+    if (instruction.args.length > 0 && instruction.accounts.length > 0) ixLayouts += ` & `;
+    if (instruction.accounts.length > 0) ixLayouts += `${instruction.name}AccountsInstruction`;
+
+    ixLayouts += `
+  
+export type Raw${instruction.name} = RawInstructionBase & {
+  parsed: {
+    info: ${instruction.name}Info
+    type: InstructionType.${instruction.name}
+  }
+}
+  
+`;
+  }
+
+  ixLayouts += `export type RawInstructionsInfo = 
+`;
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `   | ${instruction.name}Info
+`;
+  }
+
+  ixLayouts += `       
+export type RawInstruction = 
+`;
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `   | Raw${instruction.name}
+`;
+  }
+
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `
+export type ${instruction.name}Event = EventBase<InstructionType> & {
+  info: ${instruction.name}Info
+  signer: string
+  account: string
+}
+`;
+  }
+
+  ixLayouts += `       
+export type ${Name}Event = 
+`;
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `   | ${instruction.name}Event
+`;
+  }
+
+  ixLayouts += `/*----------------------------------------------------------------------*/
+  
 export function getInstructionType(data: Buffer): InstructionType | undefined {
   const discriminator = data.slice(0, 8)
   return IX_METHOD_CODE.get(discriminator.toString('ascii'))
 }
-
+  
 export const IX_METHOD_CODE: Map<string, InstructionType | undefined > = 
   new Map<string, InstructionType | undefined >([
-`
-    for (const instruction of instructionsView.instructions) {
-      ixLayouts += `   [Buffer.from(solita.${instruction.name
-        .charAt(0)
-        .toLowerCase()
-        .concat(
-          instruction.name.slice(1),
-        )}InstructionDiscriminator).toString('ascii'), InstructionType.${
-        instruction.name
-      }],
-`
-    }
-    ixLayouts += `
+`;
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `   [Buffer.from(solita.${instruction.name
+      .charAt(0)
+      .toLowerCase()
+      .concat(
+        instruction.name.slice(1),
+      )}InstructionDiscriminator).toString('ascii'), InstructionType.${
+      instruction.name
+    }],
+`;
+  }
+  ixLayouts += `
 ])
 export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
-`
-    for (const instruction of instructionsView.instructions) {
-      ixLayouts += `   [InstructionType.${
-        instruction.name
-      }]: solita.${instruction.name
-        .charAt(0)
-        .toLowerCase()
-        .concat(instruction.name.slice(1))}Struct,
-`
-    }
-
-    ixLayouts += `}
-
-export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
-`
-    for (const instruction of instructionsView.instructions) {
-      ixLayouts += `   [InstructionType.${instruction.name}]: solita.${instruction.name}Accounts,
-`
-    }
-
-    ixLayouts += `}
-    
-export type ParsedEventsInfo = 
-`
-    for (const instruction of instructionsView.instructions) {
-      ixLayouts += `   | ${instruction.name}Info
-`
-    }
-
-    ixLayouts += `       
-export type ParsedEvents = 
-`
-    for (const instruction of instructionsView.instructions) {
-      ixLayouts += `   | ${instruction.name}Event
-`
-    }
+`;
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `   [InstructionType.${
+      instruction.name
+    }]: solita.${instruction.name
+      .charAt(0)
+      .toLowerCase()
+      .concat(instruction.name.slice(1))}Struct,
+`;
   }
+
+  ixLayouts += `}
+  
+export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
+`;
+  for (const instruction of instructionsView.instructions) {
+    ixLayouts += `   [InstructionType.${instruction.name}]: solita.${instruction.name}Accounts,
+`;
+  }
+  ixLayouts += `}`;
+
   return ['instructions', ixLayouts];
 }
 
@@ -279,8 +255,8 @@ function renderLayoutLayouts(name: string, NAME: string): [string, string] {
 }
 
 function isPubkey(type: string): boolean {
-  return type === 'PublicKey';
+  return type === 'PublicKey'
 }
 function isBN(type: string): boolean {
-  return type === 'BN';
+  return type === 'BN'
 }

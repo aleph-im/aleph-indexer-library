@@ -1,7 +1,7 @@
 import MainDomain from '../domain/main.js'
 import {
   AccountType,
-  ParsedEvents,
+  MarinadeFinanceEvent,
   InstructionType,
 } from '../utils/layouts/index.js'
 import {
@@ -46,13 +46,13 @@ export class APIResolvers {
     limit = 1000,
     skip = 0,
     reverse = true,
-  }: EventsFilters): Promise<ParsedEvents[]> {
+  }: EventsFilters): Promise<MarinadeFinanceEvent[]> {
     if (limit < 1 || limit > 1000)
       throw new Error('400 Bad Request: 1 <= limit <= 1000')
 
     const typesMap = types ? new Set(types) : undefined
 
-    const events: ParsedEvents[] = []
+    const events: MarinadeFinanceEvent[] = []
 
     const accountEvents = await this.domain.getAccountEventsByTime(
       account,

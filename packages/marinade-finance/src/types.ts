@@ -1,6 +1,6 @@
 import {
   AccountType,
-  ParsedEvents,
+  MarinadeFinanceEvent,
   ParsedAccountsData,
 } from './utils/layouts/index.js'
 
@@ -44,7 +44,7 @@ export type MarinadeFinanceAccountStats = {
   last7d: AccessTimeStats
   total: AccessTimeStats
   accessingPrograms: Set<string>
-  lastRequest?: ParsedEvents
+  lastRequest?: MarinadeFinanceEvent
 }
 
 export type HourlyStats = {

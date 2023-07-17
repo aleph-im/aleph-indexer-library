@@ -12,6 +12,7 @@ function createTimeSeries(Name: string): string {
   return `import {
     AccountTimeSeriesStatsManager,
     Blockchain,
+    IndexableEntityType,
     IndexerMsClient,
     StatsStateStorage,
     StatsTimeSeriesStorage,
@@ -19,7 +20,7 @@ function createTimeSeries(Name: string): string {
     TimeSeriesStats,
   } from '@aleph-indexer/framework'
   import { EventDALIndex, EventStorage } from '../../dal/event.js'
-  import { ParsedEvents } from '../../utils/layouts/index.js'
+  import { ${Name}Event } from '../../utils/layouts/index.js'
   import { AccessTimeStats, ${Name}AccountStats } from '../../types.js'
   import statsAggregator from './statsAggregator.js'
   import accessAggregator from './timeSeriesAggregator.js'
@@ -34,7 +35,7 @@ function createTimeSeries(Name: string): string {
   ): Promise<AccountTimeSeriesStatsManager<${Name}AccountStats>> {
       
     // @note: this aggregator is used to aggregate usage stats for the account
-    const accessTimeSeries = new TimeSeriesStats<ParsedEvents, AccessTimeStats>(
+    const accessTimeSeries = new TimeSeriesStats<${Name}Event, AccessTimeStats>(
       {
         type: 'access',
         startDate: 0,
@@ -79,11 +80,11 @@ function createTimeSeries(Name: string): string {
 
 function createTimeSeriesAggregator(Name: string): string {
   return `import { AccessTimeStats } from '../../types.js'
-  import { ParsedEvents } from '../../utils/layouts/index.js'
+  import { ${Name}Event } from '../../utils/layouts/index.js'
   
   export class AccessTimeSeriesAggregator {
     aggregate(    
-      curr: ParsedEvents | AccessTimeStats,
+      curr: ${Name}Event | AccessTimeStats,
       prev?: AccessTimeStats,
     ): AccessTimeStats {
       prev = this.prepareAccessStats(prev)
@@ -108,10 +109,10 @@ function createTimeSeriesAggregator(Name: string): string {
     // @note: We assume that curr data is sorted by time
     protected processAccessStats(
       acc: AccessTimeStats,
-      curr: ParsedEvents | AccessTimeStats,
+      curr: ${Name}Event | AccessTimeStats,
     ): AccessTimeStats {
-      if ((curr as ParsedEvents).timestamp) {
-        const event = curr as ParsedEvents
+      if ((curr as ${Name}Event).timestamp) {
+        const event = curr as ${Name}Event
         let signer: string;
         signer = event.signer as unknown as string
         acc.accesses++
@@ -158,8 +159,8 @@ function createTimeSeriesAggregator(Name: string): string {
     }
   
     protected is${Name}Event(
-      event: ParsedEvents | AccessTimeStats,
-    ): event is ParsedEvents {
+      event: ${Name}Event | AccessTimeStats,
+    ): event is ${Name}Event {
       return 'type' in event
     }
   }
