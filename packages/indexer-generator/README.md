@@ -37,12 +37,12 @@ npm run generate <program-address>
 npm i && npm run build
 npm run generate MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD
 ```
+- Modify env.default by adding your RPC URL to the SOLANA_RPC variable.
 - Run the indexer:
 ```bash
 npm i && npm run build
 npm run start marinade-finance
 ```
-- Modify env.default by adding your RPC URL to the SOLANA_RPC variable.
 
 If you wait for a moment you will see a message warning you that it is now running a GraphQL server on http://localhost:8080.
 

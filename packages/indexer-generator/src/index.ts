@@ -78,6 +78,7 @@ async function main() {
         };
       }
 
+      idl.name = idl.name.replace(/_/g, "-")
       paths = paths ?? new Paths(`./`, idl.name);
       await generate(idl, paths, [
         TemplateType.Types,

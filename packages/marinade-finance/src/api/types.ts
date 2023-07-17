@@ -50,6 +50,15 @@ export const ChangeAuthorityData = new GraphQLObjectType({
     treasuryMsolAccount: { type: new GraphQLNonNull(GraphQLString) },
   },
 })
+export const ConfigLpParams = new GraphQLObjectType({
+  name: 'ConfigLpParams',
+  fields: {
+    minFee: { type: new GraphQLNonNull(Fee) },
+    maxFee: { type: new GraphQLNonNull(Fee) },
+    liquidityTarget: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    treasuryCut: { type: new GraphQLNonNull(Fee) },
+  },
+})
 export const ConfigMarinadeParams = new GraphQLObjectType({
   name: 'ConfigMarinadeParams',
   fields: {
@@ -273,7 +282,7 @@ export const MarinadeFinanceEvent = new GraphQLEnumType({
     LiquidUnstake: { value: 'LiquidUnstake' },
     AddLiquidity: { value: 'AddLiquidity' },
     RemoveLiquidity: { value: 'RemoveLiquidity' },
-    SetLpParams: { value: 'SetLpParams' },
+    ConfigLp: { value: 'ConfigLp' },
     ConfigMarinade: { value: 'ConfigMarinade' },
     OrderUnstake: { value: 'OrderUnstake' },
     Claim: { value: 'Claim' },
@@ -282,6 +291,7 @@ export const MarinadeFinanceEvent = new GraphQLEnumType({
     UpdateDeactivated: { value: 'UpdateDeactivated' },
     DeactivateStake: { value: 'DeactivateStake' },
     EmergencyUnstake: { value: 'EmergencyUnstake' },
+    PartialUnstake: { value: 'PartialUnstake' },
     MergeStakes: { value: 'MergeStakes' },
   },
 })
@@ -603,24 +613,22 @@ export const RemoveLiquidityEvent = new GraphQLObjectType({
 
 /*----------------------------------------------------------------------*/
 
-export const SetLpParamsInfo = new GraphQLObjectType({
-  name: 'SetLpParamsInfo',
+export const ConfigLpInfo = new GraphQLObjectType({
+  name: 'ConfigLpInfo',
   fields: {
     state: { type: new GraphQLNonNull(GraphQLString) },
     adminAuthority: { type: new GraphQLNonNull(GraphQLString) },
-    minFee: { type: new GraphQLNonNull(Fee) },
-    maxFee: { type: new GraphQLNonNull(Fee) },
-    liquidityTarget: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    params: { type: new GraphQLNonNull(ConfigLpParams) },
   },
 })
 
-export const SetLpParamsEvent = new GraphQLObjectType({
-  name: 'SetLpParamsEvent',
+export const ConfigLpEvent = new GraphQLObjectType({
+  name: 'ConfigLpEvent',
   interfaces: [Event],
-  isTypeOf: (item) => item.type === InstructionType.SetLpParams,
+  isTypeOf: (item) => item.type === InstructionType.ConfigLp,
   fields: {
     ...commonEventFields,
-    info: { type: new GraphQLNonNull(SetLpParamsInfo) },
+    info: { type: new GraphQLNonNull(ConfigLpInfo) },
   },
 })
 
@@ -837,6 +845,41 @@ export const EmergencyUnstakeEvent = new GraphQLObjectType({
 
 /*----------------------------------------------------------------------*/
 
+export const PartialUnstakeInfo = new GraphQLObjectType({
+  name: 'PartialUnstakeInfo',
+  fields: {
+    state: { type: new GraphQLNonNull(GraphQLString) },
+    validatorManagerAuthority: { type: new GraphQLNonNull(GraphQLString) },
+    validatorList: { type: new GraphQLNonNull(GraphQLString) },
+    stakeList: { type: new GraphQLNonNull(GraphQLString) },
+    stakeAccount: { type: new GraphQLNonNull(GraphQLString) },
+    stakeDepositAuthority: { type: new GraphQLNonNull(GraphQLString) },
+    reservePda: { type: new GraphQLNonNull(GraphQLString) },
+    splitStakeAccount: { type: new GraphQLNonNull(GraphQLString) },
+    splitStakeRentPayer: { type: new GraphQLNonNull(GraphQLString) },
+    clock: { type: new GraphQLNonNull(GraphQLString) },
+    rent: { type: new GraphQLNonNull(GraphQLString) },
+    stakeHistory: { type: new GraphQLNonNull(GraphQLString) },
+    systemProgram: { type: new GraphQLNonNull(GraphQLString) },
+    stakeProgram: { type: new GraphQLNonNull(GraphQLString) },
+    stakeIndex: { type: new GraphQLNonNull(GraphQLInt) },
+    validatorIndex: { type: new GraphQLNonNull(GraphQLInt) },
+    desiredUnstakeAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
+  },
+})
+
+export const PartialUnstakeEvent = new GraphQLObjectType({
+  name: 'PartialUnstakeEvent',
+  interfaces: [Event],
+  isTypeOf: (item) => item.type === InstructionType.PartialUnstake,
+  fields: {
+    ...commonEventFields,
+    info: { type: new GraphQLNonNull(PartialUnstakeInfo) },
+  },
+})
+
+/*----------------------------------------------------------------------*/
+
 export const MergeStakesInfo = new GraphQLObjectType({
   name: 'MergeStakesInfo',
   fields: {
@@ -883,7 +926,7 @@ export const types = [
   LiquidUnstakeEvent,
   AddLiquidityEvent,
   RemoveLiquidityEvent,
-  SetLpParamsEvent,
+  ConfigLpEvent,
   ConfigMarinadeEvent,
   OrderUnstakeEvent,
   ClaimEvent,
@@ -892,5 +935,6 @@ export const types = [
   UpdateDeactivatedEvent,
   DeactivateStakeEvent,
   EmergencyUnstakeEvent,
+  PartialUnstakeEvent,
   MergeStakesEvent,
 ]

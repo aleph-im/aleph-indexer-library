@@ -15,7 +15,7 @@ export enum InstructionType {
   LiquidUnstake = 'LiquidUnstake',
   AddLiquidity = 'AddLiquidity',
   RemoveLiquidity = 'RemoveLiquidity',
-  SetLpParams = 'SetLpParams',
+  ConfigLp = 'ConfigLp',
   ConfigMarinade = 'ConfigMarinade',
   OrderUnstake = 'OrderUnstake',
   Claim = 'Claim',
@@ -24,6 +24,7 @@ export enum InstructionType {
   UpdateDeactivated = 'UpdateDeactivated',
   DeactivateStake = 'DeactivateStake',
   EmergencyUnstake = 'EmergencyUnstake',
+  PartialUnstake = 'PartialUnstake',
   MergeStakes = 'MergeStakes',
 }
 
@@ -268,18 +269,18 @@ export type RawRemoveLiquidity = RawInstructionBase & {
   }
 }
 
-export type SetLpParamsAccountsInstruction = {
+export type ConfigLpAccountsInstruction = {
   state: string
   adminAuthority: string
 }
 
-export type SetLpParamsInfo = solita.SetLpParamsInstructionArgs &
-  SetLpParamsAccountsInstruction
+export type ConfigLpInfo = solita.ConfigLpInstructionArgs &
+  ConfigLpAccountsInstruction
 
-export type RawSetLpParams = RawInstructionBase & {
+export type RawConfigLp = RawInstructionBase & {
   parsed: {
-    info: SetLpParamsInfo
-    type: InstructionType.SetLpParams
+    info: ConfigLpInfo
+    type: InstructionType.ConfigLp
   }
 }
 
@@ -443,6 +444,33 @@ export type RawEmergencyUnstake = RawInstructionBase & {
   }
 }
 
+export type PartialUnstakeAccountsInstruction = {
+  state: string
+  validatorManagerAuthority: string
+  validatorList: string
+  stakeList: string
+  stakeAccount: string
+  stakeDepositAuthority: string
+  reservePda: string
+  splitStakeAccount: string
+  splitStakeRentPayer: string
+  clock: string
+  rent: string
+  stakeHistory: string
+  systemProgram: string
+  stakeProgram: string
+}
+
+export type PartialUnstakeInfo = solita.PartialUnstakeInstructionArgs &
+  PartialUnstakeAccountsInstruction
+
+export type RawPartialUnstake = RawInstructionBase & {
+  parsed: {
+    info: PartialUnstakeInfo
+    type: InstructionType.PartialUnstake
+  }
+}
+
 export type MergeStakesAccountsInstruction = {
   state: string
   stakeList: string
@@ -479,7 +507,7 @@ export type RawInstructionsInfo =
   | LiquidUnstakeInfo
   | AddLiquidityInfo
   | RemoveLiquidityInfo
-  | SetLpParamsInfo
+  | ConfigLpInfo
   | ConfigMarinadeInfo
   | OrderUnstakeInfo
   | ClaimInfo
@@ -488,6 +516,7 @@ export type RawInstructionsInfo =
   | UpdateDeactivatedInfo
   | DeactivateStakeInfo
   | EmergencyUnstakeInfo
+  | PartialUnstakeInfo
   | MergeStakesInfo
 
 export type RawInstruction =
@@ -502,7 +531,7 @@ export type RawInstruction =
   | RawLiquidUnstake
   | RawAddLiquidity
   | RawRemoveLiquidity
-  | RawSetLpParams
+  | RawConfigLp
   | RawConfigMarinade
   | RawOrderUnstake
   | RawClaim
@@ -511,6 +540,7 @@ export type RawInstruction =
   | RawUpdateDeactivated
   | RawDeactivateStake
   | RawEmergencyUnstake
+  | RawPartialUnstake
   | RawMergeStakes
 
 export type InitializeEvent = EventBase<InstructionType> & {
@@ -579,8 +609,8 @@ export type RemoveLiquidityEvent = EventBase<InstructionType> & {
   account: string
 }
 
-export type SetLpParamsEvent = EventBase<InstructionType> & {
-  info: SetLpParamsInfo
+export type ConfigLpEvent = EventBase<InstructionType> & {
+  info: ConfigLpInfo
   signer: string
   account: string
 }
@@ -633,6 +663,12 @@ export type EmergencyUnstakeEvent = EventBase<InstructionType> & {
   account: string
 }
 
+export type PartialUnstakeEvent = EventBase<InstructionType> & {
+  info: PartialUnstakeInfo
+  signer: string
+  account: string
+}
+
 export type MergeStakesEvent = EventBase<InstructionType> & {
   info: MergeStakesInfo
   signer: string
@@ -651,7 +687,7 @@ export type MarinadeFinanceEvent =
   | LiquidUnstakeEvent
   | AddLiquidityEvent
   | RemoveLiquidityEvent
-  | SetLpParamsEvent
+  | ConfigLpEvent
   | ConfigMarinadeEvent
   | OrderUnstakeEvent
   | ClaimEvent
@@ -660,6 +696,7 @@ export type MarinadeFinanceEvent =
   | UpdateDeactivatedEvent
   | DeactivateStakeEvent
   | EmergencyUnstakeEvent
+  | PartialUnstakeEvent
   | MergeStakesEvent
 /*----------------------------------------------------------------------*/
 
@@ -729,8 +766,8 @@ export const IX_METHOD_CODE: Map<string, InstructionType | undefined> = new Map<
     InstructionType.RemoveLiquidity,
   ],
   [
-    Buffer.from(solita.setLpParamsInstructionDiscriminator).toString('ascii'),
-    InstructionType.SetLpParams,
+    Buffer.from(solita.configLpInstructionDiscriminator).toString('ascii'),
+    InstructionType.ConfigLp,
   ],
   [
     Buffer.from(solita.configMarinadeInstructionDiscriminator).toString(
@@ -773,6 +810,12 @@ export const IX_METHOD_CODE: Map<string, InstructionType | undefined> = new Map<
     InstructionType.EmergencyUnstake,
   ],
   [
+    Buffer.from(solita.partialUnstakeInstructionDiscriminator).toString(
+      'ascii',
+    ),
+    InstructionType.PartialUnstake,
+  ],
+  [
     Buffer.from(solita.mergeStakesInstructionDiscriminator).toString('ascii'),
     InstructionType.MergeStakes,
   ],
@@ -789,7 +832,7 @@ export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.LiquidUnstake]: solita.liquidUnstakeStruct,
   [InstructionType.AddLiquidity]: solita.addLiquidityStruct,
   [InstructionType.RemoveLiquidity]: solita.removeLiquidityStruct,
-  [InstructionType.SetLpParams]: solita.setLpParamsStruct,
+  [InstructionType.ConfigLp]: solita.configLpStruct,
   [InstructionType.ConfigMarinade]: solita.configMarinadeStruct,
   [InstructionType.OrderUnstake]: solita.orderUnstakeStruct,
   [InstructionType.Claim]: solita.claimStruct,
@@ -798,6 +841,7 @@ export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.UpdateDeactivated]: solita.updateDeactivatedStruct,
   [InstructionType.DeactivateStake]: solita.deactivateStakeStruct,
   [InstructionType.EmergencyUnstake]: solita.emergencyUnstakeStruct,
+  [InstructionType.PartialUnstake]: solita.partialUnstakeStruct,
   [InstructionType.MergeStakes]: solita.mergeStakesStruct,
 }
 
@@ -813,7 +857,7 @@ export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.LiquidUnstake]: solita.LiquidUnstakeAccounts,
   [InstructionType.AddLiquidity]: solita.AddLiquidityAccounts,
   [InstructionType.RemoveLiquidity]: solita.RemoveLiquidityAccounts,
-  [InstructionType.SetLpParams]: solita.SetLpParamsAccounts,
+  [InstructionType.ConfigLp]: solita.ConfigLpAccounts,
   [InstructionType.ConfigMarinade]: solita.ConfigMarinadeAccounts,
   [InstructionType.OrderUnstake]: solita.OrderUnstakeAccounts,
   [InstructionType.Claim]: solita.ClaimAccounts,
@@ -822,5 +866,6 @@ export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.UpdateDeactivated]: solita.UpdateDeactivatedAccounts,
   [InstructionType.DeactivateStake]: solita.DeactivateStakeAccounts,
   [InstructionType.EmergencyUnstake]: solita.EmergencyUnstakeAccounts,
+  [InstructionType.PartialUnstake]: solita.PartialUnstakeAccounts,
   [InstructionType.MergeStakes]: solita.MergeStakesAccounts,
 }

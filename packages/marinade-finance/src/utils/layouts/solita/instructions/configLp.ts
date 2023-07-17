@@ -7,72 +7,68 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import * as web3 from '@solana/web3.js'
-import { Fee, feeBeet } from '../types/Fee.js'
+import { ConfigLpParams, configLpParamsBeet } from '../types/ConfigLpParams.js'
 
 /**
  * @category Instructions
- * @category SetLpParams
+ * @category ConfigLp
  * @category generated
  */
-export type SetLpParamsInstructionArgs = {
-  minFee: Fee
-  maxFee: Fee
-  liquidityTarget: beet.bignum
+export type ConfigLpInstructionArgs = {
+  params: ConfigLpParams
 }
 /**
  * @category Instructions
- * @category SetLpParams
+ * @category ConfigLp
  * @category generated
  */
-export const setLpParamsStruct = new beet.BeetArgsStruct<
-  SetLpParamsInstructionArgs & {
+export const configLpStruct = new beet.FixableBeetArgsStruct<
+  ConfigLpInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['minFee', feeBeet],
-    ['maxFee', feeBeet],
-    ['liquidityTarget', beet.u64],
+    ['params', configLpParamsBeet],
   ],
-  'SetLpParamsInstructionArgs',
+  'ConfigLpInstructionArgs',
 )
 /**
- * Accounts required by the _setLpParams_ instruction
+ * Accounts required by the _configLp_ instruction
  *
  * @property [_writable_] state
  * @property [**signer**] adminAuthority
  * @category Instructions
- * @category SetLpParams
+ * @category ConfigLp
  * @category generated
  */
-export type SetLpParamsInstructionAccounts = {
+export type ConfigLpInstructionAccounts = {
   state: web3.PublicKey
   adminAuthority: web3.PublicKey
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const setLpParamsInstructionDiscriminator = [
-  227, 163, 242, 45, 79, 203, 106, 44,
+export const configLpInstructionDiscriminator = [
+  10, 24, 168, 119, 86, 48, 225, 17,
 ]
 
 /**
- * Creates a _SetLpParams_ instruction.
+ * Creates a _ConfigLp_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category SetLpParams
+ * @category ConfigLp
  * @category generated
  */
-export function createSetLpParamsInstruction(
-  accounts: SetLpParamsInstructionAccounts,
-  args: SetLpParamsInstructionArgs,
+export function createConfigLpInstruction(
+  accounts: ConfigLpInstructionAccounts,
+  args: ConfigLpInstructionArgs,
   programId = new web3.PublicKey('MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'),
 ) {
-  const [data] = setLpParamsStruct.serialize({
-    instructionDiscriminator: setLpParamsInstructionDiscriminator,
+  const [data] = configLpStruct.serialize({
+    instructionDiscriminator: configLpInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
