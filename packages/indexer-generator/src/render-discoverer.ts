@@ -1,7 +1,13 @@
-export function renderDiscovererFiles(Name: string, filename: string): string {
-  const NAME = filename.toUpperCase()
+export function renderDiscovererFiles(Name: string, filename: string): [string, string][] {
+  const discovererFileContent = renderDiscovererFile(Name, filename);
 
-  const discoverer = `import {
+  return [[`${filename}`, discovererFileContent]];
+}
+
+export function renderDiscovererFile(Name: string, filename: string): string {
+  const NAME = filename.toUpperCase().replace(/-/g, "_");
+
+  return `import {
     ${NAME}_PROGRAM_ID,
     ${NAME}_PROGRAM_ID_PK,
 } from '../../constants.js'
@@ -76,7 +82,6 @@ export default class ${Name}Discoverer {
     ): ${Name}AccountInfo {
         const data = ACCOUNTS_DATA_LAYOUT[type].deserialize(resp.account.data)[0]
         const address = resp.pubkey.toBase58()
-        // Parsing names from on-chain account data can be complicated at times...
         let name: string = address
         if (Object.hasOwn(data, 'name')) {
             if ((data as any).name instanceof Uint8Array)
@@ -93,5 +98,4 @@ export default class ${Name}Discoverer {
     }
 }
 `
-  return discoverer
 }

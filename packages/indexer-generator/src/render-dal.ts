@@ -1,6 +1,18 @@
 import { ViewInstructions } from './types.js'
 
 export function renderDALFiles(
+  Name: string,
+  instructionsView: ViewInstructions | undefined,
+): [string, string][] {
+  const files: [string, string][] = [];
+  
+  files.push(['event', generateEventDal(Name, instructionsView)]);
+
+  return files;
+}
+
+function generateEventDal(
+  Name: string,
   instructionsView: ViewInstructions | undefined,
 ): string {
   const bigNum: Set<string> = new Set([
@@ -13,55 +25,49 @@ export function renderDALFiles(
     'i256',
     'i512',
   ])
-  const uniqueBNProp: string[] = []
-  const uniquePubkeyProp: string[] = []
+
+  const uniqueBNProp: Set<string> = new Set()
+  const uniquePubkeyProp: Set<string> = new Set()
 
   if (instructionsView) {
     for (const ix of instructionsView.instructions) {
       for (const arg of ix.args) {
         if (typeof arg.type === 'string') {
           if (arg.type === 'publicKey') {
-            if (!uniquePubkeyProp.includes(arg.name)) {
-              uniquePubkeyProp.push(arg.name)
-            }
+            uniquePubkeyProp.add(arg.name)
           }
           if (bigNum.has(arg.type)) {
-            if (!uniqueBNProp.includes(arg.name)) {
-              uniqueBNProp.push(arg.name)
-            }
+            uniqueBNProp.add(arg.name)
           }
         }
       }
     }
   }
 
-  let eventDal = `import { PublicKey } from '@solana/web3.js'
+  const stringifySet = (set: Set<string>): string => {
+    return Array.from(set)
+      .map(prop => `  '${prop}',\n`)
+      .join('');
+  }
+
+  return `import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { EntityStorage } from '@aleph-indexer/core'
-import { ParsedEvents } from '../utils/layouts/index.js'
+import { ${Name}Event } from '../utils/layouts/index.js'
 
-export type EventStorage = EntityStorage<ParsedEvents>
+export type EventStorage = EntityStorage<${Name}Event>
 
-// in this vector you can include the properties of several 
+// in this vector you can include the properties of several
 // events that are BN in order to be able to cast them
 const mappedBNProps: string[] = [
-  `
-  for (const prop of uniqueBNProp) {
-    eventDal += `'${prop}',
-`
-  }
-  eventDal += `
+  ${stringifySet(uniqueBNProp)}
 ]
 
 // in this vector you can include the properties of several
 // events that are PublicKey in order to be able to cast them
 const mappedPublicKeyProps: string[] = [
-  'programId',`
-  for (const prop of uniquePubkeyProp) {
-    eventDal += `'${prop}',
-`
-  }
-  eventDal += `
+  'programId',
+  ${stringifySet(uniquePubkeyProp)}
 ]
 
 export enum EventDALIndex {
@@ -70,27 +76,27 @@ export enum EventDALIndex {
 }
 
 const idKey = {
-  get: (e: ParsedEvents) => e.id,
+  get: (e: ${Name}Event) => e.id,
   length: EntityStorage.VariableLength,
 }
 
 const accountKey = {
-  get: (e: ParsedEvents) => e.account,
+  get: (e: ${Name}Event) => e.account,
   length: EntityStorage.AddressLength,
 }
 
 const typeKey = {
-  get: (e: ParsedEvents) => e.type,
+  get: (e: ${Name}Event) => e.type,
   length: EntityStorage.VariableLength,
 }
 
 const timestampKey = {
-  get: (e: ParsedEvents) => e.timestamp,
+  get: (e: ${Name}Event) => e.timestamp,
   length: EntityStorage.TimestampLength,
 }
 
 export function createEventDAL(path: string): EventStorage {
-  return new EntityStorage<ParsedEvents>({
+  return new EntityStorage<${Name}Event>({
     name: 'event',
     path,
     key: [idKey],
@@ -115,7 +121,6 @@ export function createEventDAL(path: string): EventStorage {
       }
 
       for (const prop of mappedPublicKeyProps) {
-        console.log(value, prop in value)
         if (!(prop in value)) continue
         if ((value as any)[prop] instanceof PublicKey) continue
         ;(value as any)[prop] = new PublicKey((value as any)[prop])
@@ -126,6 +131,4 @@ export function createEventDAL(path: string): EventStorage {
   })
 }
 `
-
-  return eventDal
 }

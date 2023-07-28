@@ -52,7 +52,7 @@ export default class APISchema extends IndexerAPISchema {
             type: Types.Events,
             args: {
               account: { type: new GraphQLNonNull(GraphQLString) },
-              types: { type: new GraphQLList(Types.ParsedEvents) },
+              types: { type: new GraphQLList(Types.MarinadeFinanceEvent) },
               startDate: { type: GraphQLFloat },
               endDate: { type: GraphQLFloat },
               limit: { type: GraphQLInt },

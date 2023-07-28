@@ -1,11 +1,26 @@
-export function renderRootFiles(filename: string): string[] {
-  const name = filename.toLowerCase()
+export function renderRootFiles(filename: string): [string, string][] {
+  const name = filename.toLowerCase();
+  const files: [string, string][] = [];
 
-  const cmd = `#!/bin/sh
+  files.push(renderCmd());
+  files.push(renderDocker(name));
+  files.push(renderPackageJson(filename));
+  files.push(renderRun(name));
+  files.push(renderTsconfig());
+  files.push(renderTypesDts());
 
-node --max-old-space-size=51200 packages/\${INDEXER}/dist/run.js`
+  return files;
+}
 
-  const docker = `version: '2'
+function renderCmd(): [string, string] {
+  const content = `#!/bin/sh
+
+node --max-old-space-size=51200 packages/\${INDEXER}/dist/run.js`;
+  return ["cmd.sh", content];
+}
+
+function renderDocker(name: string): [string, string] {
+  const content = `version: '2'
 
 services:
   ${name}:
@@ -24,9 +39,12 @@ services:
       - VIRTUAL_PORT=8080
       - SOLANA_RPC=
     network_mode: bridge
-`
+`;
+  return ["docker-compose.yaml", content];
+}
 
-  const pkg = `{
+function renderPackageJson(filename: string): [string, string] {
+  const content = `{
   "name": "@aleph-indexer/${filename}",
   "version": "1.0.0",
   "description": "",
@@ -43,13 +61,14 @@ services:
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.26",
-    "@aleph-indexer/framework": "^1.0.29",
-    "@aleph-indexer/solana": "^1.0.29",
+    "@aleph-indexer/core": "^1.0.42",
+    "@aleph-indexer/framework": "^1.0.43",
+    "@aleph-indexer/solana": "^1.0.43",
+    "@coral-xyz/borsh": "^0.28.0",
     "@metaplex-foundation/beet": "0.7.1",
     "@metaplex-foundation/beet-solana": "0.4.0",
     "@solana/spl-token": "0.3.5",
-    "@solana/web3.js": "^1.66.2",
+    "@solana/web3.js": "^1.78.0",
     "bs58": "5.0.0"
   },
   "devDependencies": {
@@ -58,9 +77,13 @@ services:
     "typescript": "^4.8.3",
     "@types/bn.js": "^5.1.0"
   }
-}`
+}
+`;
+  return ["package.json", content];
+}
 
-  const run = `import { fileURLToPath } from 'url'
+function renderRun(name: string): [string, string] {
+  const content = `import { fileURLToPath } from 'url'
 import path from 'path'
 import { config } from '@aleph-indexer/core'
 import SDK, { Blockchain, TransportType } from '@aleph-indexer/framework'
@@ -117,27 +140,33 @@ async function main() {
 }
 
 main()
-`
+`;
+  return ["run.ts", content];
+}
 
-  const tsconfig = `{
-    "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "outDir": "dist"
-    },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "scripts",
-        "tests",
-        "**/*.spec.ts",
-        "**/*.test.ts",
-        "**/__tests__",
-        "**/__mocks__"
-    ]
-  }`
+function renderTsconfig(): [string, string] {
+  const content = `{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+      "outDir": "dist"
+  },
+  "exclude": [
+      "node_modules",
+      "dist",
+      "scripts",
+      "tests",
+      "**/*.spec.ts",
+      "**/*.test.ts",
+      "**/__tests__",
+      "**/__mocks__"
+  ]
+}
+`;
+  return ["tsconfig.json", content];
+}
 
-  const typesdts = `export * from '../../types'
-`
-
-  return [docker, pkg, run, tsconfig, typesdts, cmd]
+function renderTypesDts(): [string, string] {
+  const content = `export * from '../../types'
+`;
+  return ["types.d.ts", content];
 }

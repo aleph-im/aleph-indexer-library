@@ -4,10 +4,18 @@ export function renderDomainFiles(
   Name: string,
   filename: string,
   accounts: ViewAccounts | undefined,
-): string[] {
-  const NAME = filename.toUpperCase()
+): [string, string][] {
+  const files: [string, string][] = [];
 
-  const account = `import { StorageStream } from '@aleph-indexer/core'
+  files.push(['account', createAccountDomain(Name)]);
+  files.push(['worker', createWorkerDomain(Name, filename)]);
+  files.push(['main', createMainDomain(Name, filename, accounts)]);
+
+  return files;
+}
+
+function createAccountDomain(Name: string): string {
+  return `import { StorageStream } from '@aleph-indexer/core'
 import {
   AccountTimeSeriesStatsManager,
   AccountTimeSeriesStats,
@@ -15,7 +23,7 @@ import {
   AccountStats,
 } from '@aleph-indexer/framework'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
-import { ParsedEvents } from '../utils/layouts/index.js'
+import { ${Name}Event } from '../utils/layouts/index.js'
 import { ${Name}AccountInfo, ${Name}AccountStats } from '../types.js'
 
 export class AccountDomain {
@@ -40,12 +48,12 @@ export class AccountDomain {
     return this.timeSeriesStats.getStats()
   }
 
-  getEventsByTime(
+  async getEventsByTime(
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, ParsedEvents>> {
-    return this.eventDAL
+  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
+    return await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
       .getAllFromTo(
         [this.info.address, startDate],
@@ -55,7 +63,12 @@ export class AccountDomain {
   }
 }
 `
-  const worker = `import { StorageStream, Utils } from '@aleph-indexer/core'
+}
+
+function createWorkerDomain(Name: string, filename: string): string {
+  const NAME = filename.toUpperCase().replace(/-/g, "_");
+
+  return `import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
@@ -66,15 +79,16 @@ import {
   AccountTimeSeriesStats,
   AccountStatsFilters,
   AccountStats,
+  ParserContext,
 } from '@aleph-indexer/framework'
 import {
   isParsedIx,
   SolanaIndexerWorkerDomainI,
-  SolanaInstructionContext,
+  SolanaParsedInstructionContext,
 } from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
-import { ParsedEvents } from '../utils/layouts/index.js'
+import { ${Name}Event } from '../utils/layouts/index.js'
 import { ${Name}AccountStats, ${Name}AccountInfo } from '../types.js'
 import { AccountDomain } from './account.js'
 import { createAccountStats } from './stats/timeSeries.js'
@@ -135,22 +149,28 @@ export default class WorkerDomain
     return this.getAccountStats(account)
   }
 
-  async solanaFilterInstructions(
-    ixsContext: SolanaInstructionContext[],
-  ): Promise<SolanaInstructionContext[]> {
-    return ixsContext.filter(({ ix }) => {
-      return isParsedIx(ix) && ix.programId === this.programId
-    })
+  async solanaFilterInstruction(
+    context: ParserContext,
+    entity: SolanaParsedInstructionContext,
+  ): Promise<boolean> {
+    return (
+      isParsedIx(entity.instruction) &&
+      entity.instruction.programId === this.programId
+    )
   }
 
   async solanaIndexInstructions(
-    ixsContext: SolanaInstructionContext[],
+    context: ParserContext,
+    ixsContext: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    const parsedIxs = ixsContext.map((ix) => this.eventParser.parse(ix))
+    if ('account' in context) {
+      const parsedIxs = ixsContext.map((ix) =>
+        this.eventParser.parse(ix, context.account),
+      )
+      console.log(\`indexing \${ixsContext.length} parsed ixs\`)
 
-    console.log(\`indexing \${ixsContext.length} parsed ixs\`)
-
-    await this.eventDAL.save(parsedIxs)
+      await this.eventDAL.save(parsedIxs)
+    }
   }
 
   // ------------- Custom impl methods -------------------
@@ -165,14 +185,14 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  getAccountEventsByTime(
+  async getAccountEventsByTime(
     account: string,
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, ParsedEvents>> {
+  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
     const res = this.getAccount(account)
-    return res.getEventsByTime(startDate, endDate, opts)
+    return await res.getEventsByTime(startDate, endDate, opts)
   }
 
   private getAccount(account: string): AccountDomain {
@@ -182,7 +202,9 @@ export default class WorkerDomain
   }
 }
 `
+}
 
+function createMainDomain(Name: string, filename: string, accounts: ViewAccounts | undefined): string {
   let mainDomain = `import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerMainDomain,
@@ -196,7 +218,7 @@ import {
 import { `
 
   if (accounts) mainDomain += `AccountType, `
-  mainDomain += `ParsedEvents } from '../utils/layouts/index.js'
+  mainDomain += `${Name}Event } from '../utils/layouts/index.js'
 import {
   Global${Name}Stats,
   ${Name}AccountStats,
@@ -285,7 +307,7 @@ export default class MainDomain
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, ParsedEvents>> {
+  ): Promise<StorageStream<string, ${Name}Event>> {
     const stream = await this.context.apiClient
       .useBlockchain(Blockchain.Solana)
       .invokeDomainMethod({
@@ -294,7 +316,7 @@ export default class MainDomain
         args: [startDate, endDate, opts],
       })
 
-    return stream as StorageStream<string, ParsedEvents>
+    return stream as StorageStream<string, ${Name}Event>
   }
 
   async updateStats(now: number): Promise<void> {
@@ -321,6 +343,7 @@ export default class MainDomain
       Blockchain.Solana,
       accountAddresses,
     )
+
     const globalStats: Global${Name}Stats = this.getNewGlobalStats()
 
     for (const accountStats of accountsStats) {
@@ -370,6 +393,5 @@ export default class MainDomain
   }
 }
 `
-
-  return [account, worker, mainDomain]
+  return mainDomain;
 }

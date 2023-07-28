@@ -8,7 +8,7 @@ import {
   AccountStats,
   Blockchain,
 } from '@aleph-indexer/framework'
-import { AccountType, ParsedEvents } from '../utils/layouts/index.js'
+import { AccountType, MarinadeFinanceEvent } from '../utils/layouts/index.js'
 import {
   GlobalMarinadeFinanceStats,
   MarinadeFinanceAccountStats,
@@ -97,7 +97,7 @@ export default class MainDomain
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, ParsedEvents>> {
+  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
     const stream = await this.context.apiClient
       .useBlockchain(Blockchain.Solana)
       .invokeDomainMethod({
@@ -106,7 +106,7 @@ export default class MainDomain
         args: [startDate, endDate, opts],
       })
 
-    return stream as StorageStream<string, ParsedEvents>
+    return stream as StorageStream<string, MarinadeFinanceEvent>
   }
 
   async updateStats(now: number): Promise<void> {

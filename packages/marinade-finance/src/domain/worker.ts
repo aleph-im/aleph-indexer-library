@@ -18,7 +18,7 @@ import {
 } from '@aleph-indexer/solana'
 import { eventParser as eParser } from '../parsers/event.js'
 import { createEventDAL } from '../dal/event.js'
-import { ParsedEvents } from '../utils/layouts/index.js'
+import { MarinadeFinanceEvent } from '../utils/layouts/index.js'
 import {
   MarinadeFinanceAccountStats,
   MarinadeFinanceAccountInfo,
@@ -99,16 +99,17 @@ export default class WorkerDomain
   }
 
   async solanaIndexInstructions(
-    context: { account: string; startDate: number; endDate: number },
-    entities: SolanaParsedInstructionContext[],
+    context: ParserContext,
+    ixsContext: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    const parsedIxs = entities.map((entity) =>
-      this.eventParser.parse(entity, context),
-    )
+    if ('account' in context) {
+      const parsedIxs = ixsContext.map((ix) =>
+        this.eventParser.parse(ix, context.account),
+      )
+      console.log(`indexing ${ixsContext.length} parsed ixs`)
 
-    console.log(`indexing ${entities.length} parsed ixs`)
-
-    await this.eventDAL.save(parsedIxs)
+      await this.eventDAL.save(parsedIxs)
+    }
   }
 
   // ------------- Custom impl methods -------------------
@@ -130,9 +131,9 @@ export default class WorkerDomain
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, ParsedEvents>> {
+  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
     const res = this.getAccount(account)
-    return res.getEventsByTime(startDate, endDate, opts)
+    return await res.getEventsByTime(startDate, endDate, opts)
   }
 
   private getAccount(account: string): AccountDomain {

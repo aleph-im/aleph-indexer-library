@@ -1,6 +1,3 @@
-import bs58 from 'bs58'
-import { AccountInfo, PublicKey } from '@solana/web3.js'
-import { solanaPrivateRPC } from '@aleph-indexer/solana'
 import {
   MARINADE_FINANCE_PROGRAM_ID,
   MARINADE_FINANCE_PROGRAM_ID_PK,
@@ -11,6 +8,9 @@ import {
   ACCOUNT_DISCRIMINATOR,
   ACCOUNTS_DATA_LAYOUT,
 } from '../../utils/layouts/accounts.js'
+import { solanaPrivateRPC } from '@aleph-indexer/solana'
+import bs58 from 'bs58'
+import { AccountInfo, PublicKey } from '@solana/web3.js'
 
 export default class MarinadeFinanceDiscoverer {
   constructor(
@@ -75,7 +75,6 @@ export default class MarinadeFinanceDiscoverer {
   ): MarinadeFinanceAccountInfo {
     const data = ACCOUNTS_DATA_LAYOUT[type].deserialize(resp.account.data)[0]
     const address = resp.pubkey.toBase58()
-    // Parsing names from on-chain account data can be complicated at times...
     let name: string = address
     if (Object.hasOwn(data, 'name')) {
       if ((data as any).name instanceof Uint8Array)
