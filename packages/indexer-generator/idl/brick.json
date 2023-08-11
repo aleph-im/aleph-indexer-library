@@ -1,0 +1,3362 @@
+{
+  "version": "0.1.0",
+  "name": "brick",
+  "instructions": [
+    {
+      "name": "acceptAccess",
+      "docs": [
+        "airdrop a token that allows users to create products in a specific marketplace"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "request",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "request"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "receiver"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "accessMint",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "access_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "accessVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "airdropAccess",
+      "docs": [
+        "airdrop a token that allows users to create products in a specific marketplace"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "accessMint",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "access_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "accessVault",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "editProduct",
+      "docs": [
+        "seller can edit payment_mint and product_price"
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.first_id"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "paymentMint",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "productPrice",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "editMarketplace",
+      "docs": [
+        "marketplace authority can edit fees and rewards configs"
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "discountMint",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "EditMarketplaceParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initBounty",
+      "docs": [
+        "marketplace auth can create multiple bounty vaults (different mints)"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bountyVault",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "bounty_vault"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "reward_mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initMarketplace",
+      "docs": [
+        "recommeded to read the Marketplace state code to understand the meaning of this data structure"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "accessMint",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "access_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "discountMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bountyVault",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "bounty_vault"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "reward_mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "InitMarketplaceParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initProductTree",
+      "docs": [
+        "recommeded to read the Product state code to understand the meaning of this data structure"
+      ],
+      "accounts": [
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bubblegumProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "compressionProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "arg",
+                "type": {
+                  "defined": "InitProductTreeParams"
+                },
+                "path": "params.first_id"
+              },
+              {
+                "kind": "arg",
+                "type": {
+                  "defined": "InitProductTreeParams"
+                },
+                "path": "params.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "productMint",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product"
+              }
+            ]
+          }
+        },
+        {
+          "name": "paymentMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "accessMint",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "access_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "productMintVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "accessVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "masterEdition",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "metadata"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "token_metadata_program"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "product_mint"
+              },
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "edition"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "token_metadata_program"
+            }
+          }
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "metadata"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "token_metadata_program"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "product_mint"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "token_metadata_program"
+            }
+          }
+        },
+        {
+          "name": "merkleTree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "treeAuthority",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "merkle_tree"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "bubblegum_program"
+            }
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "InitProductTreeParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initProduct",
+      "docs": [
+        "recommeded to read the Product state code to understand the meaning of this data structure"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "arg",
+                "type": {
+                  "defined": "InitProductParams"
+                },
+                "path": "params.first_id"
+              },
+              {
+                "kind": "arg",
+                "type": {
+                  "defined": "InitProductParams"
+                },
+                "path": "params.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "productMint",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product"
+              }
+            ]
+          }
+        },
+        {
+          "name": "paymentMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "accessMint",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "access_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "accessVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "InitProductParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initRewardVault",
+      "docs": [
+        "if a marketplace wants to change the reward mint, sellers and buyers have to create a new vault",
+        "because there is only one PDA, reward is the authority of these vaults"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reward",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward_vault"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "reward_mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initReward",
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reward",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward_vault"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "reward_mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "registerBuyCnft",
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bubblegumProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "compressionProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenMetadataProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceAuth",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.first_id"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "paymentMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "productMint",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "ATA that receives fees"
+          ]
+        },
+        {
+          "name": "bountyVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.authority"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sellerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "metadata",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "metadata"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "token_metadata_program"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "product_mint"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "token_metadata_program"
+            }
+          }
+        },
+        {
+          "name": "masterEdition",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "metadata"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "token_metadata_program"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "product_mint"
+              },
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "edition"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "token_metadata_program"
+            }
+          }
+        },
+        {
+          "name": "treeAuthority",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "merkle_tree"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "bubblegum_program"
+            }
+          }
+        },
+        {
+          "name": "bubblegumSigner",
+          "isMut": false,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "collection_cpi"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "bubblegum_program"
+            }
+          }
+        },
+        {
+          "name": "merkleTree",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "RegisterBuyCnftParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "registerBuyCounter",
+      "docs": [
+        "manages the transfers (buyer -> seller and fees to marketplace authority)",
+        "initializes the payment account to get the number of purchases"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceAuth",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.first_id"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payment",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "payment"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product"
+              }
+            ]
+          }
+        },
+        {
+          "name": "paymentMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "ATA that receives fees"
+          ]
+        },
+        {
+          "name": "bountyVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.authority"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sellerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "registerBuyToken",
+      "docs": [
+        "manages the transfers (buyer -> seller and fees to marketplace authority)",
+        "and buyers receive a token as a proof of payment (each product has its own tokenc)"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram2022",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceAuth",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.first_id"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "productMint",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product_mint"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product"
+              }
+            ]
+          }
+        },
+        {
+          "name": "paymentMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTokenVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "ATA that receives fees"
+          ]
+        },
+        {
+          "name": "bountyVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.authority"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sellerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "registerBuy",
+      "docs": [
+        "manages the transfers (buyer -> seller and fees to marketplace authority)",
+        "uses payment pda to index transactions, but it does not initilize it"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "seller",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceAuth",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.first_id"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payment",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "payment"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product"
+              }
+            ]
+          }
+        },
+        {
+          "name": "paymentMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "buyerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "marketplaceTransferVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "docs": [
+            "ATA that receives fees"
+          ]
+        },
+        {
+          "name": "bountyVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "sellerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.authority"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "sellerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerReward",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "buyerRewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "requestAccess",
+      "docs": [
+        "creates on chain request to get access to sell products in a specific marketplace"
+      ],
+      "accounts": [
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "request",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "request"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "updateTree",
+      "docs": [
+        "creates on chain request to get access to sell products in a specific marketplace"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "signer",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "product"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.first_id"
+              },
+              {
+                "kind": "account",
+                "type": {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                "account": "Product",
+                "path": "product.second_id"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Product",
+                "path": "product.marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "treeAuthority",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "merkle_tree"
+              }
+            ],
+            "programId": {
+              "kind": "account",
+              "type": "publicKey",
+              "path": "bubblegum_program"
+            }
+          }
+        },
+        {
+          "name": "merkleTree",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "logWrapper",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "bubblegumProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "compressionProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": "UpdateProductTreeParams"
+          }
+        }
+      ]
+    },
+    {
+      "name": "withdrawReward",
+      "docs": [
+        "when promotion is ended users can withdraw the funds stored in the vaults and managed by the reward PFA"
+      ],
+      "accounts": [
+        {
+          "name": "tokenProgramV0",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "marketplace",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace.authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "reward",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "receiverVault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardVault",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "reward_vault"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "signer"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "account": "Marketplace",
+                "path": "marketplace"
+              },
+              {
+                "kind": "account",
+                "type": "publicKey",
+                "path": "reward_mint"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Marketplace",
+      "docs": [
+        "This account represents a marketplace with associated transaction fees and reward configurations.",
+        "The account is controlled by an authority that can modify the fee and reward configurations."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "The authorized entity that can modify this account data."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "tokenConfig",
+            "docs": [
+              "Token or indexing and access system work."
+            ],
+            "type": {
+              "defined": "TokenConfig"
+            }
+          },
+          {
+            "name": "permissionConfig",
+            "docs": [
+              "Set of permission configuration on a marketplace that can be modified by the authority."
+            ],
+            "type": {
+              "defined": "PermissionConfig"
+            }
+          },
+          {
+            "name": "feesConfig",
+            "docs": [
+              "Set of fee configuration that can be modified by the authority."
+            ],
+            "type": {
+              "defined": "FeesConfig"
+            }
+          },
+          {
+            "name": "rewardsConfig",
+            "docs": [
+              "Set of rewards configuration that can be modified by the authority."
+            ],
+            "type": {
+              "defined": "RewardsConfig"
+            }
+          },
+          {
+            "name": "bumps",
+            "docs": [
+              "Seed bump parameters used for deterministic address derivation."
+            ],
+            "type": {
+              "defined": "MarketplaceBumps"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Product",
+      "docs": [
+        "This account works as an product administrator"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "The seller's public key, who owns the product."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "firstId",
+            "docs": [
+              "Off chain identifier of the product, split across two arrays due to a limit on",
+              "the maximum size of a seed component and with the goal of use 64 byte id"
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "secondId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "marketplace",
+            "type": "publicKey"
+          },
+          {
+            "name": "productMint",
+            "docs": [
+              "Two options:",
+              "- Collection address",
+              "- Mint (fungible) that represents the product. Owning this token implies having paid for the product."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "merkleTree",
+            "docs": [
+              "Active merkle tree, a seller has a limited sells so when the tree is full it is needed to update this address",
+              "can be null in case the product is created with create_product, to create a new one it is needed to call update_tree"
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "sellerConfig",
+            "docs": [
+              "Seller-defined product configurations."
+            ],
+            "type": {
+              "defined": "SellerConfig"
+            }
+          },
+          {
+            "name": "bumps",
+            "docs": [
+              "Seed bump parameters used for deterministic address derivation."
+            ],
+            "type": {
+              "defined": "ProductBumps"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reward",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "The public key of the account having authority over the reward PDA."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "marketplace",
+            "docs": [
+              "The marketplace address, stored to derive reward pda in the context."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "rewardVaults",
+            "docs": [
+              "Vault where tokens are stored until promotion is ended, then the user can withdraw.",
+              "reward_mint is stored in marketplace account.",
+              "It is allowed to create 5 vaults with different mints. In init_reward one is created,",
+              "if you want to change the mint reward for your users you need to makes user sign a init_bounty ix"
+            ],
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "bumps",
+            "docs": [
+              "Seed bump parameter used for deterministic address derivation in case of the Reward account."
+            ],
+            "type": {
+              "defined": "RewardBumps"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Access",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "docs": [
+              "The user pubkey that request access to the marketplace."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "marketplace",
+            "docs": [
+              "The marketplace address, stored to derive access pda in the context."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Payment",
+      "docs": [
+        "its a pda from signer, marketplace and product can only be",
+        "created/modified in register_buy that requieres transfers"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "units",
+            "type": "u32"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "EditMarketplaceParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fee",
+            "type": "u16"
+          },
+          {
+            "name": "feeReduction",
+            "type": "u16"
+          },
+          {
+            "name": "sellerReward",
+            "type": "u16"
+          },
+          {
+            "name": "buyerReward",
+            "type": "u16"
+          },
+          {
+            "name": "useCnfts",
+            "type": "bool"
+          },
+          {
+            "name": "deliverToken",
+            "type": "bool"
+          },
+          {
+            "name": "transferable",
+            "type": "bool"
+          },
+          {
+            "name": "chainCounter",
+            "type": "bool"
+          },
+          {
+            "name": "permissionless",
+            "type": "bool"
+          },
+          {
+            "name": "rewardsEnabled",
+            "type": "bool"
+          },
+          {
+            "name": "feePayer",
+            "type": {
+              "defined": "PaymentFeePayer"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitMarketplaceParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fee",
+            "type": "u16"
+          },
+          {
+            "name": "feeReduction",
+            "type": "u16"
+          },
+          {
+            "name": "sellerReward",
+            "type": "u16"
+          },
+          {
+            "name": "buyerReward",
+            "type": "u16"
+          },
+          {
+            "name": "useCnfts",
+            "type": "bool"
+          },
+          {
+            "name": "deliverToken",
+            "type": "bool"
+          },
+          {
+            "name": "transferable",
+            "type": "bool"
+          },
+          {
+            "name": "chainCounter",
+            "type": "bool"
+          },
+          {
+            "name": "permissionless",
+            "type": "bool"
+          },
+          {
+            "name": "rewardsEnabled",
+            "type": "bool"
+          },
+          {
+            "name": "accessMintBump",
+            "type": "u8"
+          },
+          {
+            "name": "feePayer",
+            "type": {
+              "defined": "PaymentFeePayer"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitProductTreeParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "firstId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "secondId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "productPrice",
+            "type": "u64"
+          },
+          {
+            "name": "maxDepth",
+            "type": "u32"
+          },
+          {
+            "name": "maxBufferSize",
+            "type": "u32"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "metadataUrl",
+            "type": "string"
+          },
+          {
+            "name": "feeBasisPoints",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InitProductParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "firstId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "secondId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "productPrice",
+            "type": "u64"
+          },
+          {
+            "name": "productMintBump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RegisterBuyCnftParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u32"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          },
+          {
+            "name": "uri",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UpdateProductTreeParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxDepth",
+            "type": "u32"
+          },
+          {
+            "name": "maxBufferSize",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokenConfig",
+      "docs": [
+        "Marketplace permission configs, gives flexibility to this program, marketplace auth decides.",
+        "All properties = false, buyer can call only register_buy instruction"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "useCnfts",
+            "docs": [
+              "If true seller inits the tree and buyers receives a cnft as a proof of payment",
+              "ie: seller calls init_product_tree to list a product and buyer calls register_buy_cnft"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "deliverToken",
+            "docs": [
+              "If true when someone buys a product, he receives a fungible token as proof of payment",
+              "false, payment account (just a counter) its created to keep track of amount of units bought"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "transferable",
+            "docs": [
+              "If true the fungible token can be transferable, ie: a user can sell it"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "chainCounter",
+            "docs": [
+              "If true payment account is created (pda used to index ALL transactions), init that account means having",
+              "a counter of the times a user has bought a specific product (should be cheaper vs using a token)"
+            ],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PermissionConfig",
+      "docs": [
+        "Marketplace permission configs, gives flexibility to this program, marketplace auth decides."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "accessMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "permissionless",
+            "docs": [
+              "True = permissionless marketplace, false = only wallets with a specific token can create products."
+            ],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeesConfig",
+      "docs": [
+        "Marketplace fees related to transactions."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "discountMint",
+            "docs": [
+              "Marketplaces can set a mint. Sellers opting to receive this mint as payment",
+              "will have their marketplace fee reduced. This could be a governance token, for instance."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "fee",
+            "docs": [
+              "The transaction fee percentage levied by the app or marketplace.",
+              "For example, a value of 250 corresponds to a fee of 2.5%."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "feeReduction",
+            "docs": [
+              "Fee reduction percentage applied if the seller chooses to receive a specific token as payment."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "feePayer",
+            "docs": [
+              "The entity that pays the transaction fees (either the buyer or the seller)."
+            ],
+            "type": {
+              "defined": "PaymentFeePayer"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "RewardsConfig",
+      "docs": [
+        "Rewards configuration associated with sales.",
+        "1. marketplace auth init_market (with one bounty_vault)",
+        "2. if a marketplace wants to change the reward mint, needs to call init_bounty_vault with that mint",
+        "3. marketplace auth transfers manually the bounty tokens (can be with 1/2 in the same transaction)",
+        "4. user sells / buys during promo in the marketplace, sends some tokens to the reward_vault of both",
+        "seller and buyer these vaults are controlled by marketplace pda",
+        "5. when promotion is ended the user can withdraw the rewards"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "rewardMint",
+            "docs": [
+              "If set, the marketplace will only give rewards if the payment is made with this specific mint.",
+              "To enable rewards irrespective of payment mint, set this value to pda(b\"null\", this program)."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "bountyVaults",
+            "docs": [
+              "Vaults where reward tokens are stored.",
+              "These vaults are managed by this marketplace PDA.",
+              "Tokens used during the promotional period should be deposited here."
+            ],
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "sellerReward",
+            "docs": [
+              "The transaction volume percentage that the seller receives as a reward on a sale.",
+              "A value of 250 corresponds to a reward of 2.5% of the transaction volume.",
+              "A value of 0 indicates that there is no active rewards for the seller."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "buyerReward",
+            "docs": [
+              "The transaction volume percentage that the buyer receives as a reward on a sale."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "rewardsEnabled",
+            "docs": [
+              "This flag enables or disables the reward system.",
+              "When false, the reward system is inactive regardless of the reward_mint value."
+            ],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MarketplaceBumps",
+      "docs": [
+        "Bump seed parameters used for deterministic address derivation."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vaultBumps",
+            "type": "bytes"
+          },
+          {
+            "name": "accessMintBump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SellerConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "paymentMint",
+            "docs": [
+              "The token seller selects to receive as payment."
+            ],
+            "type": "publicKey"
+          },
+          {
+            "name": "productPrice",
+            "docs": [
+              "The product price in terms of payment token/mint."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProductBumps",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "mintBump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RewardBumps",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "vaultBumps",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PaymentFeePayer",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Buyer"
+          },
+          {
+            "name": "Seller"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "CannotCloseProduct",
+      "msg": "There are still users with active payments"
+    },
+    {
+      "code": 6001,
+      "name": "StringTooLong",
+      "msg": "You are providing a string that is too long"
+    },
+    {
+      "code": 6002,
+      "name": "NumericalOverflow",
+      "msg": "Numerical Overflow happened"
+    },
+    {
+      "code": 6003,
+      "name": "IncorrectFee",
+      "msg": "You are setting a higher fee than allowed"
+    },
+    {
+      "code": 6004,
+      "name": "InconrrectAppAccount",
+      "msg": "You are providing a wrong app account"
+    },
+    {
+      "code": 6005,
+      "name": "InconrrectCreatorAccount",
+      "msg": "You are providing a wrong creator vault"
+    },
+    {
+      "code": 6006,
+      "name": "IncorrectPaymentMint",
+      "msg": "You are trying to pay a different mint than the one stated by the seller"
+    },
+    {
+      "code": 6007,
+      "name": "IncorrectATA",
+      "msg": "You are providing a wrong associated token account"
+    },
+    {
+      "code": 6008,
+      "name": "IncorrectAuthority",
+      "msg": "You are not the authority"
+    },
+    {
+      "code": 6009,
+      "name": "IncorrectMint",
+      "msg": "You are providing an incorrect mint"
+    },
+    {
+      "code": 6010,
+      "name": "IncorrectNonce",
+      "msg": "Given nonce is invalid"
+    },
+    {
+      "code": 6011,
+      "name": "IncorrectSeeds",
+      "msg": "Incorrect seeds"
+    },
+    {
+      "code": 6012,
+      "name": "IncorrectGovernanceName",
+      "msg": "You are not allowed to create a governance account"
+    },
+    {
+      "code": 6013,
+      "name": "IncorrectTokenProgram",
+      "msg": "You are providing a wrong token program"
+    },
+    {
+      "code": 6014,
+      "name": "IncorrectInstruction",
+      "msg": "You are trying to sign an incorrect instruction based on marketplace configuration"
+    },
+    {
+      "code": 6015,
+      "name": "ConversionError",
+      "msg": "Failed to convert data"
+    },
+    {
+      "code": 6016,
+      "name": "TransferError",
+      "msg": "Transfer error"
+    },
+    {
+      "code": 6017,
+      "name": "MintToError",
+      "msg": "Error during the mint_to CPI"
+    },
+    {
+      "code": 6018,
+      "name": "BurnError",
+      "msg": "Error during the burn CPI"
+    },
+    {
+      "code": 6019,
+      "name": "CloseAccountError",
+      "msg": "Error during the close account CPI"
+    },
+    {
+      "code": 6020,
+      "name": "ClosedPromotion",
+      "msg": "Currently we do not offer any promotion"
+    },
+    {
+      "code": 6021,
+      "name": "OpenPromotion",
+      "msg": "Currently you can not withdraw the bonus because the promotion has not finished"
+    },
+    {
+      "code": 6022,
+      "name": "VaultsVectorFull",
+      "msg": "The max size of reward vaults are set at 5"
+    },
+    {
+      "code": 6023,
+      "name": "ExtensionNotSupported",
+      "msg": "Currently this extension is not supported"
+    },
+    {
+      "code": 6024,
+      "name": "CreateAccountError",
+      "msg": "Error creating mint account"
+    },
+    {
+      "code": 6025,
+      "name": "MintExtensionError",
+      "msg": "Error extension init"
+    },
+    {
+      "code": 6026,
+      "name": "InitMintError",
+      "msg": "Error mint init"
+    },
+    {
+      "code": 6027,
+      "name": "OptionalAccountNotProvided",
+      "msg": "Optional account not provided"
+    },
+    {
+      "code": 6028,
+      "name": "NotInWithelist",
+      "msg": "You dont have the token that allows you to create products"
+    }
+  ],
+  "metadata": {
+    "address": "brick5uEiJqSkfuAvMtKmq7kiuEVmbjVMiigyV51GRF"
+  }
+}
