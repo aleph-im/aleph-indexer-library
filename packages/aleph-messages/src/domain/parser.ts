@@ -1,4 +1,4 @@
-import { Blockchain } from '@aleph-indexer/framework'
+import { BlockchainId } from '@aleph-indexer/framework'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
 import { SolanaParsedInstructionContext } from '@aleph-indexer/solana'
 import {
@@ -22,7 +22,7 @@ export class EventParser {
   )
 
   parseMessageEvent(
-    blockchainId: Blockchain,
+    blockchainId: BlockchainId,
     entity: EthereumParsedLog,
   ): MessageEvent {
     const parsedEvent = this.parseCommonScheme(blockchainId, entity)
@@ -38,7 +38,7 @@ export class EventParser {
   }
 
   parseSyncEvent(
-    blockchainId: Blockchain,
+    blockchainId: BlockchainId,
     entity: EthereumParsedLog,
   ): SyncEvent {
     const parsedEvent = this.parseCommonScheme(blockchainId, entity)
@@ -53,7 +53,7 @@ export class EventParser {
   }
 
   protected parseCommonScheme(
-    blockchain: Blockchain,
+    blockchain: BlockchainId,
     entity: EthereumParsedLog,
   ): AlephEvent {
     const [rawTimestamp, address] = entity.parsed?.args || []
@@ -76,9 +76,9 @@ export class EventParser {
   }
 
   parseSolanaMessages(
-    blockchain: Blockchain,
+    blockchain: BlockchainId,
     entities: SolanaParsedInstructionContext[],
-  ) {
+  ): [MessageEvent[], SyncEvent[]] {
     const parsedMessageEvents: MessageEvent[] = []
     const parsedSyncEvents: SyncEvent[] = []
 
@@ -116,7 +116,7 @@ export class EventParser {
       }
     }
 
-    return { parsedMessageEvents, parsedSyncEvents }
+    return [parsedMessageEvents, parsedSyncEvents]
   }
 
   protected isSolanaMessageEvent(event: any): event is SolanaMessageEvent {

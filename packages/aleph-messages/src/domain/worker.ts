@@ -5,7 +5,8 @@ import {
   IndexerWorkerDomain,
   AccountIndexerRequestArgs,
   ParserContext,
-  Blockchain,
+  BlockchainChain,
+  BlockchainId,
 } from '@aleph-indexer/framework'
 import {
   EthereumLogIndexerWorkerDomainI,
@@ -53,32 +54,32 @@ export default class WorkerDomain
     context: ParserContext,
     entity: EthereumParsedLog,
   ): Promise<boolean> {
-    return this.filterEVMLog(Blockchain.Ethereum, context, entity)
+    return this.filterEVMLog(BlockchainChain.Ethereum, context, entity)
   }
 
   async bscFilterLog(
     context: ParserContext,
     entity: EthereumParsedLog,
   ): Promise<boolean> {
-    return this.filterEVMLog(Blockchain.Bsc, context, entity)
+    return this.filterEVMLog(BlockchainChain.Bsc, context, entity)
   }
 
   async ethereumIndexLogs(
     context: ParserContext,
     entities: EthereumParsedLog[],
   ): Promise<void> {
-    return this.indexEVMLogs(Blockchain.Ethereum, context, entities)
+    return this.indexEVMLogs(BlockchainChain.Ethereum, context, entities)
   }
 
   async bscIndexLogs(
     context: ParserContext,
     entities: BscParsedLog[],
   ): Promise<void> {
-    return this.indexEVMLogs(Blockchain.Bsc, context, entities)
+    return this.indexEVMLogs(BlockchainChain.Bsc, context, entities)
   }
 
   protected async filterEVMLog(
-    blockchainId: Blockchain,
+    blockchainId: BlockchainId,
     context: ParserContext,
     entity: EthereumParsedLog,
   ): Promise<boolean> {
@@ -92,7 +93,7 @@ export default class WorkerDomain
   }
 
   protected async indexEVMLogs(
-    blockchainId: Blockchain,
+    blockchainId: BlockchainId,
     context: ParserContext,
     entities: BscParsedLog[],
   ): Promise<void> {
@@ -134,12 +135,12 @@ export default class WorkerDomain
     entities: SolanaParsedInstructionContext[],
   ): Promise<void> {
     console.log(
-      `Index ${Blockchain.Solana} logs`,
+      `Index ${BlockchainChain.Solana} logs`,
       JSON.stringify(entities, null, 2),
     )
 
-    const { parsedMessageEvents, parsedSyncEvents } =
-      this.parser.parseSolanaMessages(Blockchain.Solana, entities)
+    const [parsedMessageEvents, parsedSyncEvents] =
+      this.parser.parseSolanaMessages(BlockchainChain.Solana, entities)
 
     if (parsedMessageEvents.length) {
       await this.messageEventDAL.save(parsedMessageEvents)

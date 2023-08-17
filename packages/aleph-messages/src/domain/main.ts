@@ -1,4 +1,4 @@
-import { Blockchain } from '@aleph-indexer/framework'
+import { BlockchainChain } from '@aleph-indexer/framework'
 import { IndexerMainDomain } from '@aleph-indexer/framework'
 import {
   MessageEvent,
@@ -13,17 +13,17 @@ export default class MainDomain extends IndexerMainDomain {
 
     await this.indexAccounts([
       {
-        blockchainId: Blockchain.Ethereum,
+        blockchainId: BlockchainChain.Ethereum,
         account: '0x166fd4299364B21c7567e163d85D78d2fb2f8Ad5',
         index: { logs: true },
       },
       {
-        blockchainId: Blockchain.Bsc,
+        blockchainId: BlockchainChain.Bsc,
         account: '0xdF270752C8C71D08acbae4372687DA65AECe2D5D',
         index: { logs: true },
       },
       {
-        blockchainId: Blockchain.Solana,
+        blockchainId: BlockchainChain.Solana,
         account: 'ALepH1n9jxScbz45aZhBYVa35zxBNbKSvL6rWQpb4snc',
         index: { transactions: true },
       },
