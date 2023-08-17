@@ -47,4 +47,4 @@ export function round(num: number, decimals = 2): number {
   return Math.round((num + Number.EPSILON) * pow) / pow
 }
 
-export * from './constants'
+export * from './constants.js'
