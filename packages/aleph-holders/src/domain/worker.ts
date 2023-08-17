@@ -25,7 +25,10 @@ import {
 } from '../dal/erc20TransferEvent.js'
 import { EventParser } from './parser.js'
 import { BalanceDALIndex, createBalanceDAL } from '../dal/balance.js'
-import { blockchainTotalSupply } from '../utils/index.js'
+import {
+  blockchainDeployerAccount,
+  blockchainTotalSupply,
+} from '../utils/index.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -43,26 +46,27 @@ export default class WorkerDomain
   }
 
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
-    const { blockchainId: blockchain, account } = config
+    const { blockchainId: blockchain, account: contract } = config
     const { instanceName } = this.context
 
-    const accountBalance = await this.balanceDAL.get([blockchain, account])
+    const deployer = String(blockchainDeployerAccount[blockchain]).toLowerCase()
+    const accountBalance = await this.balanceDAL.get([blockchain, deployer])
 
     console.log(
       'Account indexing',
       instanceName,
       blockchain,
-      account,
+      contract,
+      deployer,
       accountBalance,
     )
 
     // @note: Init the initial supply if it is the first it run
     if (!accountBalance) {
       const balance = blockchainTotalSupply[blockchain].toString('hex')
+      await this.balanceDAL.save({ blockchain, account: deployer, balance })
 
-      console.log('Init supply', blockchain, account, balance)
-
-      await this.balanceDAL.save({ blockchain, account, balance })
+      console.log('Init supply', blockchain, deployer, balance)
     }
   }
 

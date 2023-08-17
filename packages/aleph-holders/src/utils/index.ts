@@ -1,4 +1,3 @@
-import { BlockchainChain, BlockchainId } from '@aleph-indexer/framework'
 import BN from 'bn.js'
 
 export function uint256ToBigNumber(hex: string): BN {
@@ -48,10 +47,4 @@ export function round(num: number, decimals = 2): number {
   return Math.round((num + Number.EPSILON) * pow) / pow
 }
 
-export const blockchainDecimals: Record<BlockchainId, number> = {
-  [BlockchainChain.Ethereum]: 18,
-}
-
-export const blockchainTotalSupply: Record<BlockchainId, BN> = {
-  [BlockchainChain.Ethereum]: new BN('500000000000000000000000000', 10),
-}
+export * from './constants'
