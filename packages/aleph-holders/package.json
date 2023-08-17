@@ -1,0 +1,25 @@
+{
+  "name": "@aleph-indexer/aleph-holders",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.js",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "up": "docker-compose up -d",
+    "up:devnet": "docker-compose -f docker-compose-devnet.yaml --project-name staking-devnet up -d"
+  },
+  "author": "ALEPH.im",
+  "license": "ISC",
+  "dependencies": {
+    "@aleph-indexer/bsc": "^1.1.1",
+    "@aleph-indexer/core": "^1.1.1",
+    "@aleph-indexer/ethereum": "^1.1.1",
+    "@aleph-indexer/framework": "^1.1.1"
+  }
+}
