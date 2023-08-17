@@ -12,7 +12,6 @@ import {
   EthereumParsedLog,
 } from '@aleph-indexer/ethereum'
 import {
-  isParsedIx,
   SolanaIndexerWorkerDomainI,
   SolanaParsedInstructionContext,
 } from '@aleph-indexer/solana'
@@ -30,7 +29,10 @@ import { EventParser } from './parser.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements EthereumLogIndexerWorkerDomainI, BscLogIndexerWorkerDomainI, SolanaIndexerWorkerDomainI
+  implements
+    EthereumLogIndexerWorkerDomainI,
+    BscLogIndexerWorkerDomainI,
+    SolanaIndexerWorkerDomainI
 {
   constructor(
     protected context: IndexerDomainContext,
@@ -131,10 +133,14 @@ export default class WorkerDomain
     context: ParserContext,
     entities: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    console.log(`Index ${Blockchain.Solana} logs`, JSON.stringify(entities, null, 2))
-    
-    const { parsedMessageEvents, parsedSyncEvents } = this.parser.parseSolanaMessages(Blockchain.Solana, entities)
-    
+    console.log(
+      `Index ${Blockchain.Solana} logs`,
+      JSON.stringify(entities, null, 2),
+    )
+
+    const { parsedMessageEvents, parsedSyncEvents } =
+      this.parser.parseSolanaMessages(Blockchain.Solana, entities)
+
     if (parsedMessageEvents.length) {
       await this.messageEventDAL.save(parsedMessageEvents)
     }
