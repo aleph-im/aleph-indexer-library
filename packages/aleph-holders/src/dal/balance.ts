@@ -2,6 +2,7 @@ import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
 import { Balance } from '../types.js'
 import {
   bigNumberToString,
+  blockchainDecimals,
   uint256ToBigNumber,
   uint256ToNumber,
 } from '../utils/index.js'
@@ -35,7 +36,10 @@ const mapValueFn = async (value: any) => {
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
     value.balanceBN = uint256ToBigNumber(value.balance)
-    value.balanceNum = uint256ToNumber(value.balance)
+    value.balanceNum = uint256ToNumber(
+      value.balance,
+      blockchainDecimals[value.blockchain],
+    )
   } catch (e) {
     console.log(e)
     console.log('ERR VAL', value)
