@@ -11,11 +11,18 @@ export type ERC20TransferEventStorage = EntityStorage<ERC20TransferEvent>
 export enum ERC20TransferEventDALIndex {
   BlockchainTimestamp = 'blockchain_timestamp',
   BlockchainHeight = 'blockchain_height',
+  BlockchainAccountTimestamp = 'blockchain_account_timestamp',
+  BlockchainAccountHeight = 'blockchain_account_height',
 }
 
 const idKey = {
   get: (e: ERC20TransferEvent) => e.id,
   length: EntityStorage.VariableLength,
+}
+
+const accountKey = {
+  get: (e: ERC20TransferEvent) => [e.from, e.to],
+  length: EntityStorage.EthereumAddressLength,
 }
 
 const blockchainKey = {
@@ -68,6 +75,14 @@ export function createERC20TransferEventDAL(
       {
         name: ERC20TransferEventDALIndex.BlockchainHeight,
         key: [blockchainKey, heightKey],
+      },
+      {
+        name: ERC20TransferEventDALIndex.BlockchainAccountTimestamp,
+        key: [blockchainKey, accountKey, timestampKey],
+      },
+      {
+        name: ERC20TransferEventDALIndex.BlockchainAccountHeight,
+        key: [blockchainKey, accountKey, heightKey],
       },
     ],
     mapValueFn,

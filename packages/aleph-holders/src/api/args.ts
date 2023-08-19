@@ -9,6 +9,7 @@ import { GraphQLBlockchain } from '@aleph-indexer/framework'
 
 export const ERC20TransferEventQueryArgs = {
   blockchain: { type: new GraphQLNonNull(GraphQLBlockchain) },
+  account: { type: GraphQLString },
   startDate: { type: GraphQLFloat },
   endDate: { type: GraphQLFloat },
   startHeight: { type: GraphQLFloat },

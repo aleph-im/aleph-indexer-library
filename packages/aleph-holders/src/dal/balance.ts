@@ -10,7 +10,6 @@ import {
 export type BalanceStorage = EntityStorage<Balance>
 
 export enum BalanceDALIndex {
-  BlockchainAccount = 'blockchain_account',
   BlockchainBalance = 'blockchain_balance',
 }
 
@@ -54,10 +53,6 @@ export function createBalanceDAL(path: string): BalanceStorage {
     path,
     key: [blockchainKey, accountKey],
     indexes: [
-      {
-        name: BalanceDALIndex.BlockchainAccount,
-        key: [blockchainKey, accountKey],
-      },
       {
         name: BalanceDALIndex.BlockchainBalance,
         key: [blockchainKey, balanceKey],

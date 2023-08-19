@@ -30,10 +30,8 @@ export enum EventType {
 }
 
 export type ERC20TransferEventQueryArgs = {
-  // @todo: Implement this query filters
-  // address?: string
-  // types?: string[]
   blockchain: BlockchainId
+  account?: string
   startDate?: number
   endDate?: number
   startHeight?: number

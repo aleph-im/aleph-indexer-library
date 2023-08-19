@@ -146,10 +146,17 @@ export default class WorkerDomain
     account: string,
     args: ERC20TransferEventQueryArgs,
   ): Promise<ERC20TransferEvent[]> {
-    let { startDate, endDate, startHeight, endHeight, blockchain, ...opts } =
-      args
+    let {
+      startDate,
+      endDate,
+      startHeight,
+      endHeight,
+      blockchain,
+      account: acc,
+      ...opts
+    } = args
 
-    console.log('QUERY EVENTS ', args)
+    console.log('QUERY EVENTS ', account, args)
 
     opts.reverse = opts.reverse !== undefined ? opts.reverse : true
 
@@ -157,13 +164,40 @@ export default class WorkerDomain
     const limit = opts.limit || 1000
     const result: ERC20TransferEvent[] = []
 
-    let events
+    let entries
 
-    if (!events && (startDate !== undefined || endDate !== undefined)) {
+    if (!entries && acc) {
+      if (startDate !== undefined || endDate !== undefined) {
+        startDate = startDate !== undefined ? startDate : 0
+        endDate = endDate !== undefined ? endDate : Date.now()
+
+        entries = await this.erc20TransferEventDAL
+          .useIndex(ERC20TransferEventDALIndex.BlockchainAccountTimestamp)
+          .getAllValuesFromTo(
+            [blockchain, acc, startDate],
+            [blockchain, acc, endDate],
+            opts,
+          )
+      } else {
+        startHeight = startHeight !== undefined ? startHeight : 0
+        endHeight =
+          endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
+
+        entries = await this.erc20TransferEventDAL
+          .useIndex(ERC20TransferEventDALIndex.BlockchainAccountHeight)
+          .getAllValuesFromTo(
+            [blockchain, acc, startHeight],
+            [blockchain, acc, endHeight],
+            opts,
+          )
+      }
+    }
+
+    if (!entries && (startDate !== undefined || endDate !== undefined)) {
       startDate = startDate !== undefined ? startDate : 0
       endDate = endDate !== undefined ? endDate : Date.now()
 
-      events = await this.erc20TransferEventDAL
+      entries = await this.erc20TransferEventDAL
         .useIndex(ERC20TransferEventDALIndex.BlockchainTimestamp)
         .getAllValuesFromTo(
           [blockchain, startDate],
@@ -172,11 +206,11 @@ export default class WorkerDomain
         )
     }
 
-    if (!events && (startHeight !== undefined || endDate !== undefined)) {
+    if (!entries) {
       startHeight = startHeight !== undefined ? startHeight : 0
       endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
-      events = await this.erc20TransferEventDAL
+      entries = await this.erc20TransferEventDAL
         .useIndex(ERC20TransferEventDALIndex.BlockchainHeight)
         .getAllValuesFromTo(
           [blockchain, startHeight],
@@ -185,17 +219,11 @@ export default class WorkerDomain
         )
     }
 
-    if (!events) {
-      events = await this.erc20TransferEventDAL
-        .useIndex(ERC20TransferEventDALIndex.BlockchainHeight)
-        .getAllValuesFromTo([blockchain], [blockchain], opts)
-    }
-
-    for await (const message of events) {
-      // @note: Skip first N events
+    for await (const entry of entries) {
+      // @note: Skip first N entries
       if (--skip >= 0) continue
 
-      result.push(message)
+      result.push(entry)
 
       // @note: Stop when after reaching the limit
       if (limit > 0 && result.length >= limit) return result
@@ -210,7 +238,7 @@ export default class WorkerDomain
   ): Promise<Balance[]> {
     let { blockchain, account: acc, ...opts } = args
 
-    console.log('QUERY BALANCE ', args)
+    console.log('QUERY BALANCE ', account, args)
 
     opts.reverse = opts.reverse !== undefined ? opts.reverse : true
 
@@ -218,25 +246,27 @@ export default class WorkerDomain
     const limit = opts.limit || 1000
     const result: Balance[] = []
 
-    let events
+    let entries
 
-    if (!events && acc) {
-      events = await this.balanceDAL
-        .useIndex(BalanceDALIndex.BlockchainAccount)
-        .getAllValuesFromTo([blockchain, acc], [blockchain, acc], opts)
+    if (!entries && acc) {
+      entries = await this.balanceDAL.getAllValuesFromTo(
+        [blockchain, acc],
+        [blockchain, acc],
+        opts,
+      )
     }
 
-    if (!events) {
-      events = await this.balanceDAL
+    if (!entries) {
+      entries = await this.balanceDAL
         .useIndex(BalanceDALIndex.BlockchainBalance)
         .getAllValuesFromTo([blockchain], [blockchain], opts)
     }
 
-    for await (const message of events) {
-      // @note: Skip first N events
+    for await (const entry of entries) {
+      // @note: Skip first N entries
       if (--skip >= 0) continue
 
-      result.push(message)
+      result.push(entry)
 
       // @note: Stop when after reaching the limit
       if (limit > 0 && result.length >= limit) return result
