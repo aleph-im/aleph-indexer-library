@@ -65,17 +65,16 @@ export function createBalanceDAL(path: string): BalanceStorage {
       if (oldEntity) {
         const oldBalance = uint256ToBigNumber(oldEntity.balance)
         const newBalance = uint256ToBigNumber(newEntity.balance)
-        const result = oldBalance.add(newBalance)
-
-        if (result.isZero()) {
-          return { op: EntityUpdateOp.Delete }
-        }
+        const balance = bigNumberToString(oldBalance.add(newBalance))
 
         entity = {
           ...newEntity,
-          balance: bigNumberToString(result),
+          balance,
         }
       }
+
+      const balance = uint256ToBigNumber(entity.balance)
+      if (balance.isZero()) return { op: EntityUpdateOp.Delete }
 
       return { op: EntityUpdateOp.Update, entity }
     },
