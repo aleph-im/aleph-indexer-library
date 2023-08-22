@@ -49,7 +49,7 @@ export default class WorkerDomain
     const { blockchainId: blockchain, account: contract } = config
     const { instanceName } = this.context
 
-    const deployer = String(blockchainDeployerAccount[blockchain]).toLowerCase()
+    const deployer = blockchainDeployerAccount[blockchain]
     const accountBalance = await this.balanceDAL.get([blockchain, deployer])
 
     console.log(
