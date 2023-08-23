@@ -5,7 +5,6 @@ import {
   IndexerWorkerDomain,
   AccountIndexerRequestArgs,
   ParserContext,
-  BlockchainChain,
   BlockchainId,
 } from '@aleph-indexer/framework'
 import {
@@ -16,6 +15,7 @@ import {
   SolanaIndexerWorkerDomainI,
   SolanaParsedInstructionContext,
 } from '@aleph-indexer/solana'
+import { OasysParsedLog } from '@aleph-indexer/oasys'
 import { BscLogIndexerWorkerDomainI, BscParsedLog } from '@aleph-indexer/bsc'
 import {
   EventType,
@@ -27,6 +27,7 @@ import {
 import { createMessageEventDAL } from '../dal/messageEvent.js'
 import { createSyncEventDAL, SyncEventDALIndex } from '../dal/syncEvent.js'
 import { EventParser } from './parser.js'
+import { BlockchainChain } from '../utils/index.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -64,6 +65,20 @@ export default class WorkerDomain
     return this.filterEVMLog(BlockchainChain.Bsc, context, entity)
   }
 
+  async oasysTestnetFilterLog(
+    context: ParserContext,
+    entity: OasysParsedLog,
+  ): Promise<boolean> {
+    return this.filterEVMLog(BlockchainChain.OasysTestnet, context, entity)
+  }
+
+  async homeverseTestnetFilterLog(
+    context: ParserContext,
+    entity: OasysParsedLog,
+  ): Promise<boolean> {
+    return this.filterEVMLog(BlockchainChain.HomeverseTestnet, context, entity)
+  }
+
   async ethereumIndexLogs(
     context: ParserContext,
     entities: EthereumParsedLog[],
@@ -76,6 +91,24 @@ export default class WorkerDomain
     entities: BscParsedLog[],
   ): Promise<void> {
     return this.indexEVMLogs(BlockchainChain.Bsc, context, entities)
+  }
+
+  async oasysTestnetIndexLogs(
+    context: ParserContext,
+    entities: OasysParsedLog[],
+  ): Promise<void> {
+    return this.indexEVMLogs(BlockchainChain.OasysTestnet, context, entities)
+  }
+
+  async homeverseTestnetIndexLogs(
+    context: ParserContext,
+    entities: OasysParsedLog[],
+  ): Promise<void> {
+    return this.indexEVMLogs(
+      BlockchainChain.HomeverseTestnet,
+      context,
+      entities,
+    )
   }
 
   protected async filterEVMLog(

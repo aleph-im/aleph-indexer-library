@@ -1,4 +1,3 @@
-import { BlockchainChain } from '@aleph-indexer/framework'
 import { IndexerMainDomain } from '@aleph-indexer/framework'
 import {
   MessageEvent,
@@ -6,6 +5,7 @@ import {
   SyncEvent,
   SyncEventQueryArgs,
 } from '../types.js'
+import { BlockchainChain, blockchainContract } from '../utils/index.js'
 
 export default class MainDomain extends IndexerMainDomain {
   async init(): Promise<void> {
@@ -14,18 +14,28 @@ export default class MainDomain extends IndexerMainDomain {
     await this.indexAccounts([
       {
         blockchainId: BlockchainChain.Ethereum,
-        account: '0x166fd4299364B21c7567e163d85D78d2fb2f8Ad5',
+        account: blockchainContract[BlockchainChain.Ethereum],
         index: { logs: true },
       },
       {
         blockchainId: BlockchainChain.Bsc,
-        account: '0xdF270752C8C71D08acbae4372687DA65AECe2D5D',
+        account: blockchainContract[BlockchainChain.Bsc],
         index: { logs: true },
       },
       {
         blockchainId: BlockchainChain.Solana,
-        account: 'ALepH1n9jxScbz45aZhBYVa35zxBNbKSvL6rWQpb4snc',
+        account: blockchainContract[BlockchainChain.Solana],
         index: { transactions: true },
+      },
+      {
+        blockchainId: BlockchainChain.OasysTestnet,
+        account: blockchainContract[BlockchainChain.OasysTestnet],
+        index: { logs: true },
+      },
+      {
+        blockchainId: BlockchainChain.HomeverseTestnet,
+        account: blockchainContract[BlockchainChain.HomeverseTestnet],
+        index: { logs: true },
       },
     ])
   }
