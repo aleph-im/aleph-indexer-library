@@ -18,7 +18,8 @@ async function main() {
 
   const projectId = config.INDEXER_NAMESPACE || 'aleph-messages'
   const supportedBlockchains = (
-    config.INDEXER_BLOCKCHAINS || 'ethereum,bsc,solana'
+    config.INDEXER_BLOCKCHAINS ||
+    'ethereum,bsc,solana,oasys:oasys-testnet,oasys-verse:homeverse-testnet'
   ).split(',') as Blockchain[]
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const transport =
