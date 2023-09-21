@@ -16,9 +16,9 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/bsc": "^1.1.7",
-    "@aleph-indexer/core": "^1.1.7",
-    "@aleph-indexer/ethereum": "^1.1.7",
-    "@aleph-indexer/framework": "^1.1.7"
+    "@aleph-indexer/bsc": "^1.1.9",
+    "@aleph-indexer/core": "^1.1.9",
+    "@aleph-indexer/ethereum": "^1.1.9",
+    "@aleph-indexer/framework": "^1.1.9"
   }
 }
