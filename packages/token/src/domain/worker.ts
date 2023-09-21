@@ -8,7 +8,6 @@ import {
   getBlockchainConfig,
 } from '@aleph-indexer/framework'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
-import { BscParsedLog } from '@aleph-indexer/bsc'
 import {
   EventType,
   ERC20TransferEventQueryArgs,
@@ -108,7 +107,7 @@ export default class WorkerDomain extends IndexerWorkerDomain {
   protected async indexEVMLogs(
     blockchainId: BlockchainId,
     context: ParserContext,
-    entities: BscParsedLog[],
+    entities: EthereumParsedLog[],
   ): Promise<void> {
     console.log(`Index ${blockchainId} logs`, JSON.stringify(entities, null, 2))
 
