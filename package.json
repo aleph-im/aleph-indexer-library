@@ -6,9 +6,6 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "postinstall": "npm run build",
-    "start": "npm run postinstall && ./run.sh",
-    "start-alone": "./run.sh",
     "generate": "./generate.sh",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:cov": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
@@ -89,6 +86,7 @@
     "packages/indexer-generator",
     "packages/marinade-finance",
     "packages/spl-lending",
-    "packages/spl-token"
+    "packages/spl-token",
+    "packages/token"
   ]
 }

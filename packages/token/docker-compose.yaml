@@ -1,0 +1,15 @@
+version: '2'
+
+services:
+  token:
+    build: ../..
+    volumes:
+      - ~/indexer.data:/app/data:rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    env_file:
+      - ../../.env
+      - ./.env
+    ports:
+      - 8080:8080
+    network_mode: bridge

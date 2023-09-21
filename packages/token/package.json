@@ -1,0 +1,24 @@
+{
+  "name": "@aleph-indexer/token",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.js",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "start": "node dist/run.js",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ALEPH.im",
+  "license": "ISC",
+  "dependencies": {
+    "@aleph-indexer/core": "^1.1.7",
+    "@aleph-indexer/framework": "^1.1.7",
+    "@aleph-indexer/ethereum": "^1.1.7"
+  }
+}
