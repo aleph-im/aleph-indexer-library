@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "postinstall": "npm run bootstrap && npm run build",
-    "start": "npm i && ./run.sh",
+    "postinstall": "npm run build",
+    "start": "npm run postinstall && ./run.sh",
     "start-alone": "./run.sh",
     "generate": "./generate.sh",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -15,16 +15,10 @@
     "test:rebuild": "npm run clean:all && npm i && npm run test",
     "lint": "eslint --cache --ignore-path .gitignore './packages/**/src/**/*.{js,ts,tsx}'",
     "lint:fix": "npm run lint -- --fix --quiet",
-    "build": "npm run clean:dist && npm run build:ts",
-    "build:ts": "lerna exec -- tsc -p ./tsconfig.json",
-    "build:all": "npm i && npm run docs",
-    "watch:ts": "lerna exec --parallel -- tsc -w -p ./tsconfig.json",
-    "bootstrap": "lerna bootstrap --force-local",
-    "link": "lerna link --force-local && node ./scripts/links.js",
-    "clean:dist": "find ./packages -maxdepth 2 -type d -name 'dist' -exec rm -rf '{}' +",
-    "clean:package-lock": "find . -maxdepth 3 -type f -name package-lock.json -exec rm -rf '{}' +",
-    "clean": "lerna clean --yes && npm run clean:dist && npm run clean:package-lock",
-    "clean:all": "npm run clean && rm -rf ./node_modules",
+    "build": "npm run clean:dist && lerna run build",
+    "clean:deps": "lerna exec -- npx rimraf node_modules && npx rimraf node_modules",
+    "clean:dist": "lerna exec -- npx rimraf dist && npx rimraf dist",
+    "clean": "npm run clean:dist && npm run clean:deps",
     "deps:fix": "madge --exclude 'dist/(.+)' --circular packages",
     "docs": "typedoc --tsconfig ./tsconfig.json"
   },
@@ -38,9 +32,7 @@
     "graphql-tools": "^8.2.9",
     "graphql-type-json": "^0.3.2",
     "lodash-es": "^4.17.21",
-    "luxon": "^2.4.0",
-    "protobufjs": "^7.2.4",
-    "typedoc": "^0.23.14"
+    "luxon": "^2.4.0"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
@@ -66,7 +58,7 @@
     "get-port": "^6.1.2",
     "husky": "^8.0.1",
     "jest": "^28.1.0",
-    "lerna": "^5.5.1",
+    "lerna": "^7.1.4",
     "lint-staged": "^12.4.1",
     "madge": "^5.0.1",
     "memdown": "^6.1.1",
@@ -75,7 +67,8 @@
     "supertest": "^6.2.3",
     "ts-jest": "^28.0.2",
     "ts-jest-resolver": "^2.0.0",
-    "typescript": "^4.6.4"
+    "typedoc": "^0.25.1",
+    "typescript": "^5.2.2"
   },
   "overrides": {
     "uuid": "8.3.2"
@@ -88,5 +81,14 @@
   },
   "lint-staged": {
     "*.js": "eslint --cache --fix"
-  }
+  },
+  "workspaces": [
+    "packages/aleph-holders",
+    "packages/aleph-messages",
+    "packages/brick",
+    "packages/indexer-generator",
+    "packages/marinade-finance",
+    "packages/spl-lending",
+    "packages/spl-token"
+  ]
 }
