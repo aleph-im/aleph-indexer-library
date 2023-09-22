@@ -29,10 +29,12 @@ async function main() {
     apiPort,
     fetcher: {
       instances: 1,
+      dataPath,
       api: false,
     },
     parser: {
       instances: 1,
+      dataPath,
       api: false,
     },
     indexer: {
