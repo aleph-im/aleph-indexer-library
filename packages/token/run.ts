@@ -12,9 +12,9 @@ async function main() {
   const apiSchemaPath = path.join(__dirname, './src/api/index.js')
 
   const projectId = config.INDEXER_NAMESPACE
-  const supportedBlockchains = (config.INDEXER_BLOCKCHAINS || 'ethereum').split(
-    ',',
-  ) as Blockchain[]
+  const supportedBlockchains = (
+    config.INDEXER_BLOCKCHAINS || 'ethereum,bsc'
+  ).split(',') as Blockchain[]
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const apiPort = Number(config.INDEXER_API_PORT || 8080)
   const transport =

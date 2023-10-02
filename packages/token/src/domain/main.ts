@@ -20,7 +20,7 @@ export default class MainDomain extends IndexerMainDomain {
       }
     })
 
-    console.log('🟢 Indexing tokens: ', accounts)
+    console.log('🟢 Indexing token accounts: ', accounts)
 
     await this.indexAccounts(accounts)
   }

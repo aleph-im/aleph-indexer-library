@@ -3,9 +3,9 @@ import {
   IndexerDomainContext,
   IndexerWorkerDomain,
   ParserContext,
-  BlockchainId,
   AccountIndexerConfigWithMeta,
   getBlockchainConfig,
+  Blockchain,
 } from '@aleph-indexer/framework'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
 import {
@@ -40,9 +40,7 @@ export default class WorkerDomain extends IndexerWorkerDomain {
 
   async init(): Promise<void> {
     this.context.supportedBlockchains.map((blockchain) => {
-      const { id } = getBlockchainConfig(blockchain)
-      const blockchainId = Utils.toCamelCase(id)
-      this.initBlockchainConfig(blockchainId)
+      this.initBlockchainConfig(blockchain)
     })
 
     await super.init()
@@ -51,18 +49,18 @@ export default class WorkerDomain extends IndexerWorkerDomain {
   async onNewAccount(
     config: AccountIndexerConfigWithMeta<TokenAccount>,
   ): Promise<void> {
-    const { blockchainId: blockchain, account: contract, meta } = config
+    const { blockchainId, account: contract, meta } = config
     const { instanceName } = this.context
 
-    this.tokenConfig[blockchain] = meta
+    this.tokenConfig[blockchainId] = meta
 
     const { deployer, supply } = meta
-    const accountBalance = await this.balanceDAL.get([blockchain, deployer])
+    const accountBalance = await this.balanceDAL.get([blockchainId, deployer])
 
     console.log(
-      'Account indexing',
+      '✅ Indexing account',
       instanceName,
-      blockchain,
+      blockchainId,
       contract,
       deployer,
       accountBalance,
@@ -71,32 +69,31 @@ export default class WorkerDomain extends IndexerWorkerDomain {
     // @note: Init the initial supply if it is the first it run
     if (!accountBalance) {
       const balance = supply.toString('hex')
-      await this.balanceDAL.save({ blockchain, account: deployer, balance })
+      await this.balanceDAL.save({
+        blockchain: blockchainId,
+        account: deployer,
+        balance,
+      })
 
-      console.log('Init supply', blockchain, deployer, balance)
+      console.log('Init supply', blockchainId, deployer, balance)
     }
   }
 
-  initBlockchainConfig(blockchain: BlockchainId): void {
-    const _this = this as any
-    if (_this[`${blockchain}FilterLog`]) return
+  initBlockchainConfig(this: any, blockchain: Blockchain): void {
+    const { id } = getBlockchainConfig(blockchain)
+    const blockchainId = Utils.toCamelCase(id)
 
-    _this[`${blockchain}FilterLog`] = (
-      context: ParserContext,
-      entity: EthereumParsedLog,
-    ) => this.filterEVMLog(blockchain, context, entity)
+    if (this[`${blockchainId}FilterLog`]) return
 
-    _this[`${blockchain}IndexLogs`] = (
-      context: ParserContext,
-      entities: EthereumParsedLog[],
-    ) => this.indexEVMLogs(blockchain, context, entities)
+    this[`${blockchainId}FilterLog`] = this.filterEVMLog.bind(this)
+    this[`${blockchainId}IndexLogs`] = this.indexEVMLogs.bind(this)
   }
 
   protected async filterEVMLog(
-    blockchainId: BlockchainId,
     context: ParserContext,
     entity: EthereumParsedLog,
   ): Promise<boolean> {
+    const { blockchainId } = context
     const eventSignature = entity.parsed?.signature
 
     console.log(`Filter ${blockchainId} logs`, eventSignature)
@@ -105,10 +102,11 @@ export default class WorkerDomain extends IndexerWorkerDomain {
   }
 
   protected async indexEVMLogs(
-    blockchainId: BlockchainId,
     context: ParserContext,
     entities: EthereumParsedLog[],
   ): Promise<void> {
+    const { blockchainId } = context
+
     console.log(`Index ${blockchainId} logs`, JSON.stringify(entities, null, 2))
 
     const parsedEvents: ERC20TransferEvent[] = []
