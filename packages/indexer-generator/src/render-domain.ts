@@ -52,7 +52,7 @@ export class AccountDomain {
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
+  ): Promise<StorageStream<string, ${Name}Event>> {
     return await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
       .getAllFromTo(
@@ -190,7 +190,7 @@ export default class WorkerDomain
     startDate: number,
     endDate: number,
     opts: any,
-  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
+  ): Promise<StorageStream<string, ${Name}Event>> {
     const res = this.getAccount(account)
     return await res.getEventsByTime(startDate, endDate, opts)
   }
@@ -213,7 +213,7 @@ import {
   AccountIndexerConfigWithMeta,
   IndexerMainDomainContext,
   AccountStats,
-  Blockchain,
+  BlockchainChain,
 } from '@aleph-indexer/framework'
 import { `
 
@@ -250,7 +250,7 @@ export default class MainDomain
 
     return accounts.map((meta) => {
       return {
-        blockchainId: Blockchain.Solana,
+        blockchainId: BlockchainChain.Solana,
         account: meta.address,
         meta,
         index: {
@@ -284,7 +284,7 @@ export default class MainDomain
     includeStats?: boolean,
   ): Promise<${Name}AccountData> {
     const info = (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getAccountInfo',
@@ -293,7 +293,7 @@ export default class MainDomain
     if (!includeStats) return { info }
 
     const { stats } = (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'get${Name}Stats',
@@ -309,7 +309,7 @@ export default class MainDomain
     opts: any,
   ): Promise<StorageStream<string, ${Name}Event>> {
     const stream = await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getAccountEventsByTime',
@@ -340,7 +340,7 @@ export default class MainDomain
   ): Promise<Global${Name}Stats> {
     console.log(\`📊 computing global stats for \${accountAddresses?.length} accounts\`)
     const accountsStats = await this.getAccountStats<${Name}AccountStats>(
-      Blockchain.Solana,
+      BlockchainChain.Solana,
       accountAddresses,
     )
 

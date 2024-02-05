@@ -11,7 +11,7 @@ export function renderStatsFiles(Name: string): [string, string][] {
 function createTimeSeries(Name: string): string {
   return `import {
     AccountTimeSeriesStatsManager,
-    Blockchain,
+    BlockchainChain,
     IndexableEntityType,
     IndexerMsClient,
     StatsStateStorage,
@@ -26,7 +26,7 @@ function createTimeSeries(Name: string): string {
   import accessAggregator from './timeSeriesAggregator.js'
   
   export async function createAccountStats(
-    blockchainId: Blockchain,
+    blockchainId: string,
     account: string,
     indexerApi: IndexerMsClient,
     eventDAL: EventStorage,

@@ -61,14 +61,14 @@ function renderPackageJson(filename: string): [string, string] {
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.42",
-    "@aleph-indexer/framework": "^1.0.43",
-    "@aleph-indexer/solana": "^1.0.43",
+    "@aleph-indexer/core": "^1.1.10",
+    "@aleph-indexer/framework": "^1.1.11",
+    "@aleph-indexer/solana": "^1.1.11",
     "@coral-xyz/borsh": "^0.28.0",
-    "@metaplex-foundation/beet": "0.7.1",
-    "@metaplex-foundation/beet-solana": "0.4.0",
-    "@solana/spl-token": "0.3.5",
-    "@solana/web3.js": "^1.78.0",
+    "@metaplex-foundation/beet": "0.7.2",
+    "@metaplex-foundation/beet-solana": "0.4.1",
+    "@solana/spl-token": "0.4.0",
+    "@solana/web3.js": "^1.89.1",
     "bs58": "5.0.0"
   },
   "devDependencies": {
@@ -86,7 +86,7 @@ function renderRun(name: string): [string, string] {
   const content = `import { fileURLToPath } from 'url'
 import path from 'path'
 import { config } from '@aleph-indexer/core'
-import SDK, { Blockchain, TransportType } from '@aleph-indexer/framework'
+import SDK, { BlockchainChain, TransportType } from '@aleph-indexer/framework'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -114,7 +114,7 @@ async function main() {
 
   await SDK.init({
     projectId,
-    supportedBlockchains: [Blockchain.Solana],
+    supportedBlockchains: [BlockchainChain.Solana],
     transport,
     transportConfig,
     apiPort,
