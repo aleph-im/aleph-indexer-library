@@ -2,7 +2,8 @@ export function renderRootFiles(filename: string): [string, string][] {
   const name = filename.toLowerCase();
   const files: [string, string][] = [];
 
-  files.push(renderCmd());
+  files.push(renderSh());
+  files.push(renderEnv());
   files.push(renderDocker(name));
   files.push(renderPackageJson(filename));
   files.push(renderRun(name));
@@ -12,11 +13,19 @@ export function renderRootFiles(filename: string): [string, string][] {
   return files;
 }
 
-function renderCmd(): [string, string] {
-  const content = `#!/bin/sh
+function renderSh(): [string, string] {
+  const content = `#!/bin/bash
+echo "NODE_ENV=production node node_modules/@aleph-indexer/core/dist/config.js setup"
+ENVS=$(NODE_ENV=production node node_modules/@aleph-indexer/core/dist/config.js setup)
 
-node --max-old-space-size=51200 packages/\${INDEXER}/dist/run.js`;
-  return ["cmd.sh", content];
+while IFS= read -r env; do
+export "\${env//\\"/}";
+done <<< "$ENVS"
+
+echo "NODE_ENV=production node dist/run.js" 
+NODE_ENV=production node $NODE_OPTIONS dist/run.js
+`;
+  return ["run.sh", content];
 }
 
 function renderDocker(name: string): [string, string] {
@@ -41,6 +50,15 @@ services:
     network_mode: bridge
 `;
   return ["docker-compose.yaml", content];
+}
+
+function renderEnv(): [string, string] {
+  const content = `SOLANA_RPC=
+  
+# 16 GB RAM for node.js
+NODE_OPTIONS=--max-old-space-size=16384  
+`;
+  return [".env", content];
 }
 
 function renderPackageJson(filename: string): [string, string] {
