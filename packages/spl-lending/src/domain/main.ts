@@ -1,12 +1,12 @@
 import BN from 'bn.js'
 import {
-  Blockchain,
   IndexerMainDomain,
   IndexerMainDomainWithDiscovery,
   IndexerMainDomainWithStats,
   AccountIndexerConfigWithMeta,
   IndexerMainDomainContext,
   AccountStats,
+  BlockchainChain,
 } from '@aleph-indexer/framework'
 import { usdDecimals } from '@aleph-indexer/solana'
 import {
@@ -48,7 +48,7 @@ export default class MainDomain
 
     return reserves.map((meta) => {
       return {
-        blockchainId: Blockchain.Solana,
+        blockchainId: BlockchainChain.Solana,
         account: meta.address,
         meta,
         index: {
@@ -82,7 +82,7 @@ export default class MainDomain
     includeStats?: boolean,
   ): Promise<ReserveData> {
     const info = (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getReserveInfo',
@@ -91,7 +91,7 @@ export default class MainDomain
     if (!includeStats) return { info }
 
     const { stats } = (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getReserveStats',
@@ -118,7 +118,7 @@ export default class MainDomain
     filters: ReserveEventsFilters,
   ): Promise<LendingEvent[]> {
     return this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getReserveEvents',
@@ -146,7 +146,7 @@ export default class MainDomain
     addresses?: string[],
   ): Promise<GlobalLendingStats> {
     const accountStats = await this.getAccountStats<LendingReserveStats>(
-      Blockchain.Solana,
+      BlockchainChain.Solana,
       addresses,
     )
 

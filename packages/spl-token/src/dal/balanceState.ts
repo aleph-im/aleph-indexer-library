@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
+import { EntityStorage, EntityUpdateCheckFnReturn, EntityUpdateOp } from '@aleph-indexer/core'
 import { SPLAccountBalance } from '../types.js'
 
 const mappedProps = ['balance']
@@ -53,17 +53,17 @@ export function createBalanceStateDAL(
     async updateCheckFn(
       oldEntity: SPLAccountBalance | undefined,
       newEntity: SPLAccountBalance,
-    ): Promise<EntityUpdateOp> {
+    ): Promise<EntityUpdateCheckFnReturn<SPLAccountBalance>> {
       if (oldEntity && oldEntity.timestamp > newEntity.timestamp) {
-        return EntityUpdateOp.Keep
+        return { op: EntityUpdateOp.Keep };
       }
-
-      console.log('Save new entity balance ', newEntity.balance)
+    
+      console.log('Save new entity balance ', newEntity.balance);
       if ((newEntity.balance as string) === '0') {
-        return EntityUpdateOp.Delete
+        return { op: EntityUpdateOp.Delete };
       }
-
-      return EntityUpdateOp.Update
-    },
+    
+      return { op: EntityUpdateOp.Update, entity: newEntity };
+    }
   })
 }

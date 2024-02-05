@@ -13,8 +13,8 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.33",
-    "@aleph-indexer/framework": "^1.0.35",
-    "@aleph-indexer/solana": "^1.0.35"
+    "@aleph-indexer/core": "^1.1.10",
+    "@aleph-indexer/framework": "^1.1.11",
+    "@aleph-indexer/solana": "^1.1.11"
   }
 }

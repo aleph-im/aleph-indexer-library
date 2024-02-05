@@ -1,7 +1,7 @@
 import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   AccountIndexerConfigWithMeta,
-  Blockchain,
+  BlockchainChain,
   createStatsStateDAL,
   createStatsTimeSeriesDAL,
   IndexerDomainContext,
@@ -138,6 +138,14 @@ export default class WorkerDomain
     context: ParserContext,
     entity: SolanaParsedInstructionContext,
   ): Promise<boolean> {
+    if(!isSPLTokenInstruction(entity.instruction)) {
+      console.log('FILTEREDD', entity.instruction)
+      console.log('SIGNATURE & id', entity.parentTransaction.id, entity.parentTransaction.signature)
+    } else {
+      if (entity.parentTransaction.signature == '3SH38oYsDekUboxR4Dqth1cppMSB2PmSJuoMiVjVjBrVfD4dLxYDeXzsrDQDzWD2nLt8ckf12rt6m1m1fHq6cATL') {
+        console.log(entity, 'HOLAAAA')
+      }
+    }
     return isSPLTokenInstruction(entity.instruction)
   }
 
@@ -147,7 +155,6 @@ export default class WorkerDomain
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
     const works: PendingWork<MintAccount>[] = []
-
     const promises = entities.map(async (ix) => {
       const account = context.account
       if (this.mints[account]) {
@@ -185,7 +192,7 @@ export default class WorkerDomain
                 },
               }
               await this.context.apiClient
-                .useBlockchain(Blockchain.Solana)
+                .useBlockchain(BlockchainChain.Solana)
                 .deleteAccount(options)
             }
           }
@@ -240,7 +247,7 @@ export default class WorkerDomain
         },
       }
       await this.context.apiClient
-        .useBlockchain(Blockchain.Solana)
+        .useBlockchain(BlockchainChain.Solana)
         .indexAccount(options)
     }
   }

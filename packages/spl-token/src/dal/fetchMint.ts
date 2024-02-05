@@ -1,4 +1,5 @@
 import {
+  EntityUpdateCheckFnReturn,
   EntityUpdateOp,
   PendingWork,
   PendingWorkStorage,
@@ -22,15 +23,16 @@ export function createFetchMintDAL(
     count: true,
     async updateCheckFn(
       oldEntity: PendingWork<MintAccount> | undefined,
-      newEntity: PendingWork<MintAccount>,
-    ): Promise<EntityUpdateOp> {
+      newEntity: PendingWork<MintAccount>
+    ): Promise<EntityUpdateCheckFnReturn<PendingWork<MintAccount>>> {
       if (oldEntity) {
         if (oldEntity.payload.timestamp > newEntity.payload.timestamp) {
-          newEntity.payload = oldEntity.payload
+          newEntity.payload = oldEntity.payload;
+          return { op: EntityUpdateOp.Keep };
         }
       }
-
-      return EntityUpdateOp.Update
-    },
+    
+      return { op: EntityUpdateOp.Update, entity: newEntity };
+    }    
   })
 }

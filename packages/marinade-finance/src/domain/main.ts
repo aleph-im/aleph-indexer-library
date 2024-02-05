@@ -6,7 +6,7 @@ import {
   AccountIndexerConfigWithMeta,
   IndexerMainDomainContext,
   AccountStats,
-  Blockchain,
+  BlockchainChain,
 } from '@aleph-indexer/framework'
 import { AccountType, MarinadeFinanceEvent } from '../utils/layouts/index.js'
 import {
@@ -40,7 +40,7 @@ export default class MainDomain
 
     return accounts.map((meta) => {
       return {
-        blockchainId: Blockchain.Solana,
+        blockchainId: BlockchainChain.Solana,
         account: meta.address,
         meta,
         index: {
@@ -74,7 +74,7 @@ export default class MainDomain
     includeStats?: boolean,
   ): Promise<MarinadeFinanceAccountData> {
     const info = (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getAccountInfo',
@@ -83,7 +83,7 @@ export default class MainDomain
     if (!includeStats) return { info }
 
     const { stats } = (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getMarinadeFinanceStats',
@@ -99,7 +99,7 @@ export default class MainDomain
     opts: any,
   ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
     const stream = await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         method: 'getAccountEventsByTime',
@@ -135,7 +135,7 @@ export default class MainDomain
     )
     const accountsStats =
       await this.getAccountStats<MarinadeFinanceAccountStats>(
-        Blockchain.Solana,
+        BlockchainChain.Solana,
         accountAddresses,
       )
 
