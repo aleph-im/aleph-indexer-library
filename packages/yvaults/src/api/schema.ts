@@ -26,7 +26,7 @@ export default class APISchema extends IndexerAPISchema {
       types: Types.types,
 
       customTimeSeriesTypesMap: { access: Types.AccessTimeStats },
-      customStatsType: Types.BrickStats,
+      customStatsType: Types.YvaultsStats,
 
       query: new GraphQLObjectType({
         name: 'Query',
@@ -52,7 +52,7 @@ export default class APISchema extends IndexerAPISchema {
             type: Types.Events,
             args: {
               account: { type: new GraphQLNonNull(GraphQLString) },
-              types: { type: new GraphQLList(Types.BrickEvent) },
+              types: { type: new GraphQLList(Types.YvaultsEvent) },
               startDate: { type: GraphQLFloat },
               endDate: { type: GraphQLFloat },
               limit: { type: GraphQLInt },
@@ -63,7 +63,7 @@ export default class APISchema extends IndexerAPISchema {
           },
 
           globalStats: {
-            type: Types.GlobalBrickStats,
+            type: Types.GlobalYvaultsStats,
             args: {
               types: { type: GraphQLString },
               accounts: { type: new GraphQLList(GraphQLString) },
