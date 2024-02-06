@@ -1,16 +1,16 @@
 export function renderRootFiles(filename: string): [string, string][] {
-  const name = filename.toLowerCase();
-  const files: [string, string][] = [];
+  const name = filename.toLowerCase()
+  const files: [string, string][] = []
 
-  files.push(renderSh());
-  files.push(renderEnv());
-  files.push(renderDocker(name));
-  files.push(renderPackageJson(filename));
-  files.push(renderRun(name));
-  files.push(renderTsconfig());
-  files.push(renderTypesDts());
+  files.push(renderSh())
+  files.push(renderEnv())
+  files.push(renderDocker(name))
+  files.push(renderPackageJson(filename))
+  files.push(renderRun(name))
+  files.push(renderTsconfig())
+  files.push(renderTypesDts())
 
-  return files;
+  return files
 }
 
 function renderSh(): [string, string] {
@@ -24,8 +24,8 @@ done <<< "$ENVS"
 
 echo "NODE_ENV=production node dist/run.js" 
 NODE_ENV=production node $NODE_OPTIONS dist/run.js
-`;
-  return ["run.sh", content];
+`
+  return ['run.sh', content]
 }
 
 function renderDocker(name: string): [string, string] {
@@ -48,8 +48,8 @@ services:
       - VIRTUAL_PORT=8080
       - SOLANA_RPC=
     network_mode: bridge
-`;
-  return ["docker-compose.yaml", content];
+`
+  return ['docker-compose.yaml', content]
 }
 
 function renderEnv(): [string, string] {
@@ -57,8 +57,8 @@ function renderEnv(): [string, string] {
   
 # 16 GB RAM for node.js
 NODE_OPTIONS=--max-old-space-size=16384  
-`;
-  return [".env", content];
+`
+  return ['.env', content]
 }
 
 function renderPackageJson(filename: string): [string, string] {
@@ -96,8 +96,8 @@ function renderPackageJson(filename: string): [string, string] {
     "@types/bn.js": "^5.1.0"
   }
 }
-`;
-  return ["package.json", content];
+`
+  return ['package.json', content]
 }
 
 function renderRun(name: string): [string, string] {
@@ -158,8 +158,8 @@ async function main() {
 }
 
 main()
-`;
-  return ["run.ts", content];
+`
+  return ['run.ts', content]
 }
 
 function renderTsconfig(): [string, string] {
@@ -179,12 +179,12 @@ function renderTsconfig(): [string, string] {
       "**/__mocks__"
   ]
 }
-`;
-  return ["tsconfig.json", content];
+`
+  return ['tsconfig.json', content]
 }
 
 function renderTypesDts(): [string, string] {
   const content = `export * from '../../types'
-`;
-  return ["types.d.ts", content];
+`
+  return ['types.d.ts', content]
 }

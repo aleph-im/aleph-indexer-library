@@ -6,22 +6,22 @@ export function renderLayoutsFiles(
   instructionsView: ViewInstructions | undefined,
   accountsView: ViewAccounts | undefined,
 ): [string, string][] {
-  const NAME = filename.toUpperCase().replace(/-/g, "_");
-  const name = filename.toLowerCase();
-  let files: [string, string][] = [];
+  const NAME = filename.toUpperCase().replace(/-/g, '_')
+  const name = filename.toLowerCase()
+  const files: [string, string][] = []
 
   if (accountsView && accountsView.length > 0) {
-    files.push(renderAccountLayouts(accountsView));
+    files.push(renderAccountLayouts(accountsView))
   }
 
   if (instructionsView && instructionsView.instructions.length > 0) {
-    files.push(renderIxLayouts(Name, instructionsView));
+    files.push(renderIxLayouts(Name, instructionsView))
   }
 
-  files.push(renderIndexLayouts(accountsView));
-  files.push(renderLayoutLayouts(name, NAME));
+  files.push(renderIndexLayouts(accountsView))
+  files.push(renderLayoutLayouts(name, NAME))
 
-  return files;
+  return files
 }
 
 function renderAccountLayouts(accountsView: ViewAccounts): [string, string] {
@@ -76,28 +76,31 @@ export const ACCOUNTS_DATA_LAYOUT: Record<
     }
     accountLayouts += `}`
   }
-  return ['accounts', accountLayouts];
+  return ['accounts', accountLayouts]
 }
 
-function renderIxLayouts(Name: string, instructionsView: ViewInstructions): [string, string] {
+function renderIxLayouts(
+  Name: string,
+  instructionsView: ViewInstructions,
+): [string, string] {
   let ixLayouts = `import { EventBase } from '@aleph-indexer/framework';
 import * as solita from './solita/index.js'
-`;
+`
   for (const otherImport of instructionsView.imports.otherImports) {
     if (isPubkey(otherImport))
       ixLayouts += `import { PublicKey } from '@solana/web3.js'
-`;
+`
     if (isBN(otherImport))
       ixLayouts += `import BN from 'bn.js'
-`;
+`
   }
 
   ixLayouts += `
 export enum InstructionType { 
-`;
+`
   for (const instruction of instructionsView.instructions) {
     ixLayouts += `   ${instruction.name} = '${instruction.name}',
-`;
+`
   }
   ixLayouts += `}
   
@@ -109,25 +112,28 @@ export type RawInstructionBase = {
   
 /*-----------------------* CUSTOM RAW INSTRUCTION TYPES *-----------------------*/
   
-`;
+`
   for (const instruction of instructionsView.instructions) {
     if (instruction.accounts.length > 0) {
-      ixLayouts += `export type ${instruction.name}AccountsInstruction = {`;
+      ixLayouts += `export type ${instruction.name}AccountsInstruction = {`
       for (const account of instruction.accounts) {
         ixLayouts += `
-  ${account.name}: string`;
+  ${account.name}: string`
       }
       ixLayouts += `
 }
   
-`;
+`
     }
 
     ixLayouts += `
-export type ${instruction.name}Info = `;
-    if (instruction.args.length > 0) ixLayouts += `solita.${instruction.name}InstructionArgs`;
-    if (instruction.args.length > 0 && instruction.accounts.length > 0) ixLayouts += ` & `;
-    if (instruction.accounts.length > 0) ixLayouts += `${instruction.name}AccountsInstruction`;
+export type ${instruction.name}Info = `
+    if (instruction.args.length > 0)
+      ixLayouts += `solita.${instruction.name}InstructionArgs`
+    if (instruction.args.length > 0 && instruction.accounts.length > 0)
+      ixLayouts += ` & `
+    if (instruction.accounts.length > 0)
+      ixLayouts += `${instruction.name}AccountsInstruction`
 
     ixLayouts += `
   
@@ -138,22 +144,22 @@ export type Raw${instruction.name} = RawInstructionBase & {
   }
 }
   
-`;
+`
   }
 
   ixLayouts += `export type RawInstructionsInfo = 
-`;
+`
   for (const instruction of instructionsView.instructions) {
     ixLayouts += `   | ${instruction.name}Info
-`;
+`
   }
 
   ixLayouts += `       
 export type RawInstruction = 
-`;
+`
   for (const instruction of instructionsView.instructions) {
     ixLayouts += `   | Raw${instruction.name}
-`;
+`
   }
 
   for (const instruction of instructionsView.instructions) {
@@ -163,15 +169,15 @@ export type ${instruction.name}Event = EventBase<InstructionType> & {
   signer: string
   account: string
 }
-`;
+`
   }
 
   ixLayouts += `       
 export type ${Name}Event = 
-`;
+`
   for (const instruction of instructionsView.instructions) {
     ixLayouts += `   | ${instruction.name}Event
-`;
+`
   }
 
   ixLayouts += `/*----------------------------------------------------------------------*/
@@ -183,7 +189,7 @@ export function getInstructionType(data: Buffer): InstructionType | undefined {
   
 export const IX_METHOD_CODE: Map<string, InstructionType | undefined > = 
   new Map<string, InstructionType | undefined >([
-`;
+`
   for (const instruction of instructionsView.instructions) {
     ixLayouts += `   [Buffer.from(solita.${instruction.name
       .charAt(0)
@@ -193,12 +199,12 @@ export const IX_METHOD_CODE: Map<string, InstructionType | undefined > =
       )}InstructionDiscriminator).toString('ascii'), InstructionType.${
       instruction.name
     }],
-`;
+`
   }
   ixLayouts += `
 ])
 export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
-`;
+`
   for (const instruction of instructionsView.instructions) {
     ixLayouts += `   [InstructionType.${
       instruction.name
@@ -206,28 +212,30 @@ export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
       .charAt(0)
       .toLowerCase()
       .concat(instruction.name.slice(1))}Struct,
-`;
+`
   }
 
   ixLayouts += `}
   
 export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
-`;
+`
   for (const instruction of instructionsView.instructions) {
     ixLayouts += `   [InstructionType.${instruction.name}]: solita.${instruction.name}Accounts,
-`;
+`
   }
-  ixLayouts += `}`;
+  ixLayouts += `}`
 
-  return ['instructions', ixLayouts];
+  return ['instructions', ixLayouts]
 }
 
-function renderIndexLayouts(accountsView: ViewAccounts | undefined): [string, string] {
+function renderIndexLayouts(
+  accountsView: ViewAccounts | undefined,
+): [string, string] {
   let indexLayouts = `export * from './instructions.js'
 export * from './solita/index.js'
-`;
-  if (accountsView) indexLayouts += `export * from './accounts.js'`;
-  return ['index', indexLayouts];
+`
+  if (accountsView) indexLayouts += `export * from './accounts.js'`
+  return ['index', indexLayouts]
 }
 
 function renderLayoutLayouts(name: string, NAME: string): [string, string] {
@@ -250,8 +258,8 @@ function renderLayoutLayouts(name: string, NAME: string): [string, string] {
       eventType: InstructionType,
       getInstructionType,
     },
-  }`;
-  return ['layout', content];
+  }`
+  return ['layout', content]
 }
 
 function isPubkey(type: string): boolean {

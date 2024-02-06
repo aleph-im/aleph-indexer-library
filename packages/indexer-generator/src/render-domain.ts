@@ -5,13 +5,13 @@ export function renderDomainFiles(
   filename: string,
   accounts: ViewAccounts | undefined,
 ): [string, string][] {
-  const files: [string, string][] = [];
+  const files: [string, string][] = []
 
-  files.push(['account', createAccountDomain(Name)]);
-  files.push(['worker', createWorkerDomain(Name, filename)]);
-  files.push(['main', createMainDomain(Name, filename, accounts)]);
+  files.push(['account', createAccountDomain(Name)])
+  files.push(['worker', createWorkerDomain(Name, filename)])
+  files.push(['main', createMainDomain(Name, filename, accounts)])
 
-  return files;
+  return files
 }
 
 function createAccountDomain(Name: string): string {
@@ -66,7 +66,7 @@ export class AccountDomain {
 }
 
 function createWorkerDomain(Name: string, filename: string): string {
-  const NAME = filename.toUpperCase().replace(/-/g, "_");
+  const NAME = filename.toUpperCase().replace(/-/g, '_')
 
   return `import { StorageStream } from '@aleph-indexer/core'
 import {
@@ -204,7 +204,11 @@ export default class WorkerDomain
 `
 }
 
-function createMainDomain(Name: string, filename: string, accounts: ViewAccounts | undefined): string {
+function createMainDomain(
+  Name: string,
+  filename: string,
+  accounts: ViewAccounts | undefined,
+): string {
   let mainDomain = `import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerMainDomain,
@@ -393,5 +397,5 @@ export default class MainDomain
   }
 }
 `
-  return mainDomain;
+  return mainDomain
 }

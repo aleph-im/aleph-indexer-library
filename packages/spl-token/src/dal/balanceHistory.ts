@@ -36,8 +36,8 @@ export function createBalanceHistoryDAL(
     indexes: [
       {
         name: 'mint_owner',
-        key: [mintKey, ownerKey]
-      }
+        key: [mintKey, ownerKey],
+      },
     ],
     mapFn: async function (entry: { key: any; value: any }) {
       const { key, value } = entry

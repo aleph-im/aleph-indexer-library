@@ -1,7 +1,5 @@
-export function renderParsersFiles(
-  Name: string,
-): [string, string][] {
-  let event = `import { SolanaParsedInstructionContext, RawMessageAccount } from '@aleph-indexer/solana'
+export function renderParsersFiles(Name: string): [string, string][] {
+  const event = `import { SolanaParsedInstructionContext, RawMessageAccount } from '@aleph-indexer/solana'
 import {
   ${Name}Event,
   RawInstruction,
@@ -37,5 +35,5 @@ export class EventParser {
 export const eventParser = new EventParser()
 export default eventParser
 `
-  return [['event', event]];
+  return [['event', event]]
 }

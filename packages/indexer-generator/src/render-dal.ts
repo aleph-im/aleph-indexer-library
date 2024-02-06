@@ -4,11 +4,11 @@ export function renderDALFiles(
   Name: string,
   instructionsView: ViewInstructions | undefined,
 ): [string, string][] {
-  const files: [string, string][] = [];
-  
-  files.push(['event', generateEventDal(Name, instructionsView)]);
+  const files: [string, string][] = []
 
-  return files;
+  files.push(['event', generateEventDal(Name, instructionsView)])
+
+  return files
 }
 
 function generateEventDal(
@@ -46,8 +46,8 @@ function generateEventDal(
 
   const stringifySet = (set: Set<string>): string => {
     return Array.from(set)
-      .map(prop => `  '${prop}',\n`)
-      .join('');
+      .map((prop) => `  '${prop}',\n`)
+      .join('')
   }
 
   return `import { PublicKey } from '@solana/web3.js'

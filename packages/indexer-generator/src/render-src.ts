@@ -6,19 +6,24 @@ export function renderSrcFiles(
   instructionsView: ViewInstructions | undefined,
   address?: string,
 ): [string, string][] {
-  const NAME = filename.toUpperCase().replace(/-/g, "_");
-  const name = filename.toLowerCase();
-  let files: [string, string][] = [];
+  const NAME = filename.toUpperCase().replace(/-/g, '_')
+  const name = filename.toLowerCase()
+  const files: [string, string][] = []
 
   if (instructionsView) {
-    files.push(renderConstants(Name, name, NAME, address));
-    files.push(renderTypes(Name, NAME, name));
+    files.push(renderConstants(Name, name, NAME, address))
+    files.push(renderTypes(Name, NAME, name))
   }
 
-  return files;
+  return files
 }
 
-function renderConstants(Name: string, name: string, NAME: string, address?: string): [string, string] {
+function renderConstants(
+  Name: string,
+  name: string,
+  NAME: string,
+  address?: string,
+): [string, string] {
   let content = `import { PublicKey } from '@solana/web3.js'
 import { config } from '@aleph-indexer/core'
 
@@ -43,12 +48,16 @@ export const ${NAME}_PROGRAM_ID_PK = new PublicKey(${NAME}_PROGRAM_ID)
 export const ${NAME}_PROGRAM_ID = 'WRITE YOUR PROGRAM PUBKEY HERE'
 export const ${NAME}_PROGRAM_ID_PK = new PublicKey(${NAME}_PROGRAM_ID)
 `
-  };
+  }
 
-  return ['constants', content];
+  return ['constants', content]
 }
 
-function renderTypes(Name: string, NAME: string, name: string): [string, string] {
+function renderTypes(
+  Name: string,
+  NAME: string,
+  name: string,
+): [string, string] {
   const content = `import { AccountType, ${Name}Event, ParsedAccountsData } from './utils/layouts/index.js'
 
   export type ${Name}AccountInfo = {
@@ -114,7 +123,7 @@ function renderTypes(Name: string, NAME: string, name: string): [string, string]
     info: ${Name}AccountInfo
     stats?: ${Name}AccountStats
   }
-  `;
+  `
 
-  return ['types', content];
+  return ['types', content]
 }
