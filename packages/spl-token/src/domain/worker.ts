@@ -138,21 +138,6 @@ export default class WorkerDomain
     context: ParserContext,
     entity: SolanaParsedInstructionContext,
   ): Promise<boolean> {
-    if (!isSPLTokenInstruction(entity.instruction)) {
-      console.log('FILTEREDD', entity.instruction)
-      console.log(
-        'SIGNATURE & id',
-        entity.parentTransaction.id,
-        entity.parentTransaction.signature,
-      )
-    } else {
-      if (
-        entity.parentTransaction.signature ==
-        '3SH38oYsDekUboxR4Dqth1cppMSB2PmSJuoMiVjVjBrVfD4dLxYDeXzsrDQDzWD2nLt8ckf12rt6m1m1fHq6cATL'
-      ) {
-        console.log(entity, 'HOLAAAA')
-      }
-    }
     return isSPLTokenInstruction(entity.instruction)
   }
 
