@@ -1,22 +1,31 @@
 export function renderRootFiles(filename: string): [string, string][] {
-  const name = filename.toLowerCase();
-  const files: [string, string][] = [];
+  const name = filename.toLowerCase()
+  const files: [string, string][] = []
 
-  files.push(renderCmd());
-  files.push(renderDocker(name));
-  files.push(renderPackageJson(filename));
-  files.push(renderRun(name));
-  files.push(renderTsconfig());
-  files.push(renderTypesDts());
+  files.push(renderSh())
+  files.push(renderEnv())
+  files.push(renderDocker(name))
+  files.push(renderPackageJson(filename))
+  files.push(renderRun(name))
+  files.push(renderTsconfig())
+  files.push(renderTypesDts())
 
-  return files;
+  return files
 }
 
-function renderCmd(): [string, string] {
-  const content = `#!/bin/sh
+function renderSh(): [string, string] {
+  const content = `#!/bin/bash
+echo "NODE_ENV=production node node_modules/@aleph-indexer/core/dist/config.js setup"
+ENVS=$(NODE_ENV=production node node_modules/@aleph-indexer/core/dist/config.js setup)
 
-node --max-old-space-size=51200 packages/\${INDEXER}/dist/run.js`;
-  return ["cmd.sh", content];
+while IFS= read -r env; do
+export "\${env//\\"/}";
+done <<< "$ENVS"
+
+echo "NODE_ENV=production node dist/run.js" 
+NODE_ENV=production node $NODE_OPTIONS dist/run.js
+`
+  return ['run.sh', content]
 }
 
 function renderDocker(name: string): [string, string] {
@@ -39,8 +48,17 @@ services:
       - VIRTUAL_PORT=8080
       - SOLANA_RPC=
     network_mode: bridge
-`;
-  return ["docker-compose.yaml", content];
+`
+  return ['docker-compose.yaml', content]
+}
+
+function renderEnv(): [string, string] {
+  const content = `SOLANA_RPC=
+  
+# 16 GB RAM for node.js
+NODE_OPTIONS=--max-old-space-size=16384  
+`
+  return ['.env', content]
 }
 
 function renderPackageJson(filename: string): [string, string] {
@@ -61,14 +79,14 @@ function renderPackageJson(filename: string): [string, string] {
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.0.42",
-    "@aleph-indexer/framework": "^1.0.43",
-    "@aleph-indexer/solana": "^1.0.43",
+    "@aleph-indexer/core": "^1.1.10",
+    "@aleph-indexer/framework": "^1.1.11",
+    "@aleph-indexer/solana": "^1.1.11",
     "@coral-xyz/borsh": "^0.28.0",
-    "@metaplex-foundation/beet": "0.7.1",
-    "@metaplex-foundation/beet-solana": "0.4.0",
-    "@solana/spl-token": "0.3.5",
-    "@solana/web3.js": "^1.78.0",
+    "@metaplex-foundation/beet": "0.7.2",
+    "@metaplex-foundation/beet-solana": "0.4.1",
+    "@solana/spl-token": "0.4.0",
+    "@solana/web3.js": "^1.89.1",
     "bs58": "5.0.0"
   },
   "devDependencies": {
@@ -78,15 +96,15 @@ function renderPackageJson(filename: string): [string, string] {
     "@types/bn.js": "^5.1.0"
   }
 }
-`;
-  return ["package.json", content];
+`
+  return ['package.json', content]
 }
 
 function renderRun(name: string): [string, string] {
   const content = `import { fileURLToPath } from 'url'
 import path from 'path'
 import { config } from '@aleph-indexer/core'
-import SDK, { Blockchain, TransportType } from '@aleph-indexer/framework'
+import SDK, { BlockchainChain, TransportType } from '@aleph-indexer/framework'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -114,7 +132,7 @@ async function main() {
 
   await SDK.init({
     projectId,
-    supportedBlockchains: [Blockchain.Solana],
+    supportedBlockchains: [BlockchainChain.Solana],
     transport,
     transportConfig,
     apiPort,
@@ -140,8 +158,8 @@ async function main() {
 }
 
 main()
-`;
-  return ["run.ts", content];
+`
+  return ['run.ts', content]
 }
 
 function renderTsconfig(): [string, string] {
@@ -161,12 +179,12 @@ function renderTsconfig(): [string, string] {
       "**/__mocks__"
   ]
 }
-`;
-  return ["tsconfig.json", content];
+`
+  return ['tsconfig.json', content]
 }
 
 function renderTypesDts(): [string, string] {
   const content = `export * from '../../types'
-`;
-  return ["types.d.ts", content];
+`
+  return ['types.d.ts', content]
 }

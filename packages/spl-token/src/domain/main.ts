@@ -1,6 +1,6 @@
 import {
   AccountIndexerRequestArgs,
-  Blockchain,
+  BlockchainChain,
   IndexerMainDomain,
   IndexerMainDomainContext,
   IndexerMainDomainWithDiscovery,
@@ -37,7 +37,7 @@ export default class MainDomain
 
   async discoverAccounts(): Promise<AccountIndexerRequestArgs[]> {
     const init = {
-      blockchainId: Blockchain.Solana,
+      blockchainId: BlockchainChain.Solana,
       account: '',
       index: {
         transactions: {
@@ -56,7 +56,6 @@ export default class MainDomain
     // TODO: create mint databases
 
     const { accounts, mints } = await discoveryFn()
-
     await Promise.all(
       accounts.map(async (account: string) => {
         const connection = solanaPrivateRPCRoundRobin.getClient()
@@ -78,7 +77,7 @@ export default class MainDomain
           },
         }
         await this.context.apiClient
-          .useBlockchain(Blockchain.Solana)
+          .useBlockchain(BlockchainChain.Solana)
           .indexAccount(options)
         this.accounts.solana.add(account)
       }),
@@ -98,7 +97,7 @@ export default class MainDomain
           },
         }
         await this.context.apiClient
-          .useBlockchain(Blockchain.Solana)
+          .useBlockchain(BlockchainChain.Solana)
           .indexAccount(options)
         this.accounts.solana.add(mint)
       }),
@@ -114,7 +113,7 @@ export default class MainDomain
     filters: TokenHoldersFilters,
   ): Promise<SPLAccountBalance[]> {
     return (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         args: [filters],
@@ -127,7 +126,7 @@ export default class MainDomain
     filters: MintEventsFilters,
   ): Promise<SPLTokenEvent[]> {
     return (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         args: [filters],
@@ -140,7 +139,7 @@ export default class MainDomain
     filters: AccountHoldingsFilters,
   ): Promise<SPLAccountHoldings[]> {
     return (await this.context.apiClient
-      .useBlockchain(Blockchain.Solana)
+      .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
         account,
         args: [filters],
@@ -151,7 +150,6 @@ export default class MainDomain
   protected async addToken(mint: string): Promise<void> {
     const connection = solanaPrivateRPCRoundRobin.getClient()
     const tokenInfo = await getTokenByAddress(mint, connection.getConnection())
-
     if (!tokenInfo) return
 
     const entity: SPLTokenInfo = {

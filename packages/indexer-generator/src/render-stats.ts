@@ -1,17 +1,17 @@
 export function renderStatsFiles(Name: string): [string, string][] {
-  const files: [string, string][] = [];
+  const files: [string, string][] = []
 
-  files.push(['timeSeries', createTimeSeries(Name)]);
-  files.push(['timeSeriesAggregator', createTimeSeriesAggregator(Name)]);
-  files.push(['statsAggregator', createstatsAggregator(Name)]);
+  files.push(['timeSeries', createTimeSeries(Name)])
+  files.push(['timeSeriesAggregator', createTimeSeriesAggregator(Name)])
+  files.push(['statsAggregator', createstatsAggregator(Name)])
 
-  return files;
+  return files
 }
 
 function createTimeSeries(Name: string): string {
   return `import {
     AccountTimeSeriesStatsManager,
-    Blockchain,
+    BlockchainChain,
     IndexableEntityType,
     IndexerMsClient,
     StatsStateStorage,
@@ -26,7 +26,7 @@ function createTimeSeries(Name: string): string {
   import accessAggregator from './timeSeriesAggregator.js'
   
   export async function createAccountStats(
-    blockchainId: Blockchain,
+    blockchainId: string,
     account: string,
     indexerApi: IndexerMsClient,
     eventDAL: EventStorage,
@@ -75,7 +75,7 @@ function createTimeSeries(Name: string): string {
       statsTimeSeriesDAL,
     )
   }
-  `;
+  `
 }
 
 function createTimeSeriesAggregator(Name: string): string {
@@ -167,7 +167,7 @@ function createTimeSeriesAggregator(Name: string): string {
   
   export const accessAggregator = new AccessTimeSeriesAggregator()
   export default accessAggregator
-  `;
+  `
 }
 
 function createstatsAggregator(Name: string): string {
@@ -239,5 +239,5 @@ function createstatsAggregator(Name: string): string {
   
   export const statsAggregator = new StatsAggregator()
   export default statsAggregator
-  `;
+  `
 }

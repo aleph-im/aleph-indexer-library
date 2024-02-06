@@ -1,11 +1,14 @@
-export function renderDiscovererFiles(Name: string, filename: string): [string, string][] {
-  const discovererFileContent = renderDiscovererFile(Name, filename);
+export function renderDiscovererFiles(
+  Name: string,
+  filename: string,
+): [string, string][] {
+  const discovererFileContent = renderDiscovererFile(Name, filename)
 
-  return [[`${filename}`, discovererFileContent]];
+  return [[`${filename}`, discovererFileContent]]
 }
 
 export function renderDiscovererFile(Name: string, filename: string): string {
-  const NAME = filename.toUpperCase().replace(/-/g, "_");
+  const NAME = filename.toUpperCase().replace(/-/g, '_')
 
   return `import {
     ${NAME}_PROGRAM_ID,

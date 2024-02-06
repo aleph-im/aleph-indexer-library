@@ -7,33 +7,29 @@ import {
   IdlDataEnumVariant,
   isIdlFieldsType,
   IdlField,
-} from '@metaplex-foundation/solita';
+} from '@metaplex-foundation/solita'
 import {
   TemplateType,
   EnumVariant,
   ViewInstructions,
   ViewAccounts,
   ViewTypes,
-} from './types.js';
-import {
-  existsSync,
-  mkdirSync,
-  writeFileSync,
-} from 'fs';
-import IdlTransformer from './transformer.js';
-import { Paths } from './paths.js';
-import { renderRootFiles } from './render-root.js';
-import { renderSrcFiles } from './render-src.js';
-import { renderParsersFiles } from './render-parsers.js';
-import { renderDALFiles } from './render-dal.js';
-import { renderDomainFiles } from './render-domain.js';
-import { renderLayoutsFiles } from './render-layouts.js';
-import { format, Options } from 'prettier';
-import { renderApiFiles } from './render-api.js';
-import { renderDiscovererFiles } from './render-discoverer.js';
-import { logError } from './utils/index.js';
-import { renderStatsFiles } from './render-stats.js';
-import { renderSolitaMods } from './render-solita.js';
+} from './types.js'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import IdlTransformer from './transformer.js'
+import { Paths } from './paths.js'
+import { renderRootFiles } from './render-root.js'
+import { renderSrcFiles } from './render-src.js'
+import { renderParsersFiles } from './render-parsers.js'
+import { renderDALFiles } from './render-dal.js'
+import { renderDomainFiles } from './render-domain.js'
+import { renderLayoutsFiles } from './render-layouts.js'
+import { format, Options } from 'prettier'
+import { renderApiFiles } from './render-api.js'
+import { renderDiscovererFiles } from './render-discoverer.js'
+import { logError } from './utils/index.js'
+import { renderStatsFiles } from './render-stats.js'
+import { renderSolitaMods } from './render-solita.js'
 
 const DEFAULT_FORMAT_OPTS: Options = {
   semi: false,
@@ -44,7 +40,7 @@ const DEFAULT_FORMAT_OPTS: Options = {
   arrowParens: 'always',
   printWidth: 80,
   parser: 'typescript',
-};
+}
 
 export default async function generate(
   idl: Idl,
@@ -52,63 +48,113 @@ export default async function generate(
   toGenerate: TemplateType[],
   address?: string,
 ): Promise<void> {
-  const Name = toCamelCase(idl.name);
+  const Name = toCamelCase(idl.name)
   if (idl.metadata.address) {
-    address = idl.metadata.address;
+    address = idl.metadata.address
   }
-  processIdl(idl);
+  processIdl(idl)
 
-  const { typesView, instructionsView, accountsView } = generateFromTemplateType(idl, toGenerate);
+  const { typesView, instructionsView, accountsView } =
+    generateFromTemplateType(idl, toGenerate)
 
   if (!accountsView || !instructionsView) {
-    console.log('Your idl needs instructions and accounts to fit this implementation');
-    process.exit(0);
+    console.log(
+      'Your idl needs instructions and accounts to fit this implementation',
+    )
+    process.exit(0)
   }
 
-  writeFilesNoFormat(paths.projectDir, renderRootFiles(idl.name), (filename) => paths.projectFile(filename));
-  writeFiles(paths.srcDir, renderSrcFiles(Name, idl.name, instructionsView, address), (filename) => paths.srcFile(filename));
-  writeFiles(paths.apiDir, renderApiFiles(Name, instructionsView, accountsView, typesView), (filename) => paths.apiFile(filename));
-  ensureDirExists(paths.utilsDir);
-  await generateSolitaTypeScript(paths, idl, instructionsView, accountsView, typesView, DEFAULT_FORMAT_OPTS);
-  writeFiles(paths.layoutsDir, renderLayoutsFiles(Name, idl.name, instructionsView, accountsView), (filename) => paths.layoutsFile(filename));
-  writeFiles(paths.parsersDir, renderParsersFiles(Name), (filename) => paths.parsersFile(filename));
-  writeFiles(paths.dalDir, renderDALFiles(Name, instructionsView), (filename) => paths.dalFile(filename));
-  writeFiles(paths.domainDir, renderDomainFiles(Name, idl.name, accountsView), (filename) => paths.domainFile(filename));
-  writeFiles(paths.statsDir, renderStatsFiles(Name), (filename) => paths.statsFile(filename));
-  writeFiles(paths.discovererDir, renderDiscovererFiles(Name, idl.name), (filename) => paths.discovererFile(filename));
+  writeFilesNoFormat(paths.projectDir, renderRootFiles(idl.name), (filename) =>
+    paths.projectFile(filename),
+  )
+  writeFiles(
+    paths.srcDir,
+    renderSrcFiles(Name, idl.name, instructionsView, address),
+    (filename) => paths.srcFile(filename),
+  )
+  writeFiles(
+    paths.apiDir,
+    renderApiFiles(Name, instructionsView, accountsView, typesView),
+    (filename) => paths.apiFile(filename),
+  )
+  ensureDirExists(paths.utilsDir)
+  await generateSolitaTypeScript(
+    paths,
+    idl,
+    instructionsView,
+    accountsView,
+    typesView,
+    DEFAULT_FORMAT_OPTS,
+  )
+  writeFiles(
+    paths.layoutsDir,
+    renderLayoutsFiles(Name, idl.name, instructionsView, accountsView),
+    (filename) => paths.layoutsFile(filename),
+  )
+  writeFiles(paths.parsersDir, renderParsersFiles(Name), (filename) =>
+    paths.parsersFile(filename),
+  )
+  writeFiles(paths.dalDir, renderDALFiles(Name, instructionsView), (filename) =>
+    paths.dalFile(filename),
+  )
+  writeFiles(
+    paths.domainDir,
+    renderDomainFiles(Name, idl.name, accountsView),
+    (filename) => paths.domainFile(filename),
+  )
+  writeFiles(paths.statsDir, renderStatsFiles(Name), (filename) =>
+    paths.statsFile(filename),
+  )
+  writeFiles(
+    paths.discovererDir,
+    renderDiscovererFiles(Name, idl.name),
+    (filename) => paths.discovererFile(filename),
+  )
 }
 
-function writeFiles(dir: string, files: [string, string][], pathFunc: (filename: string) => string) {
-  ensureDirExists(dir);
+function writeFiles(
+  dir: string,
+  files: [string, string][],
+  pathFunc: (filename: string) => string,
+) {
+  ensureDirExists(dir)
   files.forEach(([filename, content]) => {
-    const filePath = pathFunc(filename);
-    writeFileWithFormat(filePath, content, DEFAULT_FORMAT_OPTS);
-  });
+    const filePath = pathFunc(filename)
+    writeFileWithFormat(filePath, content, DEFAULT_FORMAT_OPTS)
+  })
 }
 
-function writeFilesNoFormat(dir: string, files: [string, string][], pathFunc: (filename: string) => string) {
-  ensureDirExists(dir);
+function writeFilesNoFormat(
+  dir: string,
+  files: [string, string][],
+  pathFunc: (filename: string) => string,
+) {
+  ensureDirExists(dir)
   files.forEach(([filename, content]) => {
-    const filePath = pathFunc(filename);
+    const filePath = pathFunc(filename)
     try {
-      writeFileSync(filePath, content);
+      writeFileSync(filePath, content)
     } catch (err) {
-      console.log(`Failed to format ${filePath}`);
-    }  
-  });
+      console.log(`Failed to format ${filePath}`)
+    }
+  })
 }
 
-function writeFileWithFormat(path: string, content: string, formatOptions: Options): void {
+function writeFileWithFormat(
+  path: string,
+  content: string,
+  formatOptions: Options,
+): void {
   try {
-    writeFileSync(path, format(content, formatOptions));
+    writeFileSync(path, format(content, formatOptions))
   } catch (err) {
     console.log(err)
-    console.log(`Failed to format ${path}`);
+    console.log(`Failed to format ${path}`)
   }
 }
 
 function ensureDirExists(dir: string) {
-  if (!existsSync(dir)) mkdirSync(dir);
+  if (!existsSync(dir)) mkdirSync(dir)
 }
 
 function generateFromTemplateType(idl: Idl, toGenerate: TemplateType[]) {
@@ -164,19 +210,25 @@ function generateAccounts(idl: Idl) {
 }
 
 async function generateSolitaTypeScript(
-  paths: Paths, 
-  idl: Idl, 
-  instructionsView: ViewInstructions, 
-  accountsView: ViewAccounts, 
-  typesView: ViewTypes | undefined, 
-  DEFAULT_FORMAT_OPTS: Options
+  paths: Paths,
+  idl: Idl,
+  instructionsView: ViewInstructions,
+  accountsView: ViewAccounts,
+  typesView: ViewTypes | undefined,
+  DEFAULT_FORMAT_OPTS: Options,
 ) {
   console.log('Generating TypeScript SDK to %s', paths.tsSolitaDir)
 
   const gen = new Solita(idl, { formatCode: true })
   await gen.renderAndWriteTo(paths.tsSolitaDir)
 
-  const solitaFile = renderSolitaMods(instructionsView, accountsView, typesView, paths, DEFAULT_FORMAT_OPTS);
+  const solitaFile = renderSolitaMods(
+    instructionsView,
+    accountsView,
+    typesView,
+    paths,
+    DEFAULT_FORMAT_OPTS,
+  )
   try {
     writeFileSync(
       paths.solitaFile('index'),

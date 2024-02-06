@@ -102,10 +102,9 @@ export class APIResolver {
     mint,
   }: TokenFilters): Promise<SPLTokenInfo[]> {
     const domTokens = await this.domain.getTokens()
-
-    const tokens =
-      [mint] || Object.values(domTokens).map((token: any) => token.address)
-
+    const tokens = mint
+      ? [mint]
+      : Object.values(domTokens).map((token: any) => token.address)
     const result = (tokens as string[])
       .map((address) => domTokens[address])
       .filter((token) => !!token)

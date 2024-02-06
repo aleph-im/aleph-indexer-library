@@ -32,8 +32,7 @@ export class AccessTimeSeriesAggregator {
   ): AccessTimeStats {
     if ((curr as MarinadeFinanceEvent).timestamp) {
       const event = curr as MarinadeFinanceEvent
-      let signer: string
-      signer = event.signer as unknown as string
+      const signer = event.signer
       acc.accesses++
       acc.accessesByProgramId[signer] = acc.accessesByProgramId[signer]
         ? acc.accessesByProgramId[signer] + 1

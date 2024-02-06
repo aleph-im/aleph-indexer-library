@@ -41,7 +41,8 @@ export class Mint {
     owner: string,
   ): Promise<StorageValueStream<AccountMint>> {
     const range = [this.address, owner]
-    return await this.balanceHistoryDAL.useIndex('mint_owner')
+    return await this.balanceHistoryDAL
+      .useIndex('mint_owner')
       .getAllValuesFromTo(range, range)
   }
 
@@ -125,8 +126,9 @@ export class Mint {
     }
     const gteBn = gte ? new BN(gte) : undefined
 
-    const accountMints = owner ? await this.getAccountsByOwner(owner) :
-      await this.getMintAccounts(account)
+    const accountMints = owner
+      ? await this.getAccountsByOwner(owner)
+      : await this.getMintAccounts(account)
 
     for await (const { account } of accountMints) {
       const balances = await this.balanceHistoryDAL.getAllFromTo(

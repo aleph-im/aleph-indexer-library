@@ -1,7 +1,7 @@
 import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   AccountIndexerConfigWithMeta,
-  Blockchain,
+  BlockchainChain,
   createStatsStateDAL,
   createStatsTimeSeriesDAL,
   IndexerDomainContext,
@@ -147,7 +147,6 @@ export default class WorkerDomain
   ): Promise<void> {
     const parsedEvents: SPLTokenEvent[] = []
     const works: PendingWork<MintAccount>[] = []
-
     const promises = entities.map(async (ix) => {
       const account = context.account
       if (this.mints[account]) {
@@ -185,7 +184,7 @@ export default class WorkerDomain
                 },
               }
               await this.context.apiClient
-                .useBlockchain(Blockchain.Solana)
+                .useBlockchain(BlockchainChain.Solana)
                 .deleteAccount(options)
             }
           }
@@ -240,7 +239,7 @@ export default class WorkerDomain
         },
       }
       await this.context.apiClient
-        .useBlockchain(Blockchain.Solana)
+        .useBlockchain(BlockchainChain.Solana)
         .indexAccount(options)
     }
   }
