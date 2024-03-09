@@ -61,9 +61,7 @@ const mapValueFn = async (value: any) => {
   return value
 }
 
-export function createTransferEventDAL(
-  path: string,
-): TransferEventStorage {
+export function createTransferEventDAL(path: string): TransferEventStorage {
   return new EntityStorage<TransferEvent>({
     name: 'transfer_event',
     path,

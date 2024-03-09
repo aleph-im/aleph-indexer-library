@@ -9,9 +9,7 @@ import {
 export class APIResolver {
   constructor(protected domain: MainDomain) {}
 
-  async getEvents(
-    args: TransferEventQueryArgs,
-  ): Promise<TransferEvent[]> {
+  async getEvents(args: TransferEventQueryArgs): Promise<TransferEvent[]> {
     return this.domain.getEvents(args)
   }
 

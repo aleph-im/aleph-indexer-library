@@ -185,7 +185,7 @@ export type SPLTokenRawEventInitializeAccount2 =
 export type SPLTokenRawEventInitializeAccount3 =
   SPLTokenRawEventInitializeAccountBase<SPLTokenEventType.InitializeAccount3>
 
-export type SLPTokenRawEvent = 
+export type SLPTokenRawEvent =
   | SPLTokenRawEventMintTo
   | SPLTokenRawEventMintToChecked
   | SPLTokenRawEventBurn

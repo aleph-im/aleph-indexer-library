@@ -31,9 +31,7 @@ export default class MainDomain extends IndexerMainDomain {
     ])
   }
 
-  async getEvents(
-    args: TransferEventQueryArgs,
-  ): Promise<TransferEvent[]> {
+  async getEvents(args: TransferEventQueryArgs): Promise<TransferEvent[]> {
     const { blockchain } = args
     const [alephTokenSC] = this.accounts[blockchain].values()
 

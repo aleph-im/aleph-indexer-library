@@ -12,10 +12,11 @@ import {
   EthereumParsedLog,
 } from '@aleph-indexer/ethereum'
 import { BscLogIndexerWorkerDomainI, BscParsedLog } from '@aleph-indexer/bsc'
-import { 
-  SolanaIndexerWorkerDomainI, 
-  SolanaParsedInstructionContext, 
-  TOKEN_PROGRAM_ID, 
+import {
+  SolanaIndexerWorkerDomainI,
+  SolanaParsedInstructionContext,
+  TOKEN_PROGRAM_ID,
+  solanaPrivateRPC,
 } from '@aleph-indexer/solana'
 import {
   EventType,
@@ -38,29 +39,32 @@ import {
 } from '../utils/index.js'
 import { SolanaEventParser } from './parsers/solana.js'
 import { PublicKey } from '@solana/web3.js'
-import { getAssociatedTokenAddressSync } from '@solana/spl-token'
+import { AccountLayout, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import { TokenAccount, createTokenAccounttDAL } from '../dal/tokenAccount.js'
 import { createFetchTokenAccountDAL } from '../dal/fetchTokenAccount.js'
 import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements EthereumLogIndexerWorkerDomainI, BscLogIndexerWorkerDomainI, SolanaIndexerWorkerDomainI
+  implements
+    EthereumLogIndexerWorkerDomainI,
+    BscLogIndexerWorkerDomainI,
+    SolanaIndexerWorkerDomainI
 {
   protected tokenAccountsCache: string[] = []
   protected tokenAccounts: PendingWorkPool<TokenAccount>
 
   constructor(
     protected context: IndexerDomainContext,
-    protected transferEventDAL = createTransferEventDAL(
-      context.dataPath,
-    ),
+    protected transferEventDAL = createTransferEventDAL(context.dataPath),
     protected balanceDAL = createBalanceDAL(context.dataPath),
     protected tokenAccountDAL = createTokenAccounttDAL(context.dataPath),
-    protected fetchTokenAccountDAL = createFetchTokenAccountDAL(context.dataPath),
+    protected fetchTokenAccountDAL = createFetchTokenAccountDAL(
+      context.dataPath,
+    ),
     protected ethParser = new EthereumEventParser(),
     protected solParser = new SolanaEventParser(),
-    //protected solRpc = solanaPrivateRPC.getConnection(),
+    protected solRpc = solanaPrivateRPC.getConnection(),
   ) {
     super(context)
 
@@ -79,24 +83,18 @@ export default class WorkerDomain
     const { blockchainId: blockchain, account } = config
     const { instanceName } = this.context
 
+    console.log('Account indexing', instanceName, blockchain, account)
+
+    // @note: Init the initial supply if it is the first run
     const deployer = blockchainDeployerAccount[blockchain]
-    const accountBalance = await this.balanceDAL.get([blockchain, deployer])
+    if (deployer) {
+      const accountBalance = await this.balanceDAL.get([blockchain, deployer])
+      if (!accountBalance) {
+        const balance = blockchainTotalSupply[blockchain].toString('hex')
+        await this.balanceDAL.save({ blockchain, account: deployer, balance })
 
-    console.log(
-      'Account indexing',
-      instanceName,
-      blockchain,
-      account,
-      deployer,
-      accountBalance,
-    )
-
-    // @note: Init the initial supply if it is the first it run
-    if (!accountBalance && deployer) {
-      const balance = blockchainTotalSupply[blockchain].toString('hex')
-      await this.balanceDAL.save({ blockchain, account: deployer, balance })
-
-      console.log('Init supply', blockchain, deployer, balance)
+        console.log('Init supply', blockchain, deployer, balance)
+      }
     }
   }
 
@@ -170,33 +168,42 @@ export default class WorkerDomain
     }
   }
 
-  async solanaFilterInstruction(context: ParserContext, entity: SolanaParsedInstructionContext) {
+  async solanaFilterInstruction(
+    context: ParserContext,
+    entity: SolanaParsedInstructionContext,
+  ) {
     const ix = entity.instruction as any
     if (!ix.parsed) return false
-    
+
     const alephMint = blockchainTokenContract[BlockchainChain.Solana]
     const isNewAccount = await this.isNewAccount(ix.parsed, alephMint)
     if (isNewAccount) return false
-  
+
     const id = `${entity.parentTransaction.signature}${
-      entity.parentInstruction ? `:${entity.parentInstruction.index.toString().padStart(2, '0')}` : ''
+      entity.parentInstruction
+        ? `:${entity.parentInstruction.index.toString().padStart(2, '0')}`
+        : ''
     }:${ix.index.toString().padStart(2, '0')}`
-  
     const isProcessed = await this.transferEventDAL.get(id)
     if (isProcessed) return false
-  
-    const isTokenMovement = [
-      SPLTokenEventType.Transfer,
-      SPLTokenEventType.TransferChecked,
-      SPLTokenEventType.MintTo,
-      SPLTokenEventType.MintToChecked,
-      SPLTokenEventType.Burn,
-      SPLTokenEventType.BurnChecked,
-    ].includes(ix.parsed.type) && ix.programId === TOKEN_PROGRAM_ID
+
+    const isTokenMovement =
+      [
+        SPLTokenEventType.Transfer,
+        SPLTokenEventType.TransferChecked,
+        SPLTokenEventType.MintTo,
+        SPLTokenEventType.MintToChecked,
+        SPLTokenEventType.Burn,
+        SPLTokenEventType.BurnChecked,
+      ].includes(ix.parsed.type) && ix.programId === TOKEN_PROGRAM_ID
     if (!isTokenMovement) return false
-    
-    return this.validateTokenMovement(ix.parsed.info, alephMint)
-  }  
+
+    return this.validateTokenMovement(
+      ix.parsed.info,
+      alephMint,
+      entity.parentTransaction.signature,
+    )
+  }
 
   async isNewAccount(parsed: any, alephMint: string) {
     const isNewAccountEvent = [
@@ -206,10 +213,11 @@ export default class WorkerDomain
     ].includes(parsed.type)
     if (!isNewAccountEvent) return false
 
-    if (!this.tokenAccountsCache.includes(parsed.info.account) 
-    && parsed.info.mint === alephMint) {
-      this.tokenAccountsCache.push(parsed.info.account)
+    const isNewAccount =
+      !this.tokenAccountsCache.includes(parsed.info.account) &&
+      parsed.info.mint === alephMint
 
+    if (isNewAccount) {
       this.tokenAccounts.addWork({
         id: parsed.info.account,
         time: Date.now(),
@@ -219,16 +227,55 @@ export default class WorkerDomain
           mint: alephMint,
         },
       })
-      /*const options = {
-        blockchainId: BlockchainChain.Solana,
-        account: parsed.info.account,
-        index: { transactions: true },
-      }
-      await this.context.apiClient
-        .useBlockchain(BlockchainChain.Solana)
-        .indexAccount(options)*/
+      this.tokenAccountsCache.push(parsed.info.account)
+    }
+    return isNewAccount
+  }
 
-      return true
+  validateTokenMovement(info: any, alephMint: string, signature: string) {
+    if (info.mint) {
+      return info.mint === alephMint
+    } else {
+      const owner = new PublicKey(info.authority || info.multisigAuthority)
+
+      // idk why FTX ata can not be derived
+      const FTX_ATA = '341LwarVojT1g5xMgrRYLuQ4G5oxXMSH3uEe88zu1jZ4'
+      if ([info.source, info.destination].includes(FTX_ATA)) return true
+
+      const expectedAta = getAssociatedTokenAddressSync(
+        new PublicKey(alephMint),
+        owner,
+        true,
+      )
+      if (expectedAta.toString() === info.source) return true
+
+      const alephPubkey = new PublicKey(alephMint)
+      return this.validateAta(alephPubkey, [info.source, info.destination])
+    }
+  }
+
+  async validateAta(
+    alephPubkey: PublicKey,
+    accounts: string[],
+  ): Promise<boolean> {
+    for (const account of accounts) {
+      if (this.tokenAccountsCache.includes(account)) return true
+      if (await this.balanceDAL.get(account)) return true
+      const exists = await this.transferEventDAL
+        .useIndex(TransferEventDALIndex.BlockchainAccountTimestamp)
+        .getFirstItemFromTo(
+          [BlockchainChain.Solana, account, 0],
+          [BlockchainChain.Solana, account, Date.now()],
+        )
+      if (exists) return true
+
+      const accountInfo = await this.solRpc.getAccountInfo(
+        new PublicKey(account),
+      )
+      if (accountInfo?.data) {
+        const tokenAccountInfo = AccountLayout.decode(accountInfo.data)
+        if (tokenAccountInfo.mint.equals(alephPubkey)) return true
+      }
     }
     return false
   }
@@ -236,16 +283,12 @@ export default class WorkerDomain
   protected async _handleTokenAccounts(
     works: PendingWork<TokenAccount>[],
   ): Promise<void> {
-    console.log(
-      `Mint accounts | Start handling ${works.length} minted accounts`,
-    )
-
     for (const work of works) {
       if (!work) continue
 
       const account = work.id
       if (!this.tokenAccountsCache.includes(account)) continue
-      
+
       const options = {
         account,
         meta: {
@@ -267,52 +310,15 @@ export default class WorkerDomain
     }
   }
 
-  /*isValidTransafer(info: any): info is SPLTokenRawInfoTransfer {
-    return typeof info.amount === 'string' &&
-      typeof info.destination === 'string' &&
-      typeof info.source === 'string' && (
-        typeof info.authority === 'string' || 
-        typeof info.multisigAuthority === 'string'
-      )
-  }*/
-
-  validateTokenMovement(info: any, alephMint: string) {
-    if (info.mint) {
-      return info.mint === alephMint
-    } else {
-      const owner = new PublicKey(info.authority || info.multisigAuthority)
-    
-      // idk why FTX ata can not be derived
-      const FTX_ATA = '341LwarVojT1g5xMgrRYLuQ4G5oxXMSH3uEe88zu1jZ4'
-      if ([info.source, info.destination].includes(FTX_ATA)) return true
-      
-      const expectedAta = getAssociatedTokenAddressSync(new PublicKey(alephMint), owner, true)
-      return expectedAta.toString() === info.source
-    }
-  }
-
-  /*private async validateAtaFromInfo(alephPubkey: PublicKey, accounts: string[]): Promise<boolean> {
-    for (const account of accounts) {
-      const accountInfo = await this.solRpc.getAccountInfo(new PublicKey(account))
-      if (accountInfo?.data) {
-        const tokenAccountInfo = AccountLayout.decode(accountInfo.data)
-        if (tokenAccountInfo.mint.equals(alephPubkey)) {
-          console.log('validated ata')
-          return true
-        }
-      }
-    }
-    console.log('ata not validated')
-    return false
-  }*/
-
   async solanaIndexInstructions(
     context: ParserContext,
     ixsContext: SolanaParsedInstructionContext[],
   ): Promise<void> {
     const { parsedEvents, parsedBalances } = this.solParser.parse(ixsContext)
 
-    console.log(`indexing ${parsedEvents.length} parsed events from ${ixsContext.length} parsed ixs`)
+    console.log(
+      `indexing ${parsedEvents.length} parsed events from ${ixsContext.length} parsed ixs`,
+    )
 
     if (parsedEvents.length) {
       await this.transferEventDAL.save(parsedEvents)

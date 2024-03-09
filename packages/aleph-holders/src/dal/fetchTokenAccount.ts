@@ -1,18 +1,15 @@
-import {
-    PendingWorkStorage,
-} from '@aleph-indexer/core'
+import { PendingWorkStorage } from '@aleph-indexer/core'
 import { TokenAccount } from './tokenAccount'
-  
+
 export type FetchTokenAccountStorage = PendingWorkStorage<TokenAccount>
 
 export function createFetchTokenAccountDAL(
-    path: string,
-    name = 'fetcher_token_accounts',
+  path: string,
+  name = 'fetcher_token_accounts',
 ): FetchTokenAccountStorage {
-    return new PendingWorkStorage<TokenAccount>({
-        name,
-        path,
-        count: true,
-    })
+  return new PendingWorkStorage<TokenAccount>({
+    name,
+    path,
+    count: true,
+  })
 }
-  
