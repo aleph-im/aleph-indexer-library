@@ -19,6 +19,8 @@
     "@aleph-indexer/bsc": "^1.1.11",
     "@aleph-indexer/core": "^1.1.10",
     "@aleph-indexer/ethereum": "^1.1.11",
-    "@aleph-indexer/framework": "^1.1.11"
+    "@aleph-indexer/solana": "^1.1.11",
+    "@solana/spl-token": "^0.4.1",
+    "@solana/web3.js": "^1.90.0"
   }
 }

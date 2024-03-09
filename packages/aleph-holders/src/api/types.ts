@@ -16,8 +16,8 @@ const commonFields = {
   transaction: { type: new GraphQLNonNull(GraphQLString) },
 }
 
-export const ERC20TransferEvent = new GraphQLObjectType({
-  name: 'ERC20TransferEvent',
+export const TransferEvent = new GraphQLObjectType({
+  name: 'TransferEvent',
   fields: {
     ...commonFields,
     from: { type: new GraphQLNonNull(GraphQLString) },
@@ -27,10 +27,10 @@ export const ERC20TransferEvent = new GraphQLObjectType({
   },
 })
 
-export const ERC20TransferEventList = new GraphQLList(ERC20TransferEvent)
+export const TransferEventList = new GraphQLList(TransferEvent)
 
-export const ERC20Balance = new GraphQLObjectType({
-  name: 'ERC20Balance',
+export const Balance = new GraphQLObjectType({
+  name: 'Balance',
   fields: {
     account: { type: new GraphQLNonNull(GraphQLString) },
     balance: { type: new GraphQLNonNull(GraphQLBigNumber) },
@@ -38,6 +38,6 @@ export const ERC20Balance = new GraphQLObjectType({
   },
 })
 
-export const ERC20BalanceList = new GraphQLList(ERC20Balance)
+export const BalanceList = new GraphQLList(Balance)
 
-export const types = [ERC20TransferEvent, ERC20Balance]
+export const types = [TransferEvent, Balance]

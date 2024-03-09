@@ -3,8 +3,8 @@ import { IndexerMainDomain } from '@aleph-indexer/framework'
 import {
   Balance,
   BalanceQueryArgs,
-  ERC20TransferEvent,
-  ERC20TransferEventQueryArgs,
+  TransferEvent,
+  TransferEventQueryArgs,
 } from '../types.js'
 import { blockchainTokenContract } from '../utils/index.js'
 
@@ -18,6 +18,11 @@ export default class MainDomain extends IndexerMainDomain {
         account: blockchainTokenContract[BlockchainChain.Ethereum],
         index: { logs: true },
       },
+      {
+        blockchainId: BlockchainChain.Solana,
+        account: blockchainTokenContract[BlockchainChain.Solana],
+        index: { transactions: true },
+      },
       // {
       //   blockchainId: BlockchainChain.Bsc,
       //   account: blockchainTokenContract[BlockchainChain.Bsc],
@@ -27,8 +32,8 @@ export default class MainDomain extends IndexerMainDomain {
   }
 
   async getEvents(
-    args: ERC20TransferEventQueryArgs,
-  ): Promise<ERC20TransferEvent[]> {
+    args: TransferEventQueryArgs,
+  ): Promise<TransferEvent[]> {
     const { blockchain } = args
     const [alephTokenSC] = this.accounts[blockchain].values()
 
@@ -40,7 +45,7 @@ export default class MainDomain extends IndexerMainDomain {
         args: [args],
       })
 
-    return response as ERC20TransferEvent[]
+    return response as TransferEvent[]
   }
 
   async getBalances(args: BalanceQueryArgs): Promise<Balance[]> {

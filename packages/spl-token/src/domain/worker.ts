@@ -1,7 +1,6 @@
 import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   AccountIndexerConfigWithMeta,
-  Blockchain,
   createStatsStateDAL,
   createStatsTimeSeriesDAL,
   IndexerDomainContext,
