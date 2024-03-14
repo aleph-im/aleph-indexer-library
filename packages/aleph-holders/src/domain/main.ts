@@ -1,5 +1,4 @@
-import { BlockchainChain } from '@aleph-indexer/framework'
-import { IndexerMainDomain } from '@aleph-indexer/framework'
+import { IndexerMainDomain, BlockchainChain } from '@aleph-indexer/framework'
 import {
   Balance,
   BalanceQueryArgs,

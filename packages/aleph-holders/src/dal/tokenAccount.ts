@@ -5,7 +5,6 @@ export type TokenAccountStorage = EntityStorage<TokenAccount>
 export type TokenAccount = {
   address: string
   owner: string
-  mint: string
 }
 
 const accountKey = {
