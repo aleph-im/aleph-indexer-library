@@ -19,7 +19,6 @@ export function isTokenMovement(type: SPLTokenEventType) {
     SPLTokenEventType.Transfer,
     SPLTokenEventType.MintTo,
     SPLTokenEventType.Approve,
-    SPLTokenEventType.Revoke,
   ].includes(type)
 }
 
@@ -72,10 +71,6 @@ export function getEventAccounts(event: SPLTokenIncompleteEvent): string[] {
           : event.delegate
 
       return [event.account, delegate]
-    }
-    case SPLTokenEventType.Revoke: {
-      // note: previous degelate could be different
-      return [blockchainDeployerAccount[BlockchainChain.Solana], event.account]
     }
     default: {
       return [event.account]

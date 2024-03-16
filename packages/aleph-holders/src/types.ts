@@ -128,14 +128,16 @@ export type SPLTokenRawEventMintToChecked = SPLTokenRawEventBase & {
   }
 }
 
+export type SPLTokenRawInfoBurn = {
+  account: string
+  amount: string
+  authority: string
+  mint: string
+}
+
 export type SPLTokenRawEventBurn = SPLTokenRawEventBase & {
   parsed: {
-    info: {
-      account: string
-      amount: string
-      authority: string
-      mint: string
-    }
+    info: SPLTokenRawInfoBurn
     type: SPLTokenEventType.Burn
   }
 }

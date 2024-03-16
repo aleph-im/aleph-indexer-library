@@ -25,6 +25,7 @@ import {
   BalanceQueryArgs,
   Balance,
   SPLTokenEvent,
+  SPLTokenEventType,
 } from '../types.js'
 import {
   TransferEventDALIndex,
@@ -53,6 +54,8 @@ import {
   isTokenMovement,
 } from '../utils/solana.js'
 import { createSolanaEventDAL } from '../dal/solanaEvents.js'
+import { PublicKey } from '@solana/web3.js'
+import { AccountLayout, getAssociatedTokenAddressSync } from '@solana/spl-token'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -89,12 +92,40 @@ export default class WorkerDomain
       checkComplete: () => false,
     })
 
-    this.solParser = new SolanaEventParser(
-      this.fetchTokenAccountDAL,
-      this.tokenAccountDAL,
-      this.solanaEventDAL,
-      this.tokenAccounts,
-    )
+    this.solParser = new SolanaEventParser()
+  }
+
+  async init(): Promise<void> {
+    await super.init()
+
+    /* discover atas to improve validation and filtering but got too many requests
+    const connection = new Connection("")
+    const response = await connection.getProgramAccounts(
+      TOKEN_PROGRAM_ID, {
+      dataSlice: {
+        offset: 0,
+        length: 0,
+      },
+      filters: [
+        {
+          dataSize: 165
+        },
+        {
+          memcmp: {
+            offset: 0,
+            bytes: blockchainTokenContract[BlockchainChain.Solana]
+          }
+        }
+      ]
+    })
+    const accounts = response.map((account) => {
+      return {
+        address: account.pubkey.toString(),
+        owner: '',
+      }
+    })
+    console.log('Discovered atas', accounts.length)
+    await this.tokenAccountDAL.save(accounts)*/
   }
 
   async onNewAccount(
@@ -191,9 +222,115 @@ export default class WorkerDomain
   async solanaFilterInstruction(
     context: ParserContext,
     entity: SolanaParsedInstructionContext,
-  ) {
-    return isSPLTokenInstruction(entity.instruction)
+  ): Promise<boolean> {
+    if (!isSPLTokenInstruction(entity.instruction)) return false
+  
+    const alephMint = blockchainTokenContract[BlockchainChain.Solana]
+    const parsed = entity.instruction.parsed as any
+  
+    if (this.isInitEvent(parsed, alephMint, context.account)) return true
+  
+    if (parsed.type === SPLTokenEventType.CloseAccount && await this.validateExpectedAta(parsed, alephMint)) {
+      return true
+    }
+
+    /// from mint only fetch inits and closes
+    if (context.account === alephMint) return false
+
+    if ([
+      SPLTokenEventType.TransferChecked,
+      SPLTokenEventType.MintTo,
+      SPLTokenEventType.MintToChecked,
+      SPLTokenEventType.Burn,
+      SPLTokenEventType.BurnChecked,
+      SPLTokenEventType.ApproveChecked,
+    ].includes(parsed.type) && parsed.info.mint === alephMint) {
+      return true
+    }
+  
+    if (parsed.type === SPLTokenEventType.Approve) {
+      // Only treated in case is delegated to a wormhole auth, you can delegate more than you have 
+      // for other ixns will deal balances if there is a real token movement
+      // ex: https://solana.fm/tx/3dEgFn9SKrPuRztTnsSTGiV61yCvmcU359hZWCrWwz8mo314dJqsCzVju993HfzSC4hjjCeDSoVDVji7frSs8rcc?cluster=mainnet-alpha
+      // this event is proccessed to get burnt balances (that were approved first)
+      // ex: https://solana.fm/tx/4n1uzB4vAsYYjokQAGsVCgkBHLj8bSsLGFQsvEhMi5zBtFB1UP1Je8vNoissa7dFQt31HqD2wn2LSKnBo7Shj9S8?cluster=mainnet-alpha
+      return parsed.delegate === '7oPa2PHQdZmjSPqvpZN7MQxnC7Dcf3uL4oLqknGLk2S3' && 
+        await this.validateTokenOperation(parsed.info, alephMint)
+    }
+  
+    return [
+      SPLTokenEventType.Transfer,
+      SPLTokenEventType.Revoke,
+    ].includes(parsed.type) && await this.validateTokenOperation(parsed, alephMint)
   }
+  
+  protected isInitEvent(parsed: any, alephMint: string, accountContext: string): boolean {
+    const isInitEvent = [
+      SPLTokenEventType.InitializeAccount,
+      SPLTokenEventType.InitializeAccount2,
+      SPLTokenEventType.InitializeAccount3,
+    ].includes(parsed.type)
+  
+    return isInitEvent && parsed.info.mint === alephMint 
+      && accountContext === alephMint
+  }
+    
+  protected async validateTokenOperation(
+    parsed: any,
+    alephMint: string,
+  ): Promise<boolean> {
+    const accounts = []
+    switch (parsed.type as SPLTokenEventType) {
+      case SPLTokenEventType.Approve: {
+        accounts.push(parsed.info.source)
+      }
+      case SPLTokenEventType.Transfer: {
+        accounts.push(parsed.info.source, parsed.info.destination)
+
+        const expectedAtaValidation = await this.validateExpectedAta(parsed, alephMint)
+        if (expectedAtaValidation) return true
+      }
+      default:
+        console.log('Error parsed type')
+    }
+
+    // ftx ata cant be derived
+    const isFTXAtaPresent = accounts.includes('341LwarVojT1g5xMgrRYLuQ4G5oxXMSH3uEe88zu1jZ4')
+    if (isFTXAtaPresent) return true
+
+    return await this.validateAta(alephMint, accounts)
+  }
+
+  protected async validateExpectedAta(parsed: any, alephMint: string): Promise<boolean> {
+    const owner = (parsed.info.authority || parsed.info.multisigAuthority || parsed.info.owner || parsed.info.multisigOwner)
+    const ownerPublicKey = new PublicKey(owner)
+    const alephPubkey = new PublicKey(alephMint)
+    const expectedAta = getAssociatedTokenAddressSync(alephPubkey, ownerPublicKey, true)
+
+    return expectedAta.toString() === parsed.info.account
+  }
+  
+  protected async validateAta(
+    alephMint: string,
+    accounts: string[],
+  ): Promise<boolean> {
+    const alephPubkey = new PublicKey(alephMint)
+    const connection = solanaPrivateRPC.getConnection()    
+    for (const account of accounts) {
+      const exists = await this.tokenAccountDAL.get(account)
+      if (exists) return true
+
+      const accountInfo = await connection.getAccountInfo(new PublicKey(account))
+      if (accountInfo?.data) {
+        const tokenAccountInfo = AccountLayout.decode(accountInfo.data)
+        if (tokenAccountInfo.mint.equals(alephPubkey)) {
+          return true
+        }
+      }
+    }
+
+    return false
+  }  
 
   async solanaIndexInstructions(
     context: ParserContext,
@@ -203,36 +340,20 @@ export default class WorkerDomain
     const parsedEvents: SPLTokenEvent[] = []
 
     for (const entity of entities) {
-      const parsedEvent = await this.solParser.parseEvent(
-        entity,
-        alephMint,
-        context.account,
-      )
+      const parsedEvent = await this.solParser.parseEvent(entity, alephMint)
       if (parsedEvent) {
         parsedEvents.push(parsedEvent)
-        /*if (parsedIx.type === SPLTokenEventType.CloseAccount) {
-          const work = await this.fetchTokenAccountDAL.getFirstValueFromTo(
-            [parsedIx.account],
-            [parsedIx.account],
-            { atomic: true },
-          )
-          if (work && parsedIx.timestamp >= work.payload.timestamp) {
-            await this.tokenAccounts.removeWork(work)
-            const options = {
-              account: parsedIx.account,
-              index: {
-                transactions: true,
-                content: true,
-              },
-            }
-            await this.context.apiClient
-              .useBlockchain(BlockchainChain.Solana)
-              .deleteAccount(options)
-          }
-        }*/
         if (isTokenMovement(parsedEvent.type)) {
           const [from, to] = getEventAccounts(parsedEvent)
           if (to && 'amount' in parsedEvent) {
+            await this.tokenAccountDAL.save([{
+              address: from,
+              owner: '',
+            }, {
+              address: to,
+              owner: '',
+            }])
+
             const hexValue = stringToHex(parsedEvent.amount)
             await this.balanceDAL.save([
               {
@@ -259,6 +380,50 @@ export default class WorkerDomain
             })
           }
         }
+
+        if (parsedEvent.type === SPLTokenEventType.InitializeAccount) {
+          await this.tokenAccountDAL.save({
+            address: parsedEvent.account,
+            owner: parsedEvent.owner || '',
+          })
+  
+          await this.tokenAccounts.addWork({
+            id: parsedEvent.account,
+            time: Date.now(),
+            payload: {
+              account: parsedEvent.account,
+              timestamp: parsedEvent.timestamp,
+              event: parsedEvent,
+            },
+          })
+        }
+
+        if (parsedEvent.type === SPLTokenEventType.CloseAccount) {
+          await this.tokenAccountDAL.save({
+            address: parsedEvent.account,
+            owner: parsedEvent.owner || '',
+          })
+          /*if (parsedIx.type === SPLTokenEventType.CloseAccount) {
+            const work = await this.fetchTokenAccountDAL.getFirstValueFromTo(
+              [parsedIx.account],
+              [parsedIx.account],
+              { atomic: true },
+            )
+            if (work && parsedIx.timestamp >= work.payload.timestamp) {
+              await this.tokenAccounts.removeWork(work)
+              const options = {
+                account: parsedIx.account,
+                index: {
+                  transactions: true,
+                  content: true,
+                },
+              }
+              await this.context.apiClient
+                .useBlockchain(BlockchainChain.Solana)
+                .deleteAccount(options)
+            }
+          }*/
+        }
       }
     }
 
@@ -277,10 +442,10 @@ export default class WorkerDomain
     for (const work of works) {
       if (!work) continue
       const account = work.id
-      const accountState = await this.context.apiClient
+      /*const accountState = await this.context.apiClient
         .useBlockchain(BlockchainChain.Solana)
         .getAccountState({ type: IndexableEntityType.Transaction, account })
-      if (accountState) continue
+      if (accountState) continue*/
 
       const options = {
         account,
