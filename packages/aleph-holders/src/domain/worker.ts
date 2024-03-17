@@ -50,12 +50,16 @@ import {
 import { PendingWork, PendingWorkPool } from '@aleph-indexer/core'
 import {
   getEventAccounts,
+  isCloseEvent,
+  isInitEvent,
+  isMovementWithMint,
   isSPLTokenInstruction,
   isTokenMovement,
+  validateExpectedAta,
 } from '../utils/solana.js'
 import { createSolanaEventDAL } from '../dal/solanaEvents.js'
 import { PublicKey } from '@solana/web3.js'
-import { AccountLayout, getAssociatedTokenAddressSync } from '@solana/spl-token'
+import { AccountLayout } from '@solana/spl-token'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -89,7 +93,7 @@ export default class WorkerDomain
       concurrency: 1,
       dal: this.fetchTokenAccountDAL,
       handleWork: this._handleMintAccounts.bind(this),
-      checkComplete: () => false,
+      checkComplete: this._checkComplete.bind(this),
     })
 
     this.solParser = new SolanaEventParser()
@@ -224,31 +228,23 @@ export default class WorkerDomain
     entity: SolanaParsedInstructionContext,
   ): Promise<boolean> {
     if (!isSPLTokenInstruction(entity.instruction)) return false
-  
+
     const alephMint = blockchainTokenContract[BlockchainChain.Solana]
     const parsed = entity.instruction.parsed as any
   
-    if (this.isInitEvent(parsed, alephMint, context.account)) return true
-  
-    if (parsed.type === SPLTokenEventType.CloseAccount && await this.validateExpectedAta(parsed, alephMint)) {
-      return true
-    }
-
-    /// from mint only fetch inits and closes
+    if (isInitEvent(parsed, alephMint, context.account)) return true
+    if (isCloseEvent(parsed, alephMint, context.account)) return true
+    // from mint only get init and close ixns
     if (context.account === alephMint) return false
 
-    if ([
-      SPLTokenEventType.TransferChecked,
-      SPLTokenEventType.MintTo,
-      SPLTokenEventType.MintToChecked,
-      SPLTokenEventType.Burn,
-      SPLTokenEventType.BurnChecked,
-      SPLTokenEventType.ApproveChecked,
-    ].includes(parsed.type) && parsed.info.mint === alephMint) {
-      return true
-    }
+    if (isMovementWithMint(parsed, alephMint, context.account)) return true
+      /*if (parsed.type === SPLTokenEventType.Burn 
+        && entity.parentInstruction?.programId === 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb') {
+          //return false
+          console.log('wormhole burn', parsed)
+      }*/    
   
-    if (parsed.type === SPLTokenEventType.Approve) {
+    /*if (parsed.type === SPLTokenEventType.Approve) {
       // Only treated in case is delegated to a wormhole auth, you can delegate more than you have 
       // for other ixns will deal balances if there is a real token movement
       // ex: https://solana.fm/tx/3dEgFn9SKrPuRztTnsSTGiV61yCvmcU359hZWCrWwz8mo314dJqsCzVju993HfzSC4hjjCeDSoVDVji7frSs8rcc?cluster=mainnet-alpha
@@ -256,58 +252,26 @@ export default class WorkerDomain
       // ex: https://solana.fm/tx/4n1uzB4vAsYYjokQAGsVCgkBHLj8bSsLGFQsvEhMi5zBtFB1UP1Je8vNoissa7dFQt31HqD2wn2LSKnBo7Shj9S8?cluster=mainnet-alpha
       return parsed.delegate === '7oPa2PHQdZmjSPqvpZN7MQxnC7Dcf3uL4oLqknGLk2S3' && 
         await this.validateTokenOperation(parsed.info, alephMint)
-    }
+    }*/
   
-    return [
-      SPLTokenEventType.Transfer,
-      SPLTokenEventType.Revoke,
-    ].includes(parsed.type) && await this.validateTokenOperation(parsed, alephMint)
-  }
-  
-  protected isInitEvent(parsed: any, alephMint: string, accountContext: string): boolean {
-    const isInitEvent = [
-      SPLTokenEventType.InitializeAccount,
-      SPLTokenEventType.InitializeAccount2,
-      SPLTokenEventType.InitializeAccount3,
-    ].includes(parsed.type)
-  
-    return isInitEvent && parsed.info.mint === alephMint 
-      && accountContext === alephMint
+    return parsed.type === SPLTokenEventType.Transfer 
+      && await this.validateTransfer(parsed, alephMint)
   }
     
-  protected async validateTokenOperation(
+  protected async validateTransfer(
     parsed: any,
     alephMint: string,
   ): Promise<boolean> {
-    const accounts = []
-    switch (parsed.type as SPLTokenEventType) {
-      case SPLTokenEventType.Approve: {
-        accounts.push(parsed.info.source)
-      }
-      case SPLTokenEventType.Transfer: {
-        accounts.push(parsed.info.source, parsed.info.destination)
-
-        const expectedAtaValidation = await this.validateExpectedAta(parsed, alephMint)
-        if (expectedAtaValidation) return true
-      }
-      default:
-        console.log('Error parsed type')
-    }
+    const accounts = [parsed.info.source, parsed.info.destination]
 
     // ftx ata cant be derived
     const isFTXAtaPresent = accounts.includes('341LwarVojT1g5xMgrRYLuQ4G5oxXMSH3uEe88zu1jZ4')
     if (isFTXAtaPresent) return true
 
+    const expectedAtaValidation = validateExpectedAta(parsed, alephMint)
+    if (expectedAtaValidation) return true
+
     return await this.validateAta(alephMint, accounts)
-  }
-
-  protected async validateExpectedAta(parsed: any, alephMint: string): Promise<boolean> {
-    const owner = (parsed.info.authority || parsed.info.multisigAuthority || parsed.info.owner || parsed.info.multisigOwner)
-    const ownerPublicKey = new PublicKey(owner)
-    const alephPubkey = new PublicKey(alephMint)
-    const expectedAta = getAssociatedTokenAddressSync(alephPubkey, ownerPublicKey, true)
-
-    return expectedAta.toString() === parsed.info.account
   }
   
   protected async validateAta(
@@ -342,13 +306,15 @@ export default class WorkerDomain
     for (const entity of entities) {
       const parsedEvent = await this.solParser.parseEvent(entity, alephMint)
       if (parsedEvent) {
+        if(await this.solanaEventDAL.get(parsedEvent.id)) continue
+
         parsedEvents.push(parsedEvent)
         if (isTokenMovement(parsedEvent.type)) {
           const [from, to] = getEventAccounts(parsedEvent)
           if (to && 'amount' in parsedEvent) {
             await this.tokenAccountDAL.save([{
               address: from,
-              owner: '',
+              owner: parsedEvent.owner || '',
             }, {
               address: to,
               owner: '',
@@ -442,10 +408,11 @@ export default class WorkerDomain
     for (const work of works) {
       if (!work) continue
       const account = work.id
-      /*const accountState = await this.context.apiClient
+      // to-do: delete work if already indexing account?
+      const accountState = await this.context.apiClient
         .useBlockchain(BlockchainChain.Solana)
         .getAccountState({ type: IndexableEntityType.Transaction, account })
-      if (accountState) continue*/
+      if (accountState) continue
 
       const options = {
         account,
@@ -463,6 +430,34 @@ export default class WorkerDomain
         .useBlockchain(BlockchainChain.Solana)
         .indexAccount(options)
     }
+  }
+
+  protected async _checkComplete(
+    work: PendingWork<IndexTokenAccount>,
+  ): Promise<boolean> {
+    const currentBalance = await this.getBalances(work.payload.account, { blockchain: BlockchainChain.Solana })
+    if (currentBalance.length === 0) return false 
+    
+    let workFinished = false
+    try {
+      const publicKey = new PublicKey(work.payload.account)
+      const balance = await this.solRpc.getTokenAccountBalance(publicKey)
+      workFinished = currentBalance[0].balance === balance.value.amount
+    } catch(e) {
+      // when account is closed
+      workFinished = currentBalance[0].balance === '0'
+      
+      if (workFinished) {
+        await this.context.apiClient
+          .useBlockchain(BlockchainChain.Solana)
+          .deleteAccount({
+            account: work.payload.account,
+            index: { transactions: true },
+          })
+      }
+    }
+
+    return workFinished
   }
 
   // API methods

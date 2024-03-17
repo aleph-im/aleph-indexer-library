@@ -1,4 +1,4 @@
-import { EntityStorage } from '@aleph-indexer/core'
+import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
 
 export type TokenAccountStorage = EntityStorage<TokenAccount>
 
@@ -17,5 +17,17 @@ export function createTokenAccounttDAL(path: string): TokenAccountStorage {
     name: 'account_mint',
     path,
     key: [accountKey],
+    // there are events with no owner, persists owner if any
+    updateCheckFn: async (oldEntity, newEntity) => {
+      const entity = newEntity
+
+      if (oldEntity) {
+        if (oldEntity.owner) {
+          entity.owner = oldEntity.owner
+        }
+      }
+
+      return { op: EntityUpdateOp.Update, entity }
+    },
   })
 }
