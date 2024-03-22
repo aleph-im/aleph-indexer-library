@@ -74,7 +74,8 @@ function renderPackageJson(filename: string): [string, string] {
     "build": "tsc -p ./tsconfig.json",
     "test": "echo \\"Error: no test specified\\" && exit 1",
     "up": "docker-compose up -d",
-    "up:devnet": "docker-compose -f docker-compose-devnet.yaml --project-name staking-devnet up -d"
+    "up:devnet": "docker-compose -f docker-compose-devnet.yaml --project-name staking-devnet up -d",
+    "start": "chmod +x run.sh && ./run.sh"
   },
   "author": "ALEPH.im",
   "license": "ISC",
