@@ -31,14 +31,14 @@ export type LarixSDK = PortInstance & { reserveSymbolMap: ReserveSymbolMap }
 // - https://github.com/port-finance/port-sdk/blob/master/src/structs/ReserveData.ts#L168
 // - https://github.com/ProjectLarix/larix-api-server/blob/4025ae358051213871bb8c0247973f91a5fa09e0/src/sdk/models/state/reserve.js#L95
 
-export const ReserveLayout = BufferLayout.struct([
+export const ReserveLayout = BufferLayout.struct<any>([
   BufferLayout.u8('version'),
 
   Port.SlotInfoLayout('lastUpdate'),
 
   Port.publicKey('lendingMarket'),
 
-  BufferLayout.struct(
+  BufferLayout.struct<any>(
     [
       Port.MintId.field('mintPubkey'),
       BufferLayout.u8('mintDecimals'),
@@ -59,7 +59,7 @@ export const ReserveLayout = BufferLayout.struct([
     'liquidity',
   ),
 
-  BufferLayout.struct(
+  BufferLayout.struct<any>(
     [
       Port.MintId.field('mintPubkey'),
       Port.Lamport.field(Port.BigType.U64, 'mintTotalSupply'),
@@ -68,7 +68,7 @@ export const ReserveLayout = BufferLayout.struct([
     'collateral',
   ),
 
-  BufferLayout.struct(
+  BufferLayout.struct<any>(
     [
       Port.Percentage.field('optimalUtilizationRate'),
       Port.Percentage.field('loanToValueRatio'),
@@ -78,7 +78,7 @@ export const ReserveLayout = BufferLayout.struct([
       Port.Percentage.field('optimalBorrowRate'),
       Port.Percentage.field('maxBorrowRate'),
 
-      BufferLayout.struct(
+      BufferLayout.struct<any>(
         [
           Port.BigField.forType(Port.BigType.D64, 'borrowFeeWad'),
           Port.BigField.forType(Port.BigType.D64, 'borrowInterestFeeWad'),
@@ -98,7 +98,7 @@ export const ReserveLayout = BufferLayout.struct([
     'config',
   ),
 
-  BufferLayout.struct(
+  BufferLayout.struct<any>(
     [
       Port.publicKey('unCollSupply'),
       Port.BigField.forType(Port.BigType.U128, 'lTokenMiningIndex'),
