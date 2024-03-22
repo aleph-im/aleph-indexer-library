@@ -12,15 +12,15 @@ async function main() {
   const apiSchemaPath = path.join(__dirname, './src/api/index.js')
   const layoutPath = path.join(__dirname, './src/utils/layouts/layout.js')
 
-  const instances = Number(config.INDEXER_INSTANCES || 2)
-  const apiPort = Number(config.INDEXER_API_PORT || 8080)
+  const instances = Number(config.INDEXER_INSTANCES || 1)
+  const apiPort = Number(config.INDEXER_API_PORT || 8081)
   const tcpUrls = config.INDEXER_TCP_URLS || undefined
   const natsUrl = config.INDEXER_NATS_URL || undefined
 
   const projectId = 'marinade-finance'
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const transport =
-    (config.INDEXER_TRANSPORT as TransportType) || TransportType.LocalNet
+    (config.INDEXER_TRANSPORT as TransportType) || TransportType.Thread
 
   const transportConfig: any =
     tcpUrls || natsUrl ? { tcpUrls, natsUrl } : undefined

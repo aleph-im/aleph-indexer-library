@@ -13,6 +13,7 @@ export type ChangeAuthorityData = {
   validatorManager: beet.COption<web3.PublicKey>
   operationalSolAccount: beet.COption<web3.PublicKey>
   treasuryMsolAccount: beet.COption<web3.PublicKey>
+  pauseAuthority: beet.COption<web3.PublicKey>
 }
 
 /**
@@ -26,6 +27,7 @@ export const changeAuthorityDataBeet =
       ['validatorManager', beet.coption(beetSolana.publicKey)],
       ['operationalSolAccount', beet.coption(beetSolana.publicKey)],
       ['treasuryMsolAccount', beet.coption(beetSolana.publicKey)],
+      ['pauseAuthority', beet.coption(beetSolana.publicKey)],
     ],
     'ChangeAuthorityData',
   )

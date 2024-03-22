@@ -10,60 +10,65 @@ import * as web3 from '@solana/web3.js'
 
 /**
  * @category Instructions
- * @category StakeReserve
+ * @category Redelegate
  * @category generated
  */
-export type StakeReserveInstructionArgs = {
-  validatorIndex: number
+export type RedelegateInstructionArgs = {
+  stakeIndex: number
+  sourceValidatorIndex: number
+  destValidatorIndex: number
 }
 /**
  * @category Instructions
- * @category StakeReserve
+ * @category Redelegate
  * @category generated
  */
-export const stakeReserveStruct = new beet.BeetArgsStruct<
-  StakeReserveInstructionArgs & {
+export const redelegateStruct = new beet.BeetArgsStruct<
+  RedelegateInstructionArgs & {
     instructionDiscriminator: number[] /* size: 8 */
   }
 >(
   [
     ['instructionDiscriminator', beet.uniformFixedSizeArray(beet.u8, 8)],
-    ['validatorIndex', beet.u32],
+    ['stakeIndex', beet.u32],
+    ['sourceValidatorIndex', beet.u32],
+    ['destValidatorIndex', beet.u32],
   ],
-  'StakeReserveInstructionArgs',
+  'RedelegateInstructionArgs',
 )
 /**
- * Accounts required by the _stakeReserve_ instruction
+ * Accounts required by the _redelegate_ instruction
  *
  * @property [_writable_] state
  * @property [_writable_] validatorList
  * @property [_writable_] stakeList
- * @property [_writable_] validatorVote
- * @property [_writable_] reservePda
- * @property [_writable_, **signer**] stakeAccount
+ * @property [_writable_] stakeAccount
  * @property [] stakeDepositAuthority
- * @property [_writable_, **signer**] rentPayer
+ * @property [] reservePda
+ * @property [_writable_, **signer**] splitStakeAccount
+ * @property [_writable_, **signer**] splitStakeRentPayer
+ * @property [] destValidatorAccount
+ * @property [_writable_, **signer**] redelegateStakeAccount
  * @property [] clock
- * @property [] epochSchedule
  * @property [] stakeHistory
  * @property [] stakeConfig
  * @property [] stakeProgram
  * @category Instructions
- * @category StakeReserve
+ * @category Redelegate
  * @category generated
  */
-export type StakeReserveInstructionAccounts = {
+export type RedelegateInstructionAccounts = {
   state: web3.PublicKey
   validatorList: web3.PublicKey
   stakeList: web3.PublicKey
-  validatorVote: web3.PublicKey
-  reservePda: web3.PublicKey
   stakeAccount: web3.PublicKey
   stakeDepositAuthority: web3.PublicKey
-  rentPayer: web3.PublicKey
+  reservePda: web3.PublicKey
+  splitStakeAccount: web3.PublicKey
+  splitStakeRentPayer: web3.PublicKey
+  destValidatorAccount: web3.PublicKey
+  redelegateStakeAccount: web3.PublicKey
   clock: web3.PublicKey
-  epochSchedule: web3.PublicKey
-  rent?: web3.PublicKey
   stakeHistory: web3.PublicKey
   stakeConfig: web3.PublicKey
   systemProgram?: web3.PublicKey
@@ -71,27 +76,27 @@ export type StakeReserveInstructionAccounts = {
   anchorRemainingAccounts?: web3.AccountMeta[]
 }
 
-export const stakeReserveInstructionDiscriminator = [
-  87, 217, 23, 179, 205, 25, 113, 129,
+export const redelegateInstructionDiscriminator = [
+  212, 82, 51, 160, 228, 80, 116, 35,
 ]
 
 /**
- * Creates a _StakeReserve_ instruction.
+ * Creates a _Redelegate_ instruction.
  *
  * @param accounts that will be accessed while the instruction is processed
  * @param args to provide as instruction data to the program
  *
  * @category Instructions
- * @category StakeReserve
+ * @category Redelegate
  * @category generated
  */
-export function createStakeReserveInstruction(
-  accounts: StakeReserveInstructionAccounts,
-  args: StakeReserveInstructionArgs,
+export function createRedelegateInstruction(
+  accounts: RedelegateInstructionAccounts,
+  args: RedelegateInstructionArgs,
   programId = new web3.PublicKey('MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'),
 ) {
-  const [data] = stakeReserveStruct.serialize({
-    instructionDiscriminator: stakeReserveInstructionDiscriminator,
+  const [data] = redelegateStruct.serialize({
+    instructionDiscriminator: redelegateInstructionDiscriminator,
     ...args,
   })
   const keys: web3.AccountMeta[] = [
@@ -111,19 +116,9 @@ export function createStakeReserveInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.validatorVote,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.reservePda,
-      isWritable: true,
-      isSigner: false,
-    },
-    {
       pubkey: accounts.stakeAccount,
       isWritable: true,
-      isSigner: true,
+      isSigner: false,
     },
     {
       pubkey: accounts.stakeDepositAuthority,
@@ -131,22 +126,32 @@ export function createStakeReserveInstruction(
       isSigner: false,
     },
     {
-      pubkey: accounts.rentPayer,
+      pubkey: accounts.reservePda,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.splitStakeAccount,
+      isWritable: true,
+      isSigner: true,
+    },
+    {
+      pubkey: accounts.splitStakeRentPayer,
+      isWritable: true,
+      isSigner: true,
+    },
+    {
+      pubkey: accounts.destValidatorAccount,
+      isWritable: false,
+      isSigner: false,
+    },
+    {
+      pubkey: accounts.redelegateStakeAccount,
       isWritable: true,
       isSigner: true,
     },
     {
       pubkey: accounts.clock,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.epochSchedule,
-      isWritable: false,
-      isSigner: false,
-    },
-    {
-      pubkey: accounts.rent ?? web3.SYSVAR_RENT_PUBKEY,
       isWritable: false,
       isSigner: false,
     },

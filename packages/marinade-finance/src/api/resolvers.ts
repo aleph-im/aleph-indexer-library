@@ -31,53 +31,13 @@ export type GlobalStatsFilters = AccountsFilters
 export class APIResolvers {
   constructor(protected domain: MainDomain) {}
 
-  async getAccounts(
-    args: AccountsFilters,
-  ): Promise<MarinadeFinanceAccountInfo[]> {
+  async getAccounts(args: AccountsFilters): Promise<MarinadeFinanceAccountInfo[]> {
     const acountsData = await this.filterAccounts(args)
     return acountsData.map(({ info, stats }) => ({ ...info, stats }))
   }
 
-  async getEvents({
-    account,
-    types,
-    startDate = 0,
-    endDate = Date.now(),
-    limit = 1000,
-    skip = 0,
-    reverse = true,
-  }: EventsFilters): Promise<MarinadeFinanceEvent[]> {
-    if (limit < 1 || limit > 1000)
-      throw new Error('400 Bad Request: 1 <= limit <= 1000')
-
-    const typesMap = types ? new Set(types) : undefined
-
-    const events: MarinadeFinanceEvent[] = []
-
-    const accountEvents = await this.domain.getAccountEventsByTime(
-      account,
-      startDate,
-      endDate,
-      {
-        reverse,
-        limit: !typesMap ? limit + skip : undefined,
-      },
-    )
-
-    for await (const { value } of accountEvents) {
-      // @note: Filter by type
-      if (typesMap && !typesMap.has(value.type)) continue
-
-      // @note: Skip first N events
-      if (--skip >= 0) continue
-
-      events.push(value)
-
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && events.length >= limit) return events
-    }
-
-    return events
+  async getAccountEvents(filters: EventsFilters): Promise<MarinadeFinanceEvent[]> {
+    return await this.domain.getAccountEvents(filters)
   }
 
   public async getGlobalStats(
@@ -89,13 +49,6 @@ export class APIResolvers {
     return this.domain.getGlobalStats(addresses)
   }
 
-  // -------------------------------- PROTECTED --------------------------------
-  /*protected async getAccountByAddress(address: string): Promise<AccountStats> {
-    const add: string[] = [address]
-    const account = await this.domain.getAccountStats(add)
-    if (!account) throw new Error(`Account ${address} does not exist`)
-    return account[0]
-  }*/
 
   protected async filterAccounts({
     types,

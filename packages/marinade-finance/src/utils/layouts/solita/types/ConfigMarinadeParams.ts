@@ -7,6 +7,7 @@
 
 import * as beet from '@metaplex-foundation/beet'
 import { Fee, feeBeet } from './Fee.js'
+import { FeeCents, feeCentsBeet } from './FeeCents.js'
 export type ConfigMarinadeParams = {
   rewardsFee: beet.COption<Fee>
   slotsForStakeDelta: beet.COption<beet.bignum>
@@ -15,7 +16,10 @@ export type ConfigMarinadeParams = {
   minWithdraw: beet.COption<beet.bignum>
   stakingSolCap: beet.COption<beet.bignum>
   liquiditySolCap: beet.COption<beet.bignum>
-  autoAddValidatorEnabled: beet.COption<boolean>
+  withdrawStakeAccountEnabled: beet.COption<boolean>
+  delayedUnstakeFee: beet.COption<FeeCents>
+  withdrawStakeAccountFee: beet.COption<FeeCents>
+  maxStakeMovedPerEpoch: beet.COption<Fee>
 }
 
 /**
@@ -32,7 +36,10 @@ export const configMarinadeParamsBeet =
       ['minWithdraw', beet.coption(beet.u64)],
       ['stakingSolCap', beet.coption(beet.u64)],
       ['liquiditySolCap', beet.coption(beet.u64)],
-      ['autoAddValidatorEnabled', beet.coption(beet.bool)],
+      ['withdrawStakeAccountEnabled', beet.coption(beet.bool)],
+      ['delayedUnstakeFee', beet.coption(feeCentsBeet)],
+      ['withdrawStakeAccountFee', beet.coption(feeCentsBeet)],
+      ['maxStakeMovedPerEpoch', beet.coption(feeBeet)],
     ],
     'ConfigMarinadeParams',
   )

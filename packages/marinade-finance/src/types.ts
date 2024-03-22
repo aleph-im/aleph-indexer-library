@@ -5,7 +5,6 @@ import {
 } from './utils/layouts/index.js'
 
 export type MarinadeFinanceAccountInfo = {
-  name: string
   programId: string
   address: string
   type: AccountType

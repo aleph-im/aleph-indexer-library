@@ -76,12 +76,6 @@ export class AccessTimeSeriesAggregator {
     }
     return acc
   }
-
-  protected isMarinadeFinanceEvent(
-    event: MarinadeFinanceEvent | AccessTimeStats,
-  ): event is MarinadeFinanceEvent {
-    return 'type' in event
-  }
 }
 
 export const accessAggregator = new AccessTimeSeriesAggregator()

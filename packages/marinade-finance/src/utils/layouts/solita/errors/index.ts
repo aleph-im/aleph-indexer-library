@@ -18,7 +18,7 @@ const createErrorFromNameLookup: Map<string, () => ErrorWithCode> = new Map()
  * @category generated
  */
 export class WrongReserveOwnerError extends Error {
-  readonly code: number = 0x12c
+  readonly code: number = 0x1770
   readonly name: string = 'WrongReserveOwner'
   constructor() {
     super('Wrong reserve owner. Must be a system account')
@@ -28,7 +28,7 @@ export class WrongReserveOwnerError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x12c, () => new WrongReserveOwnerError())
+createErrorFromCodeLookup.set(0x1770, () => new WrongReserveOwnerError())
 createErrorFromNameLookup.set(
   'WrongReserveOwner',
   () => new WrongReserveOwnerError(),
@@ -41,7 +41,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class NonEmptyReserveDataError extends Error {
-  readonly code: number = 0x12d
+  readonly code: number = 0x1771
   readonly name: string = 'NonEmptyReserveData'
   constructor() {
     super('Reserve must have no data, but has data')
@@ -51,7 +51,7 @@ export class NonEmptyReserveDataError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x12d, () => new NonEmptyReserveDataError())
+createErrorFromCodeLookup.set(0x1771, () => new NonEmptyReserveDataError())
 createErrorFromNameLookup.set(
   'NonEmptyReserveData',
   () => new NonEmptyReserveDataError(),
@@ -64,7 +64,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidInitialReserveLamportsError extends Error {
-  readonly code: number = 0x12e
+  readonly code: number = 0x1772
   readonly name: string = 'InvalidInitialReserveLamports'
   constructor() {
     super('Invalid initial reserve lamports')
@@ -75,7 +75,7 @@ export class InvalidInitialReserveLamportsError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x12e,
+  0x1772,
   () => new InvalidInitialReserveLamportsError(),
 )
 createErrorFromNameLookup.set(
@@ -90,7 +90,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class ZeroValidatorChunkSizeError extends Error {
-  readonly code: number = 0x12f
+  readonly code: number = 0x1773
   readonly name: string = 'ZeroValidatorChunkSize'
   constructor() {
     super('Zero validator chunk size')
@@ -100,7 +100,7 @@ export class ZeroValidatorChunkSizeError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x12f, () => new ZeroValidatorChunkSizeError())
+createErrorFromCodeLookup.set(0x1773, () => new ZeroValidatorChunkSizeError())
 createErrorFromNameLookup.set(
   'ZeroValidatorChunkSize',
   () => new ZeroValidatorChunkSizeError(),
@@ -113,7 +113,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class TooBigValidatorChunkSizeError extends Error {
-  readonly code: number = 0x130
+  readonly code: number = 0x1774
   readonly name: string = 'TooBigValidatorChunkSize'
   constructor() {
     super('Too big validator chunk size')
@@ -123,7 +123,7 @@ export class TooBigValidatorChunkSizeError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x130, () => new TooBigValidatorChunkSizeError())
+createErrorFromCodeLookup.set(0x1774, () => new TooBigValidatorChunkSizeError())
 createErrorFromNameLookup.set(
   'TooBigValidatorChunkSize',
   () => new TooBigValidatorChunkSizeError(),
@@ -136,7 +136,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class ZeroCreditChunkSizeError extends Error {
-  readonly code: number = 0x131
+  readonly code: number = 0x1775
   readonly name: string = 'ZeroCreditChunkSize'
   constructor() {
     super('Zero credit chunk size')
@@ -146,7 +146,7 @@ export class ZeroCreditChunkSizeError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x131, () => new ZeroCreditChunkSizeError())
+createErrorFromCodeLookup.set(0x1775, () => new ZeroCreditChunkSizeError())
 createErrorFromNameLookup.set(
   'ZeroCreditChunkSize',
   () => new ZeroCreditChunkSizeError(),
@@ -159,7 +159,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class TooBigCreditChunkSizeError extends Error {
-  readonly code: number = 0x132
+  readonly code: number = 0x1776
   readonly name: string = 'TooBigCreditChunkSize'
   constructor() {
     super('Too big credit chunk size')
@@ -169,7 +169,7 @@ export class TooBigCreditChunkSizeError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x132, () => new TooBigCreditChunkSizeError())
+createErrorFromCodeLookup.set(0x1776, () => new TooBigCreditChunkSizeError())
 createErrorFromNameLookup.set(
   'TooBigCreditChunkSize',
   () => new TooBigCreditChunkSizeError(),
@@ -182,7 +182,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class TooLowCreditFeeError extends Error {
-  readonly code: number = 0x133
+  readonly code: number = 0x1777
   readonly name: string = 'TooLowCreditFee'
   constructor() {
     super('Too low credit fee')
@@ -192,7 +192,7 @@ export class TooLowCreditFeeError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x133, () => new TooLowCreditFeeError())
+createErrorFromCodeLookup.set(0x1777, () => new TooLowCreditFeeError())
 createErrorFromNameLookup.set(
   'TooLowCreditFee',
   () => new TooLowCreditFeeError(),
@@ -205,7 +205,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidMintAuthorityError extends Error {
-  readonly code: number = 0x134
+  readonly code: number = 0x1778
   readonly name: string = 'InvalidMintAuthority'
   constructor() {
     super('Invalid mint authority')
@@ -215,7 +215,7 @@ export class InvalidMintAuthorityError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x134, () => new InvalidMintAuthorityError())
+createErrorFromCodeLookup.set(0x1778, () => new InvalidMintAuthorityError())
 createErrorFromNameLookup.set(
   'InvalidMintAuthority',
   () => new InvalidMintAuthorityError(),
@@ -228,7 +228,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class MintHasInitialSupplyError extends Error {
-  readonly code: number = 0x135
+  readonly code: number = 0x1779
   readonly name: string = 'MintHasInitialSupply'
   constructor() {
     super('Non empty initial mint supply')
@@ -238,7 +238,7 @@ export class MintHasInitialSupplyError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x135, () => new MintHasInitialSupplyError())
+createErrorFromCodeLookup.set(0x1779, () => new MintHasInitialSupplyError())
 createErrorFromNameLookup.set(
   'MintHasInitialSupply',
   () => new MintHasInitialSupplyError(),
@@ -251,7 +251,7 @@ createErrorFromNameLookup.set(
  * @category generated
  */
 export class InvalidOwnerFeeStateError extends Error {
-  readonly code: number = 0x136
+  readonly code: number = 0x177a
   readonly name: string = 'InvalidOwnerFeeState'
   constructor() {
     super('Invalid owner fee state')
@@ -261,24 +261,24 @@ export class InvalidOwnerFeeStateError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x136, () => new InvalidOwnerFeeStateError())
+createErrorFromCodeLookup.set(0x177a, () => new InvalidOwnerFeeStateError())
 createErrorFromNameLookup.set(
   'InvalidOwnerFeeState',
   () => new InvalidOwnerFeeStateError(),
 )
 
 /**
- * InvalidProgramId: '1910 Invalid program id. For using program from another account please update id in the code'
+ * InvalidProgramId: 'Invalid program id. For using program from another account please update id in the code'
  *
  * @category Errors
  * @category generated
  */
 export class InvalidProgramIdError extends Error {
-  readonly code: number = 0x1910
+  readonly code: number = 0x177b
   readonly name: string = 'InvalidProgramId'
   constructor() {
     super(
-      '1910 Invalid program id. For using program from another account please update id in the code',
+      'Invalid program id. For using program from another account please update id in the code',
     )
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, InvalidProgramIdError)
@@ -286,261 +286,270 @@ export class InvalidProgramIdError extends Error {
   }
 }
 
-createErrorFromCodeLookup.set(0x1910, () => new InvalidProgramIdError())
+createErrorFromCodeLookup.set(0x177b, () => new InvalidProgramIdError())
 createErrorFromNameLookup.set(
   'InvalidProgramId',
   () => new InvalidProgramIdError(),
 )
 
 /**
- * UnexpectedAccount: 'FFA0 Unexpected account'
+ * UnexpectedAccount: 'Unexpected account'
  *
  * @category Errors
  * @category generated
  */
 export class UnexpectedAccountError extends Error {
-  readonly code: number = 0xffa0
+  readonly code: number = 0x177c
   readonly name: string = 'UnexpectedAccount'
   constructor() {
-    super('FFA0 Unexpected account')
+    super('Unexpected account')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, UnexpectedAccountError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0xffa0, () => new UnexpectedAccountError())
+createErrorFromCodeLookup.set(0x177c, () => new UnexpectedAccountError())
 createErrorFromNameLookup.set(
   'UnexpectedAccount',
   () => new UnexpectedAccountError(),
 )
 
 /**
- * CalculationFailure: 'CACF Calculation failure'
+ * CalculationFailure: 'Calculation failure'
  *
  * @category Errors
  * @category generated
  */
 export class CalculationFailureError extends Error {
-  readonly code: number = 0xcacf
+  readonly code: number = 0x177d
   readonly name: string = 'CalculationFailure'
   constructor() {
-    super('CACF Calculation failure')
+    super('Calculation failure')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, CalculationFailureError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0xcacf, () => new CalculationFailureError())
+createErrorFromCodeLookup.set(0x177d, () => new CalculationFailureError())
 createErrorFromNameLookup.set(
   'CalculationFailure',
   () => new CalculationFailureError(),
 )
 
 /**
- * AccountWithLockup: 'B3AA You can't deposit a stake-account with lockup'
+ * StakeAccountWithLockup: 'You can't deposit a stake-account with lockup'
  *
  * @category Errors
  * @category generated
  */
-export class AccountWithLockupError extends Error {
-  readonly code: number = 0xb3aa
-  readonly name: string = 'AccountWithLockup'
+export class StakeAccountWithLockupError extends Error {
+  readonly code: number = 0x177e
+  readonly name: string = 'StakeAccountWithLockup'
   constructor() {
-    super("B3AA You can't deposit a stake-account with lockup")
+    super("You can't deposit a stake-account with lockup")
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, AccountWithLockupError)
+      Error.captureStackTrace(this, StakeAccountWithLockupError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0xb3aa, () => new AccountWithLockupError())
+createErrorFromCodeLookup.set(0x177e, () => new StakeAccountWithLockupError())
 createErrorFromNameLookup.set(
-  'AccountWithLockup',
-  () => new AccountWithLockupError(),
+  'StakeAccountWithLockup',
+  () => new StakeAccountWithLockupError(),
 )
 
 /**
- * NumberTooLow: '2000 Number too low'
+ * MinStakeIsTooLow: 'Min stake is too low'
  *
  * @category Errors
  * @category generated
  */
-export class NumberTooLowError extends Error {
-  readonly code: number = 0x2000
-  readonly name: string = 'NumberTooLow'
+export class MinStakeIsTooLowError extends Error {
+  readonly code: number = 0x177f
+  readonly name: string = 'MinStakeIsTooLow'
   constructor() {
-    super('2000 Number too low')
+    super('Min stake is too low')
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, NumberTooLowError)
+      Error.captureStackTrace(this, MinStakeIsTooLowError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x2000, () => new NumberTooLowError())
-createErrorFromNameLookup.set('NumberTooLow', () => new NumberTooLowError())
-
-/**
- * NumberTooHigh: '2001 Number too high'
- *
- * @category Errors
- * @category generated
- */
-export class NumberTooHighError extends Error {
-  readonly code: number = 0x2001
-  readonly name: string = 'NumberTooHigh'
-  constructor() {
-    super('2001 Number too high')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, NumberTooHighError)
-    }
-  }
-}
-
-createErrorFromCodeLookup.set(0x2001, () => new NumberTooHighError())
-createErrorFromNameLookup.set('NumberTooHigh', () => new NumberTooHighError())
-
-/**
- * FeeTooHigh: '1100 Fee too high'
- *
- * @category Errors
- * @category generated
- */
-export class FeeTooHighError extends Error {
-  readonly code: number = 0x1100
-  readonly name: string = 'FeeTooHigh'
-  constructor() {
-    super('1100 Fee too high')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, FeeTooHighError)
-    }
-  }
-}
-
-createErrorFromCodeLookup.set(0x1100, () => new FeeTooHighError())
-createErrorFromNameLookup.set('FeeTooHigh', () => new FeeTooHighError())
-
-/**
- * FeesWrongWayRound: '1101 Min fee > max fee'
- *
- * @category Errors
- * @category generated
- */
-export class FeesWrongWayRoundError extends Error {
-  readonly code: number = 0x1101
-  readonly name: string = 'FeesWrongWayRound'
-  constructor() {
-    super('1101 Min fee > max fee')
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, FeesWrongWayRoundError)
-    }
-  }
-}
-
-createErrorFromCodeLookup.set(0x1101, () => new FeesWrongWayRoundError())
+createErrorFromCodeLookup.set(0x177f, () => new MinStakeIsTooLowError())
 createErrorFromNameLookup.set(
-  'FeesWrongWayRound',
-  () => new FeesWrongWayRoundError(),
+  'MinStakeIsTooLow',
+  () => new MinStakeIsTooLowError(),
 )
 
 /**
- * LiquidityTargetTooLow: '1102 Liquidity target too low'
+ * LpMaxFeeIsTooHigh: 'Lp max fee is too high'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class LpMaxFeeIsTooHighError extends Error {
+  readonly code: number = 0x1780
+  readonly name: string = 'LpMaxFeeIsTooHigh'
+  constructor() {
+    super('Lp max fee is too high')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, LpMaxFeeIsTooHighError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1780, () => new LpMaxFeeIsTooHighError())
+createErrorFromNameLookup.set(
+  'LpMaxFeeIsTooHigh',
+  () => new LpMaxFeeIsTooHighError(),
+)
+
+/**
+ * BasisPointsOverflow: 'Basis points overflow'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class BasisPointsOverflowError extends Error {
+  readonly code: number = 0x1781
+  readonly name: string = 'BasisPointsOverflow'
+  constructor() {
+    super('Basis points overflow')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, BasisPointsOverflowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1781, () => new BasisPointsOverflowError())
+createErrorFromNameLookup.set(
+  'BasisPointsOverflow',
+  () => new BasisPointsOverflowError(),
+)
+
+/**
+ * LpFeesAreWrongWayRound: 'LP min fee > LP max fee'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class LpFeesAreWrongWayRoundError extends Error {
+  readonly code: number = 0x1782
+  readonly name: string = 'LpFeesAreWrongWayRound'
+  constructor() {
+    super('LP min fee > LP max fee')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, LpFeesAreWrongWayRoundError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1782, () => new LpFeesAreWrongWayRoundError())
+createErrorFromNameLookup.set(
+  'LpFeesAreWrongWayRound',
+  () => new LpFeesAreWrongWayRoundError(),
+)
+
+/**
+ * LiquidityTargetTooLow: 'Liquidity target too low'
  *
  * @category Errors
  * @category generated
  */
 export class LiquidityTargetTooLowError extends Error {
-  readonly code: number = 0x1102
+  readonly code: number = 0x1783
   readonly name: string = 'LiquidityTargetTooLow'
   constructor() {
-    super('1102 Liquidity target too low')
+    super('Liquidity target too low')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, LiquidityTargetTooLowError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1102, () => new LiquidityTargetTooLowError())
+createErrorFromCodeLookup.set(0x1783, () => new LiquidityTargetTooLowError())
 createErrorFromNameLookup.set(
   'LiquidityTargetTooLow',
   () => new LiquidityTargetTooLowError(),
 )
 
 /**
- * TicketNotDue: '1103 Ticket not due. Wait more epochs'
+ * TicketNotDue: 'Ticket not due. Wait more epochs'
  *
  * @category Errors
  * @category generated
  */
 export class TicketNotDueError extends Error {
-  readonly code: number = 0x1103
+  readonly code: number = 0x1784
   readonly name: string = 'TicketNotDue'
   constructor() {
-    super('1103 Ticket not due. Wait more epochs')
+    super('Ticket not due. Wait more epochs')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, TicketNotDueError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1103, () => new TicketNotDueError())
+createErrorFromCodeLookup.set(0x1784, () => new TicketNotDueError())
 createErrorFromNameLookup.set('TicketNotDue', () => new TicketNotDueError())
 
 /**
- * TicketNotReady: '1104 Ticket not ready. Wait a few hours and try again'
+ * TicketNotReady: 'Ticket not ready. Wait a few hours and try again'
  *
  * @category Errors
  * @category generated
  */
 export class TicketNotReadyError extends Error {
-  readonly code: number = 0x1104
+  readonly code: number = 0x1785
   readonly name: string = 'TicketNotReady'
   constructor() {
-    super('1104 Ticket not ready. Wait a few hours and try again')
+    super('Ticket not ready. Wait a few hours and try again')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, TicketNotReadyError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1104, () => new TicketNotReadyError())
+createErrorFromCodeLookup.set(0x1785, () => new TicketNotReadyError())
 createErrorFromNameLookup.set('TicketNotReady', () => new TicketNotReadyError())
 
 /**
- * WrongBeneficiary: '1105 Wrong Ticket Beneficiary'
+ * WrongBeneficiary: 'Wrong Ticket Beneficiary'
  *
  * @category Errors
  * @category generated
  */
 export class WrongBeneficiaryError extends Error {
-  readonly code: number = 0x1105
+  readonly code: number = 0x1786
   readonly name: string = 'WrongBeneficiary'
   constructor() {
-    super('1105 Wrong Ticket Beneficiary')
+    super('Wrong Ticket Beneficiary')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, WrongBeneficiaryError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1105, () => new WrongBeneficiaryError())
+createErrorFromCodeLookup.set(0x1786, () => new WrongBeneficiaryError())
 createErrorFromNameLookup.set(
   'WrongBeneficiary',
   () => new WrongBeneficiaryError(),
 )
 
 /**
- * StakeAccountNotUpdatedYet: '1106 Stake Account not updated yet'
+ * StakeAccountNotUpdatedYet: 'Stake Account not updated yet'
  *
  * @category Errors
  * @category generated
  */
 export class StakeAccountNotUpdatedYetError extends Error {
-  readonly code: number = 0x1106
+  readonly code: number = 0x1787
   readonly name: string = 'StakeAccountNotUpdatedYet'
   constructor() {
-    super('1106 Stake Account not updated yet')
+    super('Stake Account not updated yet')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, StakeAccountNotUpdatedYetError)
     }
@@ -548,7 +557,7 @@ export class StakeAccountNotUpdatedYetError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x1106,
+  0x1787,
   () => new StakeAccountNotUpdatedYetError(),
 )
 createErrorFromNameLookup.set(
@@ -557,39 +566,39 @@ createErrorFromNameLookup.set(
 )
 
 /**
- * StakeNotDelegated: '1107 Stake Account not delegated'
+ * StakeNotDelegated: 'Stake Account not delegated'
  *
  * @category Errors
  * @category generated
  */
 export class StakeNotDelegatedError extends Error {
-  readonly code: number = 0x1107
+  readonly code: number = 0x1788
   readonly name: string = 'StakeNotDelegated'
   constructor() {
-    super('1107 Stake Account not delegated')
+    super('Stake Account not delegated')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, StakeNotDelegatedError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1107, () => new StakeNotDelegatedError())
+createErrorFromCodeLookup.set(0x1788, () => new StakeNotDelegatedError())
 createErrorFromNameLookup.set(
   'StakeNotDelegated',
   () => new StakeNotDelegatedError(),
 )
 
 /**
- * StakeAccountIsEmergencyUnstaking: '1108 Stake Account is emergency unstaking'
+ * StakeAccountIsEmergencyUnstaking: 'Stake Account is emergency unstaking'
  *
  * @category Errors
  * @category generated
  */
 export class StakeAccountIsEmergencyUnstakingError extends Error {
-  readonly code: number = 0x1108
+  readonly code: number = 0x1789
   readonly name: string = 'StakeAccountIsEmergencyUnstaking'
   constructor() {
-    super('1108 Stake Account is emergency unstaking')
+    super('Stake Account is emergency unstaking')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, StakeAccountIsEmergencyUnstakingError)
     }
@@ -597,7 +606,7 @@ export class StakeAccountIsEmergencyUnstakingError extends Error {
 }
 
 createErrorFromCodeLookup.set(
-  0x1108,
+  0x1789,
   () => new StakeAccountIsEmergencyUnstakingError(),
 )
 createErrorFromNameLookup.set(
@@ -606,49 +615,1481 @@ createErrorFromNameLookup.set(
 )
 
 /**
- * InsufficientLiquidity: '1199 Insufficient Liquidity in the Liquidity Pool'
+ * InsufficientLiquidity: 'Insufficient Liquidity in the Liquidity Pool'
  *
  * @category Errors
  * @category generated
  */
 export class InsufficientLiquidityError extends Error {
-  readonly code: number = 0x1199
+  readonly code: number = 0x178a
   readonly name: string = 'InsufficientLiquidity'
   constructor() {
-    super('1199 Insufficient Liquidity in the Liquidity Pool')
+    super('Insufficient Liquidity in the Liquidity Pool')
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, InsufficientLiquidityError)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0x1199, () => new InsufficientLiquidityError())
+createErrorFromCodeLookup.set(0x178a, () => new InsufficientLiquidityError())
 createErrorFromNameLookup.set(
   'InsufficientLiquidity',
   () => new InsufficientLiquidityError(),
 )
 
 /**
- * InvalidValidator: 'BAD1 Invalid validator'
+ * NotUsed6027: ''
  *
  * @category Errors
  * @category generated
  */
-export class InvalidValidatorError extends Error {
-  readonly code: number = 0xbad1
-  readonly name: string = 'InvalidValidator'
+export class NotUsed6027Error extends Error {
+  readonly code: number = 0x178b
+  readonly name: string = 'NotUsed6027'
   constructor() {
-    super('BAD1 Invalid validator')
+    super('')
     if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, InvalidValidatorError)
+      Error.captureStackTrace(this, NotUsed6027Error)
     }
   }
 }
 
-createErrorFromCodeLookup.set(0xbad1, () => new InvalidValidatorError())
+createErrorFromCodeLookup.set(0x178b, () => new NotUsed6027Error())
+createErrorFromNameLookup.set('NotUsed6027', () => new NotUsed6027Error())
+
+/**
+ * InvalidAdminAuthority: 'Invalid admin authority'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidAdminAuthorityError extends Error {
+  readonly code: number = 0x178c
+  readonly name: string = 'InvalidAdminAuthority'
+  constructor() {
+    super('Invalid admin authority')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidAdminAuthorityError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x178c, () => new InvalidAdminAuthorityError())
 createErrorFromNameLookup.set(
-  'InvalidValidator',
-  () => new InvalidValidatorError(),
+  'InvalidAdminAuthority',
+  () => new InvalidAdminAuthorityError(),
+)
+
+/**
+ * InvalidValidatorManager: 'Invalid validator system manager'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidValidatorManagerError extends Error {
+  readonly code: number = 0x178d
+  readonly name: string = 'InvalidValidatorManager'
+  constructor() {
+    super('Invalid validator system manager')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidValidatorManagerError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x178d, () => new InvalidValidatorManagerError())
+createErrorFromNameLookup.set(
+  'InvalidValidatorManager',
+  () => new InvalidValidatorManagerError(),
+)
+
+/**
+ * InvalidStakeListDiscriminator: 'Invalid stake list account discriminator'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidStakeListDiscriminatorError extends Error {
+  readonly code: number = 0x178e
+  readonly name: string = 'InvalidStakeListDiscriminator'
+  constructor() {
+    super('Invalid stake list account discriminator')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidStakeListDiscriminatorError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x178e,
+  () => new InvalidStakeListDiscriminatorError(),
+)
+createErrorFromNameLookup.set(
+  'InvalidStakeListDiscriminator',
+  () => new InvalidStakeListDiscriminatorError(),
+)
+
+/**
+ * InvalidValidatorListDiscriminator: 'Invalid validator list account discriminator'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidValidatorListDiscriminatorError extends Error {
+  readonly code: number = 0x178f
+  readonly name: string = 'InvalidValidatorListDiscriminator'
+  constructor() {
+    super('Invalid validator list account discriminator')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidValidatorListDiscriminatorError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x178f,
+  () => new InvalidValidatorListDiscriminatorError(),
+)
+createErrorFromNameLookup.set(
+  'InvalidValidatorListDiscriminator',
+  () => new InvalidValidatorListDiscriminatorError(),
+)
+
+/**
+ * TreasuryCutIsTooHigh: 'Treasury cut is too high'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class TreasuryCutIsTooHighError extends Error {
+  readonly code: number = 0x1790
+  readonly name: string = 'TreasuryCutIsTooHigh'
+  constructor() {
+    super('Treasury cut is too high')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, TreasuryCutIsTooHighError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1790, () => new TreasuryCutIsTooHighError())
+createErrorFromNameLookup.set(
+  'TreasuryCutIsTooHigh',
+  () => new TreasuryCutIsTooHighError(),
+)
+
+/**
+ * RewardsFeeIsTooHigh: 'Reward fee is too high'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class RewardsFeeIsTooHighError extends Error {
+  readonly code: number = 0x1791
+  readonly name: string = 'RewardsFeeIsTooHigh'
+  constructor() {
+    super('Reward fee is too high')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, RewardsFeeIsTooHighError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1791, () => new RewardsFeeIsTooHighError())
+createErrorFromNameLookup.set(
+  'RewardsFeeIsTooHigh',
+  () => new RewardsFeeIsTooHighError(),
+)
+
+/**
+ * StakingIsCapped: 'Staking is capped'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class StakingIsCappedError extends Error {
+  readonly code: number = 0x1792
+  readonly name: string = 'StakingIsCapped'
+  constructor() {
+    super('Staking is capped')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, StakingIsCappedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1792, () => new StakingIsCappedError())
+createErrorFromNameLookup.set(
+  'StakingIsCapped',
+  () => new StakingIsCappedError(),
+)
+
+/**
+ * LiquidityIsCapped: 'Liquidity is capped'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class LiquidityIsCappedError extends Error {
+  readonly code: number = 0x1793
+  readonly name: string = 'LiquidityIsCapped'
+  constructor() {
+    super('Liquidity is capped')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, LiquidityIsCappedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1793, () => new LiquidityIsCappedError())
+createErrorFromNameLookup.set(
+  'LiquidityIsCapped',
+  () => new LiquidityIsCappedError(),
+)
+
+/**
+ * UpdateWindowIsTooLow: 'Update window is too low'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class UpdateWindowIsTooLowError extends Error {
+  readonly code: number = 0x1794
+  readonly name: string = 'UpdateWindowIsTooLow'
+  constructor() {
+    super('Update window is too low')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, UpdateWindowIsTooLowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1794, () => new UpdateWindowIsTooLowError())
+createErrorFromNameLookup.set(
+  'UpdateWindowIsTooLow',
+  () => new UpdateWindowIsTooLowError(),
+)
+
+/**
+ * MinWithdrawIsTooHigh: 'Min withdraw is too high'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class MinWithdrawIsTooHighError extends Error {
+  readonly code: number = 0x1795
+  readonly name: string = 'MinWithdrawIsTooHigh'
+  constructor() {
+    super('Min withdraw is too high')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, MinWithdrawIsTooHighError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1795, () => new MinWithdrawIsTooHighError())
+createErrorFromNameLookup.set(
+  'MinWithdrawIsTooHigh',
+  () => new MinWithdrawIsTooHighError(),
+)
+
+/**
+ * WithdrawAmountIsTooLow: 'Withdraw amount is too low'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WithdrawAmountIsTooLowError extends Error {
+  readonly code: number = 0x1796
+  readonly name: string = 'WithdrawAmountIsTooLow'
+  constructor() {
+    super('Withdraw amount is too low')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WithdrawAmountIsTooLowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1796, () => new WithdrawAmountIsTooLowError())
+createErrorFromNameLookup.set(
+  'WithdrawAmountIsTooLow',
+  () => new WithdrawAmountIsTooLowError(),
+)
+
+/**
+ * DepositAmountIsTooLow: 'Deposit amount is too low'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class DepositAmountIsTooLowError extends Error {
+  readonly code: number = 0x1797
+  readonly name: string = 'DepositAmountIsTooLow'
+  constructor() {
+    super('Deposit amount is too low')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, DepositAmountIsTooLowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1797, () => new DepositAmountIsTooLowError())
+createErrorFromNameLookup.set(
+  'DepositAmountIsTooLow',
+  () => new DepositAmountIsTooLowError(),
+)
+
+/**
+ * NotEnoughUserFunds: 'Not enough user funds'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class NotEnoughUserFundsError extends Error {
+  readonly code: number = 0x1798
+  readonly name: string = 'NotEnoughUserFunds'
+  constructor() {
+    super('Not enough user funds')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, NotEnoughUserFundsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x1798, () => new NotEnoughUserFundsError())
+createErrorFromNameLookup.set(
+  'NotEnoughUserFunds',
+  () => new NotEnoughUserFundsError(),
+)
+
+/**
+ * WrongTokenOwnerOrDelegate: 'Wrong token owner or delegate'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WrongTokenOwnerOrDelegateError extends Error {
+  readonly code: number = 0x1799
+  readonly name: string = 'WrongTokenOwnerOrDelegate'
+  constructor() {
+    super('Wrong token owner or delegate')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WrongTokenOwnerOrDelegateError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x1799,
+  () => new WrongTokenOwnerOrDelegateError(),
+)
+createErrorFromNameLookup.set(
+  'WrongTokenOwnerOrDelegate',
+  () => new WrongTokenOwnerOrDelegateError(),
+)
+
+/**
+ * TooEarlyForStakeDelta: 'Too early for stake delta'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class TooEarlyForStakeDeltaError extends Error {
+  readonly code: number = 0x179a
+  readonly name: string = 'TooEarlyForStakeDelta'
+  constructor() {
+    super('Too early for stake delta')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, TooEarlyForStakeDeltaError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x179a, () => new TooEarlyForStakeDeltaError())
+createErrorFromNameLookup.set(
+  'TooEarlyForStakeDelta',
+  () => new TooEarlyForStakeDeltaError(),
+)
+
+/**
+ * RequiredDelegatedStake: 'Required delegated stake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class RequiredDelegatedStakeError extends Error {
+  readonly code: number = 0x179b
+  readonly name: string = 'RequiredDelegatedStake'
+  constructor() {
+    super('Required delegated stake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, RequiredDelegatedStakeError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x179b, () => new RequiredDelegatedStakeError())
+createErrorFromNameLookup.set(
+  'RequiredDelegatedStake',
+  () => new RequiredDelegatedStakeError(),
+)
+
+/**
+ * RequiredActiveStake: 'Required active stake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class RequiredActiveStakeError extends Error {
+  readonly code: number = 0x179c
+  readonly name: string = 'RequiredActiveStake'
+  constructor() {
+    super('Required active stake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, RequiredActiveStakeError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x179c, () => new RequiredActiveStakeError())
+createErrorFromNameLookup.set(
+  'RequiredActiveStake',
+  () => new RequiredActiveStakeError(),
+)
+
+/**
+ * RequiredDeactivatingStake: 'Required deactivating stake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class RequiredDeactivatingStakeError extends Error {
+  readonly code: number = 0x179d
+  readonly name: string = 'RequiredDeactivatingStake'
+  constructor() {
+    super('Required deactivating stake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, RequiredDeactivatingStakeError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x179d,
+  () => new RequiredDeactivatingStakeError(),
+)
+createErrorFromNameLookup.set(
+  'RequiredDeactivatingStake',
+  () => new RequiredDeactivatingStakeError(),
+)
+
+/**
+ * DepositingNotActivatedStake: 'Depositing not activated stake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class DepositingNotActivatedStakeError extends Error {
+  readonly code: number = 0x179e
+  readonly name: string = 'DepositingNotActivatedStake'
+  constructor() {
+    super('Depositing not activated stake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, DepositingNotActivatedStakeError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x179e,
+  () => new DepositingNotActivatedStakeError(),
+)
+createErrorFromNameLookup.set(
+  'DepositingNotActivatedStake',
+  () => new DepositingNotActivatedStakeError(),
+)
+
+/**
+ * TooLowDelegationInDepositingStake: 'Too low delegation in the depositing stake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class TooLowDelegationInDepositingStakeError extends Error {
+  readonly code: number = 0x179f
+  readonly name: string = 'TooLowDelegationInDepositingStake'
+  constructor() {
+    super('Too low delegation in the depositing stake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, TooLowDelegationInDepositingStakeError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x179f,
+  () => new TooLowDelegationInDepositingStakeError(),
+)
+createErrorFromNameLookup.set(
+  'TooLowDelegationInDepositingStake',
+  () => new TooLowDelegationInDepositingStakeError(),
+)
+
+/**
+ * WrongStakeBalance: 'Wrong deposited stake balance'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WrongStakeBalanceError extends Error {
+  readonly code: number = 0x17a0
+  readonly name: string = 'WrongStakeBalance'
+  constructor() {
+    super('Wrong deposited stake balance')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WrongStakeBalanceError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17a0, () => new WrongStakeBalanceError())
+createErrorFromNameLookup.set(
+  'WrongStakeBalance',
+  () => new WrongStakeBalanceError(),
+)
+
+/**
+ * WrongValidatorAccountOrIndex: 'Wrong validator account or index'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WrongValidatorAccountOrIndexError extends Error {
+  readonly code: number = 0x17a1
+  readonly name: string = 'WrongValidatorAccountOrIndex'
+  constructor() {
+    super('Wrong validator account or index')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WrongValidatorAccountOrIndexError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17a1,
+  () => new WrongValidatorAccountOrIndexError(),
+)
+createErrorFromNameLookup.set(
+  'WrongValidatorAccountOrIndex',
+  () => new WrongValidatorAccountOrIndexError(),
+)
+
+/**
+ * WrongStakeAccountOrIndex: 'Wrong stake account or index'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WrongStakeAccountOrIndexError extends Error {
+  readonly code: number = 0x17a2
+  readonly name: string = 'WrongStakeAccountOrIndex'
+  constructor() {
+    super('Wrong stake account or index')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WrongStakeAccountOrIndexError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17a2, () => new WrongStakeAccountOrIndexError())
+createErrorFromNameLookup.set(
+  'WrongStakeAccountOrIndex',
+  () => new WrongStakeAccountOrIndexError(),
+)
+
+/**
+ * UnstakingOnPositiveDelta: 'Delta stake is positive so we must stake instead of unstake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class UnstakingOnPositiveDeltaError extends Error {
+  readonly code: number = 0x17a3
+  readonly name: string = 'UnstakingOnPositiveDelta'
+  constructor() {
+    super('Delta stake is positive so we must stake instead of unstake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, UnstakingOnPositiveDeltaError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17a3, () => new UnstakingOnPositiveDeltaError())
+createErrorFromNameLookup.set(
+  'UnstakingOnPositiveDelta',
+  () => new UnstakingOnPositiveDeltaError(),
+)
+
+/**
+ * StakingOnNegativeDelta: 'Delta stake is negative so we must unstake instead of stake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class StakingOnNegativeDeltaError extends Error {
+  readonly code: number = 0x17a4
+  readonly name: string = 'StakingOnNegativeDelta'
+  constructor() {
+    super('Delta stake is negative so we must unstake instead of stake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, StakingOnNegativeDeltaError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17a4, () => new StakingOnNegativeDeltaError())
+createErrorFromNameLookup.set(
+  'StakingOnNegativeDelta',
+  () => new StakingOnNegativeDeltaError(),
+)
+
+/**
+ * MovingStakeIsCapped: 'Moving stake during an epoch is capped'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class MovingStakeIsCappedError extends Error {
+  readonly code: number = 0x17a5
+  readonly name: string = 'MovingStakeIsCapped'
+  constructor() {
+    super('Moving stake during an epoch is capped')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, MovingStakeIsCappedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17a5, () => new MovingStakeIsCappedError())
+createErrorFromNameLookup.set(
+  'MovingStakeIsCapped',
+  () => new MovingStakeIsCappedError(),
+)
+
+/**
+ * StakeMustBeUninitialized: 'Stake must be uninitialized'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class StakeMustBeUninitializedError extends Error {
+  readonly code: number = 0x17a6
+  readonly name: string = 'StakeMustBeUninitialized'
+  constructor() {
+    super('Stake must be uninitialized')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, StakeMustBeUninitializedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17a6, () => new StakeMustBeUninitializedError())
+createErrorFromNameLookup.set(
+  'StakeMustBeUninitialized',
+  () => new StakeMustBeUninitializedError(),
+)
+
+/**
+ * DestinationStakeMustBeDelegated: 'Destination stake must be delegated'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class DestinationStakeMustBeDelegatedError extends Error {
+  readonly code: number = 0x17a7
+  readonly name: string = 'DestinationStakeMustBeDelegated'
+  constructor() {
+    super('Destination stake must be delegated')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, DestinationStakeMustBeDelegatedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17a7,
+  () => new DestinationStakeMustBeDelegatedError(),
+)
+createErrorFromNameLookup.set(
+  'DestinationStakeMustBeDelegated',
+  () => new DestinationStakeMustBeDelegatedError(),
+)
+
+/**
+ * DestinationStakeMustNotBeDeactivating: 'Destination stake must not be deactivating'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class DestinationStakeMustNotBeDeactivatingError extends Error {
+  readonly code: number = 0x17a8
+  readonly name: string = 'DestinationStakeMustNotBeDeactivating'
+  constructor() {
+    super('Destination stake must not be deactivating')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, DestinationStakeMustNotBeDeactivatingError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17a8,
+  () => new DestinationStakeMustNotBeDeactivatingError(),
+)
+createErrorFromNameLookup.set(
+  'DestinationStakeMustNotBeDeactivating',
+  () => new DestinationStakeMustNotBeDeactivatingError(),
+)
+
+/**
+ * DestinationStakeMustBeUpdated: 'Destination stake must be updated'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class DestinationStakeMustBeUpdatedError extends Error {
+  readonly code: number = 0x17a9
+  readonly name: string = 'DestinationStakeMustBeUpdated'
+  constructor() {
+    super('Destination stake must be updated')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, DestinationStakeMustBeUpdatedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17a9,
+  () => new DestinationStakeMustBeUpdatedError(),
+)
+createErrorFromNameLookup.set(
+  'DestinationStakeMustBeUpdated',
+  () => new DestinationStakeMustBeUpdatedError(),
+)
+
+/**
+ * InvalidDestinationStakeDelegation: 'Invalid destination stake delegation'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidDestinationStakeDelegationError extends Error {
+  readonly code: number = 0x17aa
+  readonly name: string = 'InvalidDestinationStakeDelegation'
+  constructor() {
+    super('Invalid destination stake delegation')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidDestinationStakeDelegationError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17aa,
+  () => new InvalidDestinationStakeDelegationError(),
+)
+createErrorFromNameLookup.set(
+  'InvalidDestinationStakeDelegation',
+  () => new InvalidDestinationStakeDelegationError(),
+)
+
+/**
+ * SourceStakeMustBeDelegated: 'Source stake must be delegated'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class SourceStakeMustBeDelegatedError extends Error {
+  readonly code: number = 0x17ab
+  readonly name: string = 'SourceStakeMustBeDelegated'
+  constructor() {
+    super('Source stake must be delegated')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, SourceStakeMustBeDelegatedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17ab,
+  () => new SourceStakeMustBeDelegatedError(),
+)
+createErrorFromNameLookup.set(
+  'SourceStakeMustBeDelegated',
+  () => new SourceStakeMustBeDelegatedError(),
+)
+
+/**
+ * SourceStakeMustNotBeDeactivating: 'Source stake must not be deactivating'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class SourceStakeMustNotBeDeactivatingError extends Error {
+  readonly code: number = 0x17ac
+  readonly name: string = 'SourceStakeMustNotBeDeactivating'
+  constructor() {
+    super('Source stake must not be deactivating')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, SourceStakeMustNotBeDeactivatingError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17ac,
+  () => new SourceStakeMustNotBeDeactivatingError(),
+)
+createErrorFromNameLookup.set(
+  'SourceStakeMustNotBeDeactivating',
+  () => new SourceStakeMustNotBeDeactivatingError(),
+)
+
+/**
+ * SourceStakeMustBeUpdated: 'Source stake must be updated'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class SourceStakeMustBeUpdatedError extends Error {
+  readonly code: number = 0x17ad
+  readonly name: string = 'SourceStakeMustBeUpdated'
+  constructor() {
+    super('Source stake must be updated')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, SourceStakeMustBeUpdatedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17ad, () => new SourceStakeMustBeUpdatedError())
+createErrorFromNameLookup.set(
+  'SourceStakeMustBeUpdated',
+  () => new SourceStakeMustBeUpdatedError(),
+)
+
+/**
+ * InvalidSourceStakeDelegation: 'Invalid source stake delegation'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidSourceStakeDelegationError extends Error {
+  readonly code: number = 0x17ae
+  readonly name: string = 'InvalidSourceStakeDelegation'
+  constructor() {
+    super('Invalid source stake delegation')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidSourceStakeDelegationError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17ae,
+  () => new InvalidSourceStakeDelegationError(),
+)
+createErrorFromNameLookup.set(
+  'InvalidSourceStakeDelegation',
+  () => new InvalidSourceStakeDelegationError(),
+)
+
+/**
+ * InvalidDelayedUnstakeTicket: 'Invalid delayed unstake ticket'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidDelayedUnstakeTicketError extends Error {
+  readonly code: number = 0x17af
+  readonly name: string = 'InvalidDelayedUnstakeTicket'
+  constructor() {
+    super('Invalid delayed unstake ticket')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidDelayedUnstakeTicketError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17af,
+  () => new InvalidDelayedUnstakeTicketError(),
+)
+createErrorFromNameLookup.set(
+  'InvalidDelayedUnstakeTicket',
+  () => new InvalidDelayedUnstakeTicketError(),
+)
+
+/**
+ * ReusingDelayedUnstakeTicket: 'Reusing delayed unstake ticket'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ReusingDelayedUnstakeTicketError extends Error {
+  readonly code: number = 0x17b0
+  readonly name: string = 'ReusingDelayedUnstakeTicket'
+  constructor() {
+    super('Reusing delayed unstake ticket')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ReusingDelayedUnstakeTicketError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17b0,
+  () => new ReusingDelayedUnstakeTicketError(),
+)
+createErrorFromNameLookup.set(
+  'ReusingDelayedUnstakeTicket',
+  () => new ReusingDelayedUnstakeTicketError(),
+)
+
+/**
+ * EmergencyUnstakingFromNonZeroScoredValidator: 'Emergency unstaking from non zero scored validator'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class EmergencyUnstakingFromNonZeroScoredValidatorError extends Error {
+  readonly code: number = 0x17b1
+  readonly name: string = 'EmergencyUnstakingFromNonZeroScoredValidator'
+  constructor() {
+    super('Emergency unstaking from non zero scored validator')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(
+        this,
+        EmergencyUnstakingFromNonZeroScoredValidatorError,
+      )
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17b1,
+  () => new EmergencyUnstakingFromNonZeroScoredValidatorError(),
+)
+createErrorFromNameLookup.set(
+  'EmergencyUnstakingFromNonZeroScoredValidator',
+  () => new EmergencyUnstakingFromNonZeroScoredValidatorError(),
+)
+
+/**
+ * WrongValidatorDuplicationFlag: 'Wrong validator duplication flag'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WrongValidatorDuplicationFlagError extends Error {
+  readonly code: number = 0x17b2
+  readonly name: string = 'WrongValidatorDuplicationFlag'
+  constructor() {
+    super('Wrong validator duplication flag')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WrongValidatorDuplicationFlagError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17b2,
+  () => new WrongValidatorDuplicationFlagError(),
+)
+createErrorFromNameLookup.set(
+  'WrongValidatorDuplicationFlag',
+  () => new WrongValidatorDuplicationFlagError(),
+)
+
+/**
+ * RedepositingMarinadeStake: 'Redepositing marinade stake'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class RedepositingMarinadeStakeError extends Error {
+  readonly code: number = 0x17b3
+  readonly name: string = 'RedepositingMarinadeStake'
+  constructor() {
+    super('Redepositing marinade stake')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, RedepositingMarinadeStakeError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17b3,
+  () => new RedepositingMarinadeStakeError(),
+)
+createErrorFromNameLookup.set(
+  'RedepositingMarinadeStake',
+  () => new RedepositingMarinadeStakeError(),
+)
+
+/**
+ * RemovingValidatorWithBalance: 'Removing validator with balance'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class RemovingValidatorWithBalanceError extends Error {
+  readonly code: number = 0x17b4
+  readonly name: string = 'RemovingValidatorWithBalance'
+  constructor() {
+    super('Removing validator with balance')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, RemovingValidatorWithBalanceError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17b4,
+  () => new RemovingValidatorWithBalanceError(),
+)
+createErrorFromNameLookup.set(
+  'RemovingValidatorWithBalance',
+  () => new RemovingValidatorWithBalanceError(),
+)
+
+/**
+ * RedelegateOverTarget: 'Redelegate will put validator over stake target'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class RedelegateOverTargetError extends Error {
+  readonly code: number = 0x17b5
+  readonly name: string = 'RedelegateOverTarget'
+  constructor() {
+    super('Redelegate will put validator over stake target')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, RedelegateOverTargetError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17b5, () => new RedelegateOverTargetError())
+createErrorFromNameLookup.set(
+  'RedelegateOverTarget',
+  () => new RedelegateOverTargetError(),
+)
+
+/**
+ * SourceAndDestValidatorsAreTheSame: 'Source and Dest Validators are the same'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class SourceAndDestValidatorsAreTheSameError extends Error {
+  readonly code: number = 0x17b6
+  readonly name: string = 'SourceAndDestValidatorsAreTheSame'
+  constructor() {
+    super('Source and Dest Validators are the same')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, SourceAndDestValidatorsAreTheSameError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17b6,
+  () => new SourceAndDestValidatorsAreTheSameError(),
+)
+createErrorFromNameLookup.set(
+  'SourceAndDestValidatorsAreTheSame',
+  () => new SourceAndDestValidatorsAreTheSameError(),
+)
+
+/**
+ * UnregisteredMsolMinted: 'Some mSOL tokens was minted outside of marinade contract'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class UnregisteredMsolMintedError extends Error {
+  readonly code: number = 0x17b7
+  readonly name: string = 'UnregisteredMsolMinted'
+  constructor() {
+    super('Some mSOL tokens was minted outside of marinade contract')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, UnregisteredMsolMintedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17b7, () => new UnregisteredMsolMintedError())
+createErrorFromNameLookup.set(
+  'UnregisteredMsolMinted',
+  () => new UnregisteredMsolMintedError(),
+)
+
+/**
+ * UnregisteredLPMinted: 'Some LP tokens was minted outside of marinade contract'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class UnregisteredLPMintedError extends Error {
+  readonly code: number = 0x17b8
+  readonly name: string = 'UnregisteredLPMinted'
+  constructor() {
+    super('Some LP tokens was minted outside of marinade contract')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, UnregisteredLPMintedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17b8, () => new UnregisteredLPMintedError())
+createErrorFromNameLookup.set(
+  'UnregisteredLPMinted',
+  () => new UnregisteredLPMintedError(),
+)
+
+/**
+ * ListIndexOutOfBounds: 'List index out of bounds'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ListIndexOutOfBoundsError extends Error {
+  readonly code: number = 0x17b9
+  readonly name: string = 'ListIndexOutOfBounds'
+  constructor() {
+    super('List index out of bounds')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ListIndexOutOfBoundsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17b9, () => new ListIndexOutOfBoundsError())
+createErrorFromNameLookup.set(
+  'ListIndexOutOfBounds',
+  () => new ListIndexOutOfBoundsError(),
+)
+
+/**
+ * ListOverflow: 'List overflow'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ListOverflowError extends Error {
+  readonly code: number = 0x17ba
+  readonly name: string = 'ListOverflow'
+  constructor() {
+    super('List overflow')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ListOverflowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17ba, () => new ListOverflowError())
+createErrorFromNameLookup.set('ListOverflow', () => new ListOverflowError())
+
+/**
+ * AlreadyPaused: 'Requested pause and already Paused'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class AlreadyPausedError extends Error {
+  readonly code: number = 0x17bb
+  readonly name: string = 'AlreadyPaused'
+  constructor() {
+    super('Requested pause and already Paused')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, AlreadyPausedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17bb, () => new AlreadyPausedError())
+createErrorFromNameLookup.set('AlreadyPaused', () => new AlreadyPausedError())
+
+/**
+ * NotPaused: 'Requested resume, but not Paused'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class NotPausedError extends Error {
+  readonly code: number = 0x17bc
+  readonly name: string = 'NotPaused'
+  constructor() {
+    super('Requested resume, but not Paused')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, NotPausedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17bc, () => new NotPausedError())
+createErrorFromNameLookup.set('NotPaused', () => new NotPausedError())
+
+/**
+ * ProgramIsPaused: 'Emergency Pause is Active'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ProgramIsPausedError extends Error {
+  readonly code: number = 0x17bd
+  readonly name: string = 'ProgramIsPaused'
+  constructor() {
+    super('Emergency Pause is Active')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ProgramIsPausedError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17bd, () => new ProgramIsPausedError())
+createErrorFromNameLookup.set(
+  'ProgramIsPaused',
+  () => new ProgramIsPausedError(),
+)
+
+/**
+ * InvalidPauseAuthority: 'Invalid pause authority'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class InvalidPauseAuthorityError extends Error {
+  readonly code: number = 0x17be
+  readonly name: string = 'InvalidPauseAuthority'
+  constructor() {
+    super('Invalid pause authority')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, InvalidPauseAuthorityError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17be, () => new InvalidPauseAuthorityError())
+createErrorFromNameLookup.set(
+  'InvalidPauseAuthority',
+  () => new InvalidPauseAuthorityError(),
+)
+
+/**
+ * SelectedStakeAccountHasNotEnoughFunds: 'Selected Stake account has not enough funds'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class SelectedStakeAccountHasNotEnoughFundsError extends Error {
+  readonly code: number = 0x17bf
+  readonly name: string = 'SelectedStakeAccountHasNotEnoughFunds'
+  constructor() {
+    super('Selected Stake account has not enough funds')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, SelectedStakeAccountHasNotEnoughFundsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17bf,
+  () => new SelectedStakeAccountHasNotEnoughFundsError(),
+)
+createErrorFromNameLookup.set(
+  'SelectedStakeAccountHasNotEnoughFunds',
+  () => new SelectedStakeAccountHasNotEnoughFundsError(),
+)
+
+/**
+ * BasisPointCentsOverflow: 'Basis point CENTS overflow'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class BasisPointCentsOverflowError extends Error {
+  readonly code: number = 0x17c0
+  readonly name: string = 'BasisPointCentsOverflow'
+  constructor() {
+    super('Basis point CENTS overflow')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, BasisPointCentsOverflowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(0x17c0, () => new BasisPointCentsOverflowError())
+createErrorFromNameLookup.set(
+  'BasisPointCentsOverflow',
+  () => new BasisPointCentsOverflowError(),
+)
+
+/**
+ * WithdrawStakeAccountIsNotEnabled: 'Withdraw stake account is not enabled'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WithdrawStakeAccountIsNotEnabledError extends Error {
+  readonly code: number = 0x17c1
+  readonly name: string = 'WithdrawStakeAccountIsNotEnabled'
+  constructor() {
+    super('Withdraw stake account is not enabled')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WithdrawStakeAccountIsNotEnabledError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17c1,
+  () => new WithdrawStakeAccountIsNotEnabledError(),
+)
+createErrorFromNameLookup.set(
+  'WithdrawStakeAccountIsNotEnabled',
+  () => new WithdrawStakeAccountIsNotEnabledError(),
+)
+
+/**
+ * WithdrawStakeAccountFeeIsTooHigh: 'Withdraw stake account fee is too high'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WithdrawStakeAccountFeeIsTooHighError extends Error {
+  readonly code: number = 0x17c2
+  readonly name: string = 'WithdrawStakeAccountFeeIsTooHigh'
+  constructor() {
+    super('Withdraw stake account fee is too high')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WithdrawStakeAccountFeeIsTooHighError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17c2,
+  () => new WithdrawStakeAccountFeeIsTooHighError(),
+)
+createErrorFromNameLookup.set(
+  'WithdrawStakeAccountFeeIsTooHigh',
+  () => new WithdrawStakeAccountFeeIsTooHighError(),
+)
+
+/**
+ * DelayedUnstakeFeeIsTooHigh: 'Delayed unstake fee is too high'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class DelayedUnstakeFeeIsTooHighError extends Error {
+  readonly code: number = 0x17c3
+  readonly name: string = 'DelayedUnstakeFeeIsTooHigh'
+  constructor() {
+    super('Delayed unstake fee is too high')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, DelayedUnstakeFeeIsTooHighError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17c3,
+  () => new DelayedUnstakeFeeIsTooHighError(),
+)
+createErrorFromNameLookup.set(
+  'DelayedUnstakeFeeIsTooHigh',
+  () => new DelayedUnstakeFeeIsTooHighError(),
+)
+
+/**
+ * WithdrawStakeLamportsIsTooLow: 'Withdraw stake account value is too low'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class WithdrawStakeLamportsIsTooLowError extends Error {
+  readonly code: number = 0x17c4
+  readonly name: string = 'WithdrawStakeLamportsIsTooLow'
+  constructor() {
+    super('Withdraw stake account value is too low')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, WithdrawStakeLamportsIsTooLowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17c4,
+  () => new WithdrawStakeLamportsIsTooLowError(),
+)
+createErrorFromNameLookup.set(
+  'WithdrawStakeLamportsIsTooLow',
+  () => new WithdrawStakeLamportsIsTooLowError(),
+)
+
+/**
+ * StakeAccountRemainderTooLow: 'Stake account remainder too low'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class StakeAccountRemainderTooLowError extends Error {
+  readonly code: number = 0x17c5
+  readonly name: string = 'StakeAccountRemainderTooLow'
+  constructor() {
+    super('Stake account remainder too low')
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, StakeAccountRemainderTooLowError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17c5,
+  () => new StakeAccountRemainderTooLowError(),
+)
+createErrorFromNameLookup.set(
+  'StakeAccountRemainderTooLow',
+  () => new StakeAccountRemainderTooLowError(),
+)
+
+/**
+ * ShrinkingListWithDeletingContents: 'Capacity of the list must be not less than it's current size'
+ *
+ * @category Errors
+ * @category generated
+ */
+export class ShrinkingListWithDeletingContentsError extends Error {
+  readonly code: number = 0x17c6
+  readonly name: string = 'ShrinkingListWithDeletingContents'
+  constructor() {
+    super("Capacity of the list must be not less than it's current size")
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, ShrinkingListWithDeletingContentsError)
+    }
+  }
+}
+
+createErrorFromCodeLookup.set(
+  0x17c6,
+  () => new ShrinkingListWithDeletingContentsError(),
+)
+createErrorFromNameLookup.set(
+  'ShrinkingListWithDeletingContents',
+  () => new ShrinkingListWithDeletingContentsError(),
 )
 
 /**

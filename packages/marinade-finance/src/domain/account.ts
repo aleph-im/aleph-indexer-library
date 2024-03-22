@@ -1,4 +1,3 @@
-import { StorageStream } from '@aleph-indexer/core'
 import {
   AccountTimeSeriesStatsManager,
   AccountTimeSeriesStats,
@@ -11,6 +10,7 @@ import {
   MarinadeFinanceAccountInfo,
   MarinadeFinanceAccountStats,
 } from '../types.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export class AccountDomain {
   constructor(
@@ -34,17 +34,44 @@ export class AccountDomain {
     return this.timeSeriesStats.getStats()
   }
 
-  async getEventsByTime(
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
-    return await this.eventDAL
+  async getEvents(
+    args: EventsFilters
+  ): Promise<MarinadeFinanceEvent[]> {
+    const {
+      types,
+      startDate = 0,
+      endDate = Date.now(),
+      limit = 1000,
+      skip = 0,
+      reverse = true,
+    } = args
+
+    if (limit < 1 || limit > 1000)
+      throw new Error('400 Bad Request: 1 <= limit <= 1000')
+
+    const typesMap = types ? new Set(types) : undefined
+    const from = startDate ? [this.info.address, startDate] : [this.info.address]
+    const to = endDate ? [this.info.address, endDate] : [this.info.address]
+    let sk = skip
+
+    const result: MarinadeFinanceEvent[] = []
+    const events = await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
-      .getAllFromTo(
-        [this.info.address, startDate],
-        [this.info.address, endDate],
-        opts,
-      )
+      .getAllFromTo(from, to, { reverse, limit })
+
+    for await (const { value } of events) {
+      // @note: Filter by type
+      if (typesMap && !typesMap.has(value.type)) continue
+
+      // @note: Skip first N events
+      if (--sk >= 0) continue
+
+      result.push(value)
+
+      // @note: Stop when after reaching the limit
+      if (limit > 0 && result.length >= limit) return result
+    }
+
+    return result
   }
 }

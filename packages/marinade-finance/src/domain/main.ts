@@ -1,4 +1,3 @@
-import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerMainDomain,
   IndexerMainDomainWithDiscovery,
@@ -16,6 +15,7 @@ import {
   MarinadeFinanceAccountInfo,
 } from '../types.js'
 import MarinadeFinanceDiscoverer from './discoverer/marinade-finance.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export default class MainDomain
   extends IndexerMainDomain
@@ -44,10 +44,7 @@ export default class MainDomain
         account: meta.address,
         meta,
         index: {
-          transactions: {
-            chunkDelay: 0,
-            chunkTimeframe: 1000 * 60 * 60 * 24,
-          },
+          transactions: true,
           content: false,
         },
       }
@@ -92,21 +89,16 @@ export default class MainDomain
     return { info, stats }
   }
 
-  async getAccountEventsByTime(
-    account: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
-    const stream = await this.context.apiClient
+  async getAccountEvents(args: EventsFilters): Promise<MarinadeFinanceEvent[]> {
+    const response = await this.context.apiClient
       .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
-        account,
-        method: 'getAccountEventsByTime',
-        args: [startDate, endDate, opts],
+        account: args.account,
+        method: 'getAccountEvents',
+        args: [args],
       })
 
-    return stream as StorageStream<string, MarinadeFinanceEvent>
+    return response as MarinadeFinanceEvent[]
   }
 
   async updateStats(now: number): Promise<void> {
@@ -177,8 +169,8 @@ export default class MainDomain
     return {
       totalAccesses: 0,
       totalAccounts: {
-        [AccountType.State]: 0,
         [AccountType.TicketAccountData]: 0,
+        [AccountType.State]: 0,
       },
       totalAccessesByProgramId: {},
       startTimestamp: undefined,

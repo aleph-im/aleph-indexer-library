@@ -75,14 +75,8 @@ export default class MarinadeFinanceDiscoverer {
   ): MarinadeFinanceAccountInfo {
     const data = ACCOUNTS_DATA_LAYOUT[type].deserialize(resp.account.data)[0]
     const address = resp.pubkey.toBase58()
-    let name: string = address
-    if (Object.hasOwn(data, 'name')) {
-      if ((data as any).name instanceof Uint8Array)
-        name = ((data as any).name as Uint8Array).toString()
-      if ((data as any).name instanceof String) name = (data as any).name
-    }
+
     return {
-      name,
       programId: MARINADE_FINANCE_PROGRAM_ID,
       type,
       address: address,

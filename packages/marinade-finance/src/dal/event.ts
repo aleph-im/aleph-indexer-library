@@ -16,7 +16,11 @@ const mappedBNProps: string[] = [
 
 // in this vector you can include the properties of several
 // events that are PublicKey in order to be able to cast them
-const mappedPublicKeyProps: string[] = ['programId', 'validatorVote']
+const mappedPublicKeyProps: string[] = [
+  'programId',
+  'validatorVote',
+  'beneficiary',
+]
 
 export enum EventDALIndex {
   AccountTimestamp = 'account_timestamp',

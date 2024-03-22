@@ -15,6 +15,7 @@ import {
   validatorSystemBeet,
 } from '../types/ValidatorSystem.js'
 import { LiqPool, liqPoolBeet } from '../types/LiqPool.js'
+import { FeeCents, feeCentsBeet } from '../types/FeeCents.js'
 
 /**
  * Arguments used to create {@link State}
@@ -43,6 +44,14 @@ export type StateArgs = {
   minWithdraw: beet.bignum
   stakingSolCap: beet.bignum
   emergencyCoolingDown: beet.bignum
+  pauseAuthority: web3.PublicKey
+  paused: boolean
+  delayedUnstakeFee: FeeCents
+  withdrawStakeAccountFee: FeeCents
+  withdrawStakeAccountEnabled: boolean
+  lastStakeMoveEpoch: beet.bignum
+  stakeMoved: beet.bignum
+  maxStakeMovedPerEpoch: Fee
 }
 
 export const stateDiscriminator = [216, 146, 107, 94, 104, 75, 182, 177]
@@ -76,6 +85,14 @@ export class State implements StateArgs {
     readonly minWithdraw: beet.bignum,
     readonly stakingSolCap: beet.bignum,
     readonly emergencyCoolingDown: beet.bignum,
+    readonly pauseAuthority: web3.PublicKey,
+    readonly paused: boolean,
+    readonly delayedUnstakeFee: FeeCents,
+    readonly withdrawStakeAccountFee: FeeCents,
+    readonly withdrawStakeAccountEnabled: boolean,
+    readonly lastStakeMoveEpoch: beet.bignum,
+    readonly stakeMoved: beet.bignum,
+    readonly maxStakeMovedPerEpoch: Fee,
   ) {}
 
   /**
@@ -104,6 +121,14 @@ export class State implements StateArgs {
       args.minWithdraw,
       args.stakingSolCap,
       args.emergencyCoolingDown,
+      args.pauseAuthority,
+      args.paused,
+      args.delayedUnstakeFee,
+      args.withdrawStakeAccountFee,
+      args.withdrawStakeAccountEnabled,
+      args.lastStakeMoveEpoch,
+      args.stakeMoved,
+      args.maxStakeMovedPerEpoch,
     )
   }
 
@@ -341,6 +366,34 @@ export class State implements StateArgs {
         }
         return x
       })(),
+      pauseAuthority: this.pauseAuthority.toBase58(),
+      paused: this.paused,
+      delayedUnstakeFee: this.delayedUnstakeFee,
+      withdrawStakeAccountFee: this.withdrawStakeAccountFee,
+      withdrawStakeAccountEnabled: this.withdrawStakeAccountEnabled,
+      lastStakeMoveEpoch: (() => {
+        const x = <{ toNumber: () => number }>this.lastStakeMoveEpoch
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
+      stakeMoved: (() => {
+        const x = <{ toNumber: () => number }>this.stakeMoved
+        if (typeof x.toNumber === 'function') {
+          try {
+            return x.toNumber()
+          } catch (_) {
+            return x
+          }
+        }
+        return x
+      })(),
+      maxStakeMovedPerEpoch: this.maxStakeMovedPerEpoch,
     }
   }
 }
@@ -378,6 +431,14 @@ export const stateBeet = new beet.BeetStruct<
     ['minWithdraw', beet.u64],
     ['stakingSolCap', beet.u64],
     ['emergencyCoolingDown', beet.u64],
+    ['pauseAuthority', beetSolana.publicKey],
+    ['paused', beet.bool],
+    ['delayedUnstakeFee', feeCentsBeet],
+    ['withdrawStakeAccountFee', feeCentsBeet],
+    ['withdrawStakeAccountEnabled', beet.bool],
+    ['lastStakeMoveEpoch', beet.u64],
+    ['stakeMoved', beet.u64],
+    ['maxStakeMovedPerEpoch', feeBeet],
   ],
   State.fromArgs,
   'State',

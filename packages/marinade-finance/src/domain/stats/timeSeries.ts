@@ -1,6 +1,5 @@
 import {
   AccountTimeSeriesStatsManager,
-  BlockchainChain,
   IndexableEntityType,
   IndexerMsClient,
   StatsStateStorage,
@@ -22,7 +21,7 @@ export async function createAccountStats(
   statsStateDAL: StatsStateStorage,
   statsTimeSeriesDAL: StatsTimeSeriesStorage,
 ): Promise<AccountTimeSeriesStatsManager<MarinadeFinanceAccountStats>> {
-  // @note: this aggregator is used to aggregate usage stats for the account
+  // @note: this aggregator is used to aggregate signer usage of the program
   const accessTimeSeries = new TimeSeriesStats<
     MarinadeFinanceEvent,
     AccessTimeStats

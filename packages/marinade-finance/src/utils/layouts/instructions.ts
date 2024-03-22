@@ -26,6 +26,12 @@ export enum InstructionType {
   EmergencyUnstake = 'EmergencyUnstake',
   PartialUnstake = 'PartialUnstake',
   MergeStakes = 'MergeStakes',
+  Redelegate = 'Redelegate',
+  Pause = 'Pause',
+  Resume = 'Resume',
+  WithdrawStakeAccount = 'WithdrawStakeAccount',
+  ReallocValidatorList = 'ReallocValidatorList',
+  ReallocStakeList = 'ReallocStakeList',
 }
 
 export type RawInstructionBase = {
@@ -37,7 +43,6 @@ export type RawInstructionBase = {
 /*-----------------------* CUSTOM RAW INSTRUCTION TYPES *-----------------------*/
 
 export type InitializeAccountsInstruction = {
-  creatorAuthority: string
   state: string
   reservePda: string
   stakeList: string
@@ -346,6 +351,7 @@ export type StakeReserveAccountsInstruction = {
   reservePda: string
   stakeAccount: string
   stakeDepositAuthority: string
+  rentPayer: string
   clock: string
   epochSchedule: string
   rent: string
@@ -495,6 +501,129 @@ export type RawMergeStakes = RawInstructionBase & {
   }
 }
 
+export type RedelegateAccountsInstruction = {
+  state: string
+  validatorList: string
+  stakeList: string
+  stakeAccount: string
+  stakeDepositAuthority: string
+  reservePda: string
+  splitStakeAccount: string
+  splitStakeRentPayer: string
+  destValidatorAccount: string
+  redelegateStakeAccount: string
+  clock: string
+  stakeHistory: string
+  stakeConfig: string
+  systemProgram: string
+  stakeProgram: string
+}
+
+export type RedelegateInfo = solita.RedelegateInstructionArgs &
+  RedelegateAccountsInstruction
+
+export type RawRedelegate = RawInstructionBase & {
+  parsed: {
+    info: RedelegateInfo
+    type: InstructionType.Redelegate
+  }
+}
+
+export type PauseAccountsInstruction = {
+  state: string
+  pauseAuthority: string
+}
+
+export type PauseInfo = PauseAccountsInstruction
+
+export type RawPause = RawInstructionBase & {
+  parsed: {
+    info: PauseInfo
+    type: InstructionType.Pause
+  }
+}
+
+export type ResumeAccountsInstruction = {
+  state: string
+  pauseAuthority: string
+}
+
+export type ResumeInfo = ResumeAccountsInstruction
+
+export type RawResume = RawInstructionBase & {
+  parsed: {
+    info: ResumeInfo
+    type: InstructionType.Resume
+  }
+}
+
+export type WithdrawStakeAccountAccountsInstruction = {
+  state: string
+  msolMint: string
+  burnMsolFrom: string
+  burnMsolAuthority: string
+  treasuryMsolAccount: string
+  validatorList: string
+  stakeList: string
+  stakeWithdrawAuthority: string
+  stakeDepositAuthority: string
+  stakeAccount: string
+  splitStakeAccount: string
+  splitStakeRentPayer: string
+  clock: string
+  systemProgram: string
+  tokenProgram: string
+  stakeProgram: string
+}
+
+export type WithdrawStakeAccountInfo =
+  solita.WithdrawStakeAccountInstructionArgs &
+    WithdrawStakeAccountAccountsInstruction
+
+export type RawWithdrawStakeAccount = RawInstructionBase & {
+  parsed: {
+    info: WithdrawStakeAccountInfo
+    type: InstructionType.WithdrawStakeAccount
+  }
+}
+
+export type ReallocValidatorListAccountsInstruction = {
+  state: string
+  adminAuthority: string
+  validatorList: string
+  rentFunds: string
+  systemProgram: string
+}
+
+export type ReallocValidatorListInfo =
+  solita.ReallocValidatorListInstructionArgs &
+    ReallocValidatorListAccountsInstruction
+
+export type RawReallocValidatorList = RawInstructionBase & {
+  parsed: {
+    info: ReallocValidatorListInfo
+    type: InstructionType.ReallocValidatorList
+  }
+}
+
+export type ReallocStakeListAccountsInstruction = {
+  state: string
+  adminAuthority: string
+  stakeList: string
+  rentFunds: string
+  systemProgram: string
+}
+
+export type ReallocStakeListInfo = solita.ReallocStakeListInstructionArgs &
+  ReallocStakeListAccountsInstruction
+
+export type RawReallocStakeList = RawInstructionBase & {
+  parsed: {
+    info: ReallocStakeListInfo
+    type: InstructionType.ReallocStakeList
+  }
+}
+
 export type RawInstructionsInfo =
   | InitializeInfo
   | ChangeAuthorityInfo
@@ -518,6 +647,12 @@ export type RawInstructionsInfo =
   | EmergencyUnstakeInfo
   | PartialUnstakeInfo
   | MergeStakesInfo
+  | RedelegateInfo
+  | PauseInfo
+  | ResumeInfo
+  | WithdrawStakeAccountInfo
+  | ReallocValidatorListInfo
+  | ReallocStakeListInfo
 
 export type RawInstruction =
   | RawInitialize
@@ -542,6 +677,12 @@ export type RawInstruction =
   | RawEmergencyUnstake
   | RawPartialUnstake
   | RawMergeStakes
+  | RawRedelegate
+  | RawPause
+  | RawResume
+  | RawWithdrawStakeAccount
+  | RawReallocValidatorList
+  | RawReallocStakeList
 
 export type InitializeEvent = EventBase<InstructionType> & {
   info: InitializeInfo
@@ -675,6 +816,42 @@ export type MergeStakesEvent = EventBase<InstructionType> & {
   account: string
 }
 
+export type RedelegateEvent = EventBase<InstructionType> & {
+  info: RedelegateInfo
+  signer: string
+  account: string
+}
+
+export type PauseEvent = EventBase<InstructionType> & {
+  info: PauseInfo
+  signer: string
+  account: string
+}
+
+export type ResumeEvent = EventBase<InstructionType> & {
+  info: ResumeInfo
+  signer: string
+  account: string
+}
+
+export type WithdrawStakeAccountEvent = EventBase<InstructionType> & {
+  info: WithdrawStakeAccountInfo
+  signer: string
+  account: string
+}
+
+export type ReallocValidatorListEvent = EventBase<InstructionType> & {
+  info: ReallocValidatorListInfo
+  signer: string
+  account: string
+}
+
+export type ReallocStakeListEvent = EventBase<InstructionType> & {
+  info: ReallocStakeListInfo
+  signer: string
+  account: string
+}
+
 export type MarinadeFinanceEvent =
   | InitializeEvent
   | ChangeAuthorityEvent
@@ -698,6 +875,12 @@ export type MarinadeFinanceEvent =
   | EmergencyUnstakeEvent
   | PartialUnstakeEvent
   | MergeStakesEvent
+  | RedelegateEvent
+  | PauseEvent
+  | ResumeEvent
+  | WithdrawStakeAccountEvent
+  | ReallocValidatorListEvent
+  | ReallocStakeListEvent
 /*----------------------------------------------------------------------*/
 
 export function getInstructionType(data: Buffer): InstructionType | undefined {
@@ -819,6 +1002,36 @@ export const IX_METHOD_CODE: Map<string, InstructionType | undefined> = new Map<
     Buffer.from(solita.mergeStakesInstructionDiscriminator).toString('ascii'),
     InstructionType.MergeStakes,
   ],
+  [
+    Buffer.from(solita.redelegateInstructionDiscriminator).toString('ascii'),
+    InstructionType.Redelegate,
+  ],
+  [
+    Buffer.from(solita.pauseInstructionDiscriminator).toString('ascii'),
+    InstructionType.Pause,
+  ],
+  [
+    Buffer.from(solita.resumeInstructionDiscriminator).toString('ascii'),
+    InstructionType.Resume,
+  ],
+  [
+    Buffer.from(solita.withdrawStakeAccountInstructionDiscriminator).toString(
+      'ascii',
+    ),
+    InstructionType.WithdrawStakeAccount,
+  ],
+  [
+    Buffer.from(solita.reallocValidatorListInstructionDiscriminator).toString(
+      'ascii',
+    ),
+    InstructionType.ReallocValidatorList,
+  ],
+  [
+    Buffer.from(solita.reallocStakeListInstructionDiscriminator).toString(
+      'ascii',
+    ),
+    InstructionType.ReallocStakeList,
+  ],
 ])
 export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.Initialize]: solita.initializeStruct,
@@ -843,6 +1056,12 @@ export const IX_DATA_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.EmergencyUnstake]: solita.emergencyUnstakeStruct,
   [InstructionType.PartialUnstake]: solita.partialUnstakeStruct,
   [InstructionType.MergeStakes]: solita.mergeStakesStruct,
+  [InstructionType.Redelegate]: solita.redelegateStruct,
+  [InstructionType.Pause]: solita.pauseStruct,
+  [InstructionType.Resume]: solita.resumeStruct,
+  [InstructionType.WithdrawStakeAccount]: solita.withdrawStakeAccountStruct,
+  [InstructionType.ReallocValidatorList]: solita.reallocValidatorListStruct,
+  [InstructionType.ReallocStakeList]: solita.reallocStakeListStruct,
 }
 
 export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
@@ -868,4 +1087,10 @@ export const IX_ACCOUNTS_LAYOUT: Partial<Record<InstructionType, any>> = {
   [InstructionType.EmergencyUnstake]: solita.EmergencyUnstakeAccounts,
   [InstructionType.PartialUnstake]: solita.PartialUnstakeAccounts,
   [InstructionType.MergeStakes]: solita.MergeStakesAccounts,
+  [InstructionType.Redelegate]: solita.RedelegateAccounts,
+  [InstructionType.Pause]: solita.PauseAccounts,
+  [InstructionType.Resume]: solita.ResumeAccounts,
+  [InstructionType.WithdrawStakeAccount]: solita.WithdrawStakeAccountAccounts,
+  [InstructionType.ReallocValidatorList]: solita.ReallocValidatorListAccounts,
+  [InstructionType.ReallocStakeList]: solita.ReallocStakeListAccounts,
 }
