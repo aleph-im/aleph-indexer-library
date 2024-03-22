@@ -66,46 +66,8 @@ export class APIResolvers {
     return acountsData.map(({ info, stats }) => ({ ...info, stats }))
   }
 
-  async getEvents({
-    account,
-    types,
-    startDate = 0,
-    endDate = Date.now(),
-    limit = 1000,
-    skip = 0,
-    reverse = true,
-  }: EventsFilters): Promise<${Name}Event[]> {
-    if (limit < 1 || limit > 1000)
-      throw new Error('400 Bad Request: 1 <= limit <= 1000')
-
-    const typesMap = types ? new Set(types) : undefined
-
-    const events: ${Name}Event[] = []
-
-    const accountEvents = await this.domain.getAccountEventsByTime(
-      account,
-      startDate,
-      endDate,
-      {
-        reverse,
-        limit: !typesMap ? limit + skip : undefined,
-      },
-    )
-
-    for await (const { value } of accountEvents) {
-      // @note: Filter by type
-      if (typesMap && !typesMap.has(value.type)) continue
-
-      // @note: Skip first N events
-      if (--skip >= 0) continue
-
-      events.push(value)
-
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && events.length >= limit) return events
-    }
-
-    return events
+  async getAccountEvents(filters: EventsFilters): Promise<${Name}Event[]> {
+    return await this.domain.getAccountEvents(filters)
   }
 
   public async getGlobalStats(args: GlobalStatsFilters): Promise<Global${Name}Stats> {
@@ -114,14 +76,6 @@ export class APIResolvers {
 
     return this.domain.getGlobalStats(addresses)
   }
-
-  // -------------------------------- PROTECTED --------------------------------
-  /*protected async getAccountByAddress(address: string): Promise<AccountStats> {
-    const add: string[] = [address]
-    const account = await this.domain.getAccountStats(add)
-    if (!account) throw new Error(\`Account \${address} does not exist\`)
-    return account[0]
-  }*/
 
   protected async filterAccounts({ 
     types, 
@@ -148,15 +102,7 @@ export class APIResolvers {
 }
 
 function createSchemaApi(Name: string): string {
-  return `import {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLList,
-  GraphQLFloat,
-  GraphQLInt,
-  GraphQLBoolean,
-  GraphQLNonNull,
-} from 'graphql'
+  return `import { GraphQLObjectType } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
 import {
@@ -176,17 +122,14 @@ export default class APISchema extends IndexerAPISchema {
       types: Types.types,
 
       customTimeSeriesTypesMap: { access: Types.AccessTimeStats },
-      customStatsType: Types.${Name}Stats,
+      customStatsType: Types.Stats,
 
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
           accounts: {
-            type: Types.AccountsInfo,
-            args: {
-              types: { type: new GraphQLList(GraphQLString) },
-              accounts: { type: new GraphQLList(GraphQLString) },
-            },
+            type: Types.AccountInfoList,
+            args: Types.AccountsArgs,
             resolve: (_, ctx, __, info) => {
               ctx.includeStats =
                   !!info.fieldNodes[0].selectionSet?.selections.find(
@@ -199,26 +142,14 @@ export default class APISchema extends IndexerAPISchema {
           },
 
           events: {
-            type: Types.Events,
-            args: {
-              account: { type: new GraphQLNonNull(GraphQLString) },
-              types: { type: new GraphQLList(Types.${Name}Event) },
-              startDate: { type: GraphQLFloat },
-              endDate: { type: GraphQLFloat },
-              limit: { type: GraphQLInt },
-              skip: { type: GraphQLInt },
-              reverse: { type: GraphQLBoolean },
-            },
-            resolve: (_, ctx) =>
-                this.resolver.getEvents(ctx as EventsFilters),
+            type: Types.EventsList,
+            args: Types.AccountEventsArgs,
+            resolve: (_, ctx) => this.resolver.getAccountEvents(ctx as EventsFilters),
           },
 
           globalStats: {
-            type: Types.Global${Name}Stats,
-            args: {
-              types: { type: GraphQLString },
-              accounts: { type: new GraphQLList(GraphQLString) },
-            },
+            type: Types.GlobalStats,
+            args: Types.AccountsArgs,
             resolve: (_, ctx) =>
                 resolver.getGlobalStats(ctx as GlobalStatsFilters),
           },
@@ -238,8 +169,10 @@ function createTypesApi(
 ): string {
   // this function mutates types var to get the correct types order
   checkOrder(types)
-  let apiTypes = `import { GraphQLBoolean, GraphQLInt } from 'graphql'
-import {
+  let apiTypes = `import {
+  GraphQLBoolean, 
+  GraphQLFloat, 
+  GraphQLInt,
   GraphQLObjectType,
   GraphQLString,
   GraphQLEnumType,
@@ -307,8 +240,8 @@ export const TotalAccounts = new GraphQLObjectType({
   },
 })
 
-export const Global${Name}Stats = new GraphQLObjectType({
-  name: 'Global${Name}Stats',
+export const GlobalStats = new GraphQLObjectType({
+  name: 'GlobalStats',
   fields: {
     totalAccounts: { type: new GraphQLNonNull(TotalAccounts) },
     totalAccesses: { type: new GraphQLNonNull(GraphQLInt) },
@@ -318,8 +251,8 @@ export const Global${Name}Stats = new GraphQLObjectType({
   },
 })
 
-export const ${Name}Stats = new GraphQLObjectType({
-  name: '${Name}Stats',
+export const Stats = new GraphQLObjectType({
+  name: 'Stats',
   fields: {
     last1h: { type: AccessTimeStats },
     last24h: { type: AccessTimeStats },
@@ -343,8 +276,8 @@ export const AccountsEnum = new GraphQLEnumType({
 
   for (const account of accounts) {
     apiTypes += `
-export const ${account.name} = new GraphQLObjectType({
-  name: '${account.name}',
+export const ${account.name}Data = new GraphQLObjectType({
+  name: '${account.name}Data',
   fields: {`
     for (const field of account.data.fields) {
       apiTypes += `
@@ -361,7 +294,7 @@ export const ParsedAccountsData = new GraphQLUnionType({
   types: [`
   for (const account of accounts) {
     apiTypes += `
-    ${account.name}, `
+    ${account.name}Data, `
   }
   apiTypes += `
   ],
@@ -386,7 +319,7 @@ export const ParsedAccountsData = new GraphQLUnionType({
   for (const [account, field] of Object.entries(uniqueAccountProperty)) {
     apiTypes += `
     if(obj.${field}) {
-        return '${account}'
+        return '${account}Data'
     }`
   }
 
@@ -408,8 +341,8 @@ const Account = new GraphQLInterfaceType({
   },
 })
 
-export const ${Name}AccountsInfo = new GraphQLObjectType({
-  name: '${Name}AccountsInfo',
+export const AccountsInfo = new GraphQLObjectType({
+  name: 'AccountsInfo',
   interfaces: [Account],
   fields: {
     ...commonAccountInfoFields,
@@ -417,7 +350,7 @@ export const ${Name}AccountsInfo = new GraphQLObjectType({
   },
 })
 
-export const AccountsInfo = new GraphQLList(${Name}AccountsInfo)
+export const AccountInfoList = new GraphQLList(AccountsInfo)
 
 // ------------------- EVENTS --------------------------
   
@@ -486,7 +419,25 @@ const Event = new GraphQLInterfaceType({
     
   `
   }
-  apiTypes += `export const Events = new GraphQLList(Event);
+  apiTypes += `export const EventsList = new GraphQLList(Event)
+
+// ------------------- QUERY ARGS ---------------------------
+
+export const AccountEventsArgs = {
+  account: { type: new GraphQLNonNull(GraphQLString) },
+  types: { type: new GraphQLList(MarinadeFinanceEvent) },
+  startDate: { type: GraphQLFloat },
+  endDate: { type: GraphQLFloat },
+  limit: { type: GraphQLInt },
+  skip: { type: GraphQLInt },
+  reverse: { type: GraphQLBoolean },
+}
+
+export const AccountsArgs = {
+  types: { type: new GraphQLList(GraphQLString) },
+  accounts: { type: new GraphQLList(GraphQLString) },
+}
+  
   
   export const types = [`
   for (const instruction of instructions.instructions) {

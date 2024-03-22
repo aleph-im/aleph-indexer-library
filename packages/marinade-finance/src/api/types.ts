@@ -1,14 +1,17 @@
-import { GraphQLBoolean, GraphQLFloat, GraphQLInt, GraphQLUnionType } from 'graphql'
 import {
+  GraphQLBoolean,
+  GraphQLFloat,
+  GraphQLInt,
   GraphQLObjectType,
   GraphQLString,
   GraphQLEnumType,
   GraphQLNonNull,
   GraphQLList,
   GraphQLInterfaceType,
+  GraphQLUnionType,
 } from 'graphql'
 import { GraphQLBigNumber, GraphQLLong, GraphQLJSON } from '@aleph-indexer/core'
-import { AccountType, InstructionType } from '../utils/layouts/index.js'
+import { InstructionType } from '../utils/layouts/index.js'
 
 // ------------------- TYPES ---------------------------
 
@@ -251,7 +254,6 @@ export const AccountsEnum = new GraphQLEnumType({
     State: { value: 'State' },
   },
 })
-
 export const TicketAccountDataData = new GraphQLObjectType({
   name: 'TicketAccountDataData',
   fields: {
@@ -259,9 +261,8 @@ export const TicketAccountDataData = new GraphQLObjectType({
     beneficiary: { type: new GraphQLNonNull(GraphQLString) },
     lamportsAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
     createdEpoch: { type: new GraphQLNonNull(GraphQLBigNumber) },
-  }
+  },
 })
-
 export const StateData = new GraphQLObjectType({
   name: 'StateData',
   fields: {
@@ -294,18 +295,18 @@ export const StateData = new GraphQLObjectType({
     lastStakeMoveEpoch: { type: new GraphQLNonNull(GraphQLBigNumber) },
     stakeMoved: { type: new GraphQLNonNull(GraphQLBigNumber) },
     maxStakeMovedPerEpoch: { type: new GraphQLNonNull(Fee) },
-  }
+  },
 })
-
 export const ParsedAccountsData = new GraphQLUnionType({
-  name: "ParsedAccountsData",
-  types: [StateData, TicketAccountDataData],
+  name: 'ParsedAccountsData',
+  types: [TicketAccountDataData, StateData],
   resolveType: (obj) => {
-    if (obj.msolMint) {
-      return 'StateData'
-    }
-    if (obj.stateAddress) {
+    // here is selected a unique property of each account to discriminate between types
+    if (obj.createdEpoch) {
       return 'TicketAccountDataData'
+    }
+    if (obj.maxStakeMovedPerEpoch) {
+      return 'StateData'
     }
   },
 })
@@ -1167,7 +1168,6 @@ export const AccountsArgs = {
   types: { type: new GraphQLList(GraphQLString) },
   accounts: { type: new GraphQLList(GraphQLString) },
 }
-
 
 export const types = [
   InitializeEvent,

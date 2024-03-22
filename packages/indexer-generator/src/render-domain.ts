@@ -15,8 +15,7 @@ export function renderDomainFiles(
 }
 
 function createAccountDomain(Name: string): string {
-  return `import { StorageStream } from '@aleph-indexer/core'
-import {
+  return `import {
   AccountTimeSeriesStatsManager,
   AccountTimeSeriesStats,
   AccountStatsFilters,
@@ -25,6 +24,7 @@ import {
 import { EventDALIndex, EventStorage } from '../dal/event.js'
 import { ${Name}Event } from '../utils/layouts/index.js'
 import { ${Name}AccountInfo, ${Name}AccountStats } from '../types.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export class AccountDomain {
   constructor(
@@ -48,18 +48,45 @@ export class AccountDomain {
     return this.timeSeriesStats.getStats()
   }
 
-  async getEventsByTime(
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, ${Name}Event>> {
-    return await this.eventDAL
+  async getEvents(
+    args: EventsFilters
+  ): Promise<MarinadeFinanceEvent[]> {
+    const {
+      types,
+      startDate = 0,
+      endDate = Date.now(),
+      limit = 1000,
+      skip = 0,
+      reverse = true,
+    } = args
+
+    if (limit < 1 || limit > 1000)
+      throw new Error('400 Bad Request: 1 <= limit <= 1000')
+
+    const typesMap = types ? new Set(types) : undefined
+    const from = startDate ? [this.info.address, startDate] : [this.info.address]
+    const to = endDate ? [this.info.address, endDate] : [this.info.address]
+    let sk = skip
+
+    const result: MarinadeFinanceEvent[] = []
+    const events = await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
-      .getAllFromTo(
-        [this.info.address, startDate],
-        [this.info.address, endDate],
-        opts,
-      )
+      .getAllFromTo(from, to, { reverse, limit })
+
+    for await (const { value } of events) {
+      // @note: Filter by type
+      if (typesMap && !typesMap.has(value.type)) continue
+
+      // @note: Skip first N events
+      if (--sk >= 0) continue
+
+      result.push(value)
+
+      // @note: Stop when after reaching the limit
+      if (limit > 0 && result.length >= limit) return result
+    }
+
+    return result
   }
 }
 `
@@ -68,8 +95,7 @@ export class AccountDomain {
 function createWorkerDomain(Name: string, filename: string): string {
   const NAME = filename.toUpperCase().replace(/-/g, '_')
 
-  return `import { StorageStream } from '@aleph-indexer/core'
-import {
+  return `import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
   IndexerWorkerDomain,
@@ -93,6 +119,7 @@ import { ${Name}AccountStats, ${Name}AccountInfo } from '../types.js'
 import { AccountDomain } from './account.js'
 import { createAccountStats } from './stats/timeSeries.js'
 import { ${NAME}_PROGRAM_ID } from '../constants.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -163,14 +190,12 @@ export default class WorkerDomain
     context: ParserContext,
     ixsContext: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    if ('account' in context) {
-      const parsedIxs = ixsContext.map((ix) =>
-        this.eventParser.parse(ix, context.account),
-      )
-      console.log(\`indexing \${ixsContext.length} parsed ixs\`)
+    const parsedIxs = ixsContext.map((ix) =>
+      this.eventParser.parse(ix, context.account),
+    )
+    console.log(\`indexing \${ixsContext.length} parsed ixs\`)
 
-      await this.eventDAL.save(parsedIxs)
-    }
+    await this.eventDAL.save(parsedIxs)
   }
 
   // ------------- Custom impl methods -------------------
@@ -185,14 +210,12 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  async getAccountEventsByTime(
+  async getAccountEvents(
     account: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, ${Name}Event>> {
+    args: EventsFilters
+  ): Promise<MarinadeFinanceEvent[]> {
     const res = this.getAccount(account)
-    return await res.getEventsByTime(startDate, endDate, opts)
+    return await res.getEvents(args)
   }
 
   private getAccount(account: string): AccountDomain {
@@ -209,8 +232,7 @@ function createMainDomain(
   filename: string,
   accounts: ViewAccounts | undefined,
 ): string {
-  let mainDomain = `import { StorageStream } from '@aleph-indexer/core'
-import {
+  let mainDomain = `import {
   IndexerMainDomain,
   IndexerMainDomainWithDiscovery,
   IndexerMainDomainWithStats,
@@ -230,6 +252,7 @@ import {
   ${Name}AccountInfo,
 } from '../types.js'
 import ${Name}Discoverer from './discoverer/${filename}.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export default class MainDomain
   extends IndexerMainDomain
@@ -258,10 +281,7 @@ export default class MainDomain
         account: meta.address,
         meta,
         index: {
-          transactions: {
-            chunkDelay: 0,
-            chunkTimeframe: 1000 * 60 * 60 * 24,
-          },
+          transactions: true,
           content: false,
         },
       }
@@ -306,21 +326,16 @@ export default class MainDomain
     return { info, stats }
   }
 
-  async getAccountEventsByTime(
-    account: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, ${Name}Event>> {
-    const stream = await this.context.apiClient
+  async getAccountEvents(args: EventsFilters): Promise<MarinadeFinanceEvent[]> {
+    const response = await this.context.apiClient
       .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
-        account,
-        method: 'getAccountEventsByTime',
-        args: [startDate, endDate, opts],
+        account: args.account,
+        method: 'getAccountEvents',
+        args: [args],
       })
 
-    return stream as StorageStream<string, ${Name}Event>
+    return response as ${Name}Event[]
   }
 
   async updateStats(now: number): Promise<void> {

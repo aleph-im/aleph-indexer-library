@@ -34,9 +34,7 @@ export class AccountDomain {
     return this.timeSeriesStats.getStats()
   }
 
-  async getEvents(
-    args: EventsFilters
-  ): Promise<MarinadeFinanceEvent[]> {
+  async getEvents(args: EventsFilters): Promise<MarinadeFinanceEvent[]> {
     const {
       types,
       startDate = 0,
@@ -50,7 +48,9 @@ export class AccountDomain {
       throw new Error('400 Bad Request: 1 <= limit <= 1000')
 
     const typesMap = types ? new Set(types) : undefined
-    const from = startDate ? [this.info.address, startDate] : [this.info.address]
+    const from = startDate
+      ? [this.info.address, startDate]
+      : [this.info.address]
     const to = endDate ? [this.info.address, endDate] : [this.info.address]
     let sk = skip
 

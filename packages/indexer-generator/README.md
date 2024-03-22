@@ -32,16 +32,18 @@ npm run generate <program-address>
 ``` 
 
 ## Example Usage
-- Generate a new indexer:
+1. Navigate to the generated package directory
 ```bash
-npm i && npm run build
-npm run generate MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD
+cd packages/<idl-name>
 ```
-- Modify env.default by adding your RPC URL to the SOLANA_RPC variable.
-- Run the indexer:
+2. Install dependencies and build the package
 ```bash
 npm i && npm run build
-npm run start marinade-finance
+```
+3. Add your RPC on SOLANA_RPC env
+4. Grant execution permission to the script and run it
+```bash
+./run.sh
 ```
 
 If you wait for a moment you will see a message warning you that it is now running a GraphQL server on http://localhost:8080.
@@ -51,7 +53,7 @@ To deploy your indexer, read this [documentation](https://github.com/aleph-im/so
 
 ## Supported Queries
 ### Total program accounts and instruction invocations
-Return global stats about the amount of accounts and total amount of instructions processed by the indexer:
+Return global stats about the amount of accounts and program accesses by signers:
 ```graphql
 {
     globalStats {
@@ -66,14 +68,14 @@ Return global stats about the amount of accounts and total amount of instruction
 ```
 
 ### Accounts
-Get all accounts, their addresses, Anchor type and contents:
+Get all accounts, their addresses, type and contents:
 ```graphql
 {
   accounts {
     address
     type
     data {
-      ...on State {
+      ...on StateData {
         msolMint
         adminAuthority
         liqPool {
@@ -90,7 +92,7 @@ Get all accounts, their addresses, Anchor type and contents:
         }
         # and other fields, see generated GraphQL schema
       }
-      ... on TicketAccountData {
+      ... on TicketAccountDataData {
         beneficiary
         stateAddress
         lamportsAmount
@@ -102,24 +104,30 @@ Get all accounts, their addresses, Anchor type and contents:
 ```
 
 ### Indexing state
-Get the current progress of the indexer. Accurate means that the indexer fetched all transaction signatures belonging to
-that account, progress tells you how much percent of all transactions have been fetched and processed.
+Get the current indexing state of a specified account entity or all indexed accounts:
 ```graphql
 {
-  accountState(account: "8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC", blockchain: solana, type: transaction) {
+  accountState(account:"ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", blockchain: "solana", type: transaction) {
+    account
     accurate
     progress
     pending
     processed
   }
 }
+
+Return fields:
+- accurate: If covers the complete transaction history
+- progress: percentage of transactions indexed out of the total identified
+-pending: An array of ISO-formatted date ranges indicating the transaction ranges yet to be indexed.
+-processed: An array of ISO-formatted date ranges indicating the transaction ranges that have been successfully indexed.
 ```
 
 ### General account stats
 Get accesses in the last hour, day, week or in total:
 ```graphql
 {
-  accountStats(account: "7ekbc8F72Zm4KKQwbgSe7UTaiprHb8nkmbA2ti5hKoCX", blockchain: solana) {
+  accountStats(account: "ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", blockchain: "solana") {
     stats {
       last1h {
         accesses
@@ -139,10 +147,10 @@ Get accesses in the last hour, day, week or in total:
 ```
 
 ### Account time series stats
-Get aggregated accesses by signing wallet and month:
+Get aggregated accesses by signer and month:
 ```graphql
 {
-  accountTimeSeriesStats(timeFrame:Month, account: "7ekbc8F72Zm4KKQwbgSe7UTaiprHb8nkmbA2ti5hKoCX", type: "access", blockchain: solana) {
+  accountTimeSeriesStats(timeFrame: Month, account: "ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", type: "access", blockchain: "solana") {
     series {
       date
       value {
@@ -159,7 +167,7 @@ Get aggregated accesses by signing wallet and month:
 Get the latest 1000 processed instructions:
 ```graphql
 {
-  events(account: "7ekbc8F72Zm4KKQwbgSe7UTaiprHb8nkmbA2ti5hKoCX", types: OrderUnstake, limit: 10) {
+  events(account: "ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", types: OrderUnstake, limit: 10) {
     id
     timestamp
     type

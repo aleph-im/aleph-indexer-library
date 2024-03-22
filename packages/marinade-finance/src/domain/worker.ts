@@ -126,7 +126,7 @@ export default class WorkerDomain
 
   async getAccountEvents(
     account: string,
-    args: EventsFilters
+    args: EventsFilters,
   ): Promise<MarinadeFinanceEvent[]> {
     const res = this.getAccount(account)
     return await res.getEvents(args)

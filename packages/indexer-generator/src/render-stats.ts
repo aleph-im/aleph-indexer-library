@@ -11,7 +11,6 @@ export function renderStatsFiles(Name: string): [string, string][] {
 function createTimeSeries(Name: string): string {
   return `import {
     AccountTimeSeriesStatsManager,
-    BlockchainChain,
     IndexableEntityType,
     IndexerMsClient,
     StatsStateStorage,
@@ -34,7 +33,7 @@ function createTimeSeries(Name: string): string {
     statsTimeSeriesDAL: StatsTimeSeriesStorage,
   ): Promise<AccountTimeSeriesStatsManager<${Name}AccountStats>> {
       
-    // @note: this aggregator is used to aggregate usage stats for the account
+    // @note: this aggregator is used to aggregate signer usage of the program
     const accessTimeSeries = new TimeSeriesStats<${Name}Event, AccessTimeStats>(
       {
         type: 'access',
@@ -113,8 +112,7 @@ function createTimeSeriesAggregator(Name: string): string {
     ): AccessTimeStats {
       if ((curr as ${Name}Event).timestamp) {
         const event = curr as ${Name}Event
-        let signer: string;
-        signer = event.signer as unknown as string
+        const signer = event.signer
         acc.accesses++
         acc.accessesByProgramId[signer] = acc.accessesByProgramId[signer]
           ? acc.accessesByProgramId[signer] + 1
@@ -156,12 +154,6 @@ function createTimeSeriesAggregator(Name: string): string {
         }
       }
       return acc
-    }
-  
-    protected is${Name}Event(
-      event: ${Name}Event | AccessTimeStats,
-    ): event is ${Name}Event {
-      return 'type' in event
     }
   }
   

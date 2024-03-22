@@ -40,7 +40,8 @@ export default class APISchema extends IndexerAPISchema {
           events: {
             type: Types.EventsList,
             args: Types.AccountEventsArgs,
-            resolve: (_, ctx) => this.resolver.getAccountEvents(ctx as EventsFilters),
+            resolve: (_, ctx) =>
+              this.resolver.getAccountEvents(ctx as EventsFilters),
           },
 
           globalStats: {

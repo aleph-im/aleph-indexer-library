@@ -31,12 +31,16 @@ export type GlobalStatsFilters = AccountsFilters
 export class APIResolvers {
   constructor(protected domain: MainDomain) {}
 
-  async getAccounts(args: AccountsFilters): Promise<MarinadeFinanceAccountInfo[]> {
+  async getAccounts(
+    args: AccountsFilters,
+  ): Promise<MarinadeFinanceAccountInfo[]> {
     const acountsData = await this.filterAccounts(args)
     return acountsData.map(({ info, stats }) => ({ ...info, stats }))
   }
 
-  async getAccountEvents(filters: EventsFilters): Promise<MarinadeFinanceEvent[]> {
+  async getAccountEvents(
+    filters: EventsFilters,
+  ): Promise<MarinadeFinanceEvent[]> {
     return await this.domain.getAccountEvents(filters)
   }
 
@@ -48,7 +52,6 @@ export class APIResolvers {
 
     return this.domain.getGlobalStats(addresses)
   }
-
 
   protected async filterAccounts({
     types,
