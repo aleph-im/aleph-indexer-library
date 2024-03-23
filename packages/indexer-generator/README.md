@@ -41,9 +41,9 @@ cd packages/<idl-name>
 npm i && npm run build
 ```
 3. Add your RPC on SOLANA_RPC env
-4. Run he indexer by executing run script
+4. Run he indexer by executing
 ```bash
-./run.sh
+npm run start
 ```
 
 The GraphQL server is accessible at http://localhost:8080.
