@@ -50,7 +50,7 @@ export class AccountDomain {
 
   async getEvents(
     args: EventsFilters
-  ): Promise<MarinadeFinanceEvent[]> {
+  ): Promise<${Name}Event[]> {
     const {
       types,
       startDate = 0,
@@ -68,7 +68,7 @@ export class AccountDomain {
     const to = endDate ? [this.info.address, endDate] : [this.info.address]
     let sk = skip
 
-    const result: MarinadeFinanceEvent[] = []
+    const result: ${Name}Event[] = []
     const events = await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
       .getAllFromTo(from, to, { reverse, limit })
@@ -213,7 +213,7 @@ export default class WorkerDomain
   async getAccountEvents(
     account: string,
     args: EventsFilters
-  ): Promise<MarinadeFinanceEvent[]> {
+  ): Promise<${Name}Event[]> {
     const res = this.getAccount(account)
     return await res.getEvents(args)
   }
@@ -326,7 +326,7 @@ export default class MainDomain
     return { info, stats }
   }
 
-  async getAccountEvents(args: EventsFilters): Promise<MarinadeFinanceEvent[]> {
+  async getAccountEvents(args: EventsFilters): Promise<${Name}Event[]> {
     const response = await this.context.apiClient
       .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({

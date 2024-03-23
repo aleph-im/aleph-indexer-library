@@ -72,8 +72,10 @@ export default class ${Name}Discoverer {
               },
             )
             accounts.map(
-                (value: { pubkey: PublicKey; account: AccountInfo<Buffer> }) =>
-                  accountsInfo.push(this.deserializeAccountResponse(value, type)),
+                (value: { pubkey: PublicKey; account: AccountInfo<Buffer> }) => {
+                  const accountInfo = this.deserializeAccountResponse(value, type)
+                  if (accountInfo) accountsInfo.push(accountInfo)
+                }
             )
         }
         return accountsInfo
@@ -82,7 +84,8 @@ export default class ${Name}Discoverer {
     deserializeAccountResponse(
         resp: { pubkey: PublicKey; account: AccountInfo<Buffer> },
         type: AccountType,
-    ): ${Name}AccountInfo {
+    ): ${Name}AccountInfo | undefined {
+      try {
         const data = ACCOUNTS_DATA_LAYOUT[type].deserialize(resp.account.data)[0]
         const address = resp.pubkey.toBase58()
 
@@ -92,6 +95,11 @@ export default class ${Name}Discoverer {
             address: address,
             data: data,
         }
+      } catch (e) {
+        // layout changed on program update?
+        console.log('Error parsing account', e)
+        return
+      }
     }
 }
 `

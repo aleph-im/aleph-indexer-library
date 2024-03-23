@@ -425,7 +425,7 @@ const Event = new GraphQLInterfaceType({
 
 export const AccountEventsArgs = {
   account: { type: new GraphQLNonNull(GraphQLString) },
-  types: { type: new GraphQLList(MarinadeFinanceEvent) },
+  types: { type: new GraphQLList(${Name}Event) },
   startDate: { type: GraphQLFloat },
   endDate: { type: GraphQLFloat },
   limit: { type: GraphQLInt },
