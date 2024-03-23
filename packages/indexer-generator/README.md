@@ -41,12 +41,12 @@ cd packages/<idl-name>
 npm i && npm run build
 ```
 3. Add your RPC on SOLANA_RPC env
-4. Grant execution permission to the script and run it
+4. Run he indexer by executing run script
 ```bash
 ./run.sh
 ```
 
-If you wait for a moment you will see a message warning you that it is now running a GraphQL server on http://localhost:8080.
+The GraphQL server is accessible at http://localhost:8080.
 
 ## Deploying your Indexer to Aleph.im
 To deploy your indexer, read this [documentation](https://github.com/aleph-im/solana-indexer-library/#deploying-a-new-indexer)
@@ -115,13 +115,12 @@ Get the current indexing state of a specified account entity or all indexed acco
     processed
   }
 }
-
-Return fields:
-- accurate: If covers the complete transaction history
-- progress: percentage of transactions indexed out of the total identified
--pending: An array of ISO-formatted date ranges indicating the transaction ranges yet to be indexed.
--processed: An array of ISO-formatted date ranges indicating the transaction ranges that have been successfully indexed.
 ```
+Query response properties:
+- accurate: If covers the complete transaction history.
+- progress: Percentage of transactions indexed out of the total identified.
+- pending: An array of ISO-formatted date ranges indicating the transaction ranges yet to be indexed.
+- processed: An array of ISO-formatted date ranges indicating the transaction ranges that have been successfully indexed.
 
 ### General account stats
 Get accesses in the last hour, day, week or in total:
@@ -167,7 +166,7 @@ Get aggregated accesses by signer and month:
 Get the latest 1000 processed instructions:
 ```graphql
 {
-  events(account: "ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", types: OrderUnstake, limit: 10) {
+  events(account: "ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", types: OrderUnstake, limit: 1000) {
     id
     timestamp
     type
