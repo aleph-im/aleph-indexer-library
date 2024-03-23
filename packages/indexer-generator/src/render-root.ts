@@ -80,15 +80,9 @@ function renderPackageJson(filename: string): [string, string] {
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.1.10",
-    "@aleph-indexer/framework": "^1.1.11",
     "@aleph-indexer/solana": "^1.1.11",
-    "@coral-xyz/borsh": "^0.28.0",
     "@metaplex-foundation/beet": "0.7.2",
-    "@metaplex-foundation/beet-solana": "0.4.1",
-    "@solana/spl-token": "0.4.0",
-    "@solana/web3.js": "^1.89.1",
-    "bs58": "5.0.0"
+    "@metaplex-foundation/beet-solana": "0.4.1"
   },
   "devDependencies": {
     "@types/luxon": "^3.0.1",
