@@ -163,10 +163,10 @@ Get aggregated accesses by signer and month:
 ```
 
 ### Processed instructions (Events)
-Get the latest 1000 processed instructions:
+Get the latest 10 processed instructions:
 ```graphql
 {
-  events(account: "ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", types: OrderUnstake, limit: 1000) {
+  events(account: "ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", types: OrderUnstake, limit: 10) {
     id
     timestamp
     type
