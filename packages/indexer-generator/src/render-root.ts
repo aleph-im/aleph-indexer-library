@@ -72,6 +72,7 @@ function renderPackageJson(filename: string): [string, string] {
   "types": "dist/index.d.js",
   "type": "module",
   "scripts": {
+    "start": "./run.sh",
     "build": "tsc -p ./tsconfig.json",
     "test": "echo \\"Error: no test specified\\" && exit 1",
     "up": "docker-compose up -d",
