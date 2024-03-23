@@ -74,30 +74,28 @@ Get all accounts, their addresses, type and contents:
   accounts {
     address
     type
-    data {
-      ...on StateData {
-        msolMint
-        adminAuthority
-        liqPool {
-          lpLiquidityTarget
-          lpMaxFee {
-            basisPoints
-          }
-          lpMinFee {
-            basisPoints
-          }
-          treasuryCut {
-            basisPoints
-          }
+    ...on State {
+      msolMint
+      adminAuthority
+      liqPool {
+        lpLiquidityTarget
+        lpMaxFee {
+          basisPoints
         }
-        # and other fields, see generated GraphQL schema
+        lpMinFee {
+          basisPoints
+        }
+        treasuryCut {
+          basisPoints
+        }
       }
-      ... on TicketAccountDataData {
-        beneficiary
-        stateAddress
-        lamportsAmount
-        # and other fields, see generated GraphQL schema
-      }
+      # and other fields, see generated GraphQL schema
+    }
+    ... on TicketAccountData {
+      beneficiary
+      stateAddress
+      lamportsAmount
+      # and other fields, see generated GraphQL schema
     }
   }
 }

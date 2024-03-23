@@ -14,17 +14,17 @@ import {
   SplitStakeAccountInfo,
   U64ValueChange,
   U32ValueChange,
-  Fee,
-  FeeCents,
+  FeeValueChange,
+  FeeCentsValueChange,
   PubkeyValueChange,
   BoolValueChange,
   ChangeAuthorityData,
   ConfigLpParams,
   ConfigMarinadeParams,
-  LiqPoolInitializeData,
   InitializeData,
-  FeeValueChange,
-  FeeCentsValueChange,
+  LiqPoolInitializeData,
+  Fee,
+  FeeCents,
   LiqPool,
   List,
   StakeRecord,
@@ -518,17 +518,17 @@ export type ParsedTypes =
   | SplitStakeAccountInfo
   | U64ValueChange
   | U32ValueChange
-  | Fee
-  | FeeCents
+  | FeeValueChange
+  | FeeCentsValueChange
   | PubkeyValueChange
   | BoolValueChange
   | ChangeAuthorityData
   | ConfigLpParams
   | ConfigMarinadeParams
-  | LiqPoolInitializeData
   | InitializeData
-  | FeeValueChange
-  | FeeCentsValueChange
+  | LiqPoolInitializeData
+  | Fee
+  | FeeCents
   | LiqPool
   | List
   | StakeRecord

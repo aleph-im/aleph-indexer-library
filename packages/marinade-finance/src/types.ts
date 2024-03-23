@@ -8,8 +8,7 @@ export type MarinadeFinanceAccountInfo = {
   programId: string
   address: string
   type: AccountType
-  data: ParsedAccountsData
-}
+} & ParsedAccountsData
 
 // -------------------------- STATS --------------------------
 

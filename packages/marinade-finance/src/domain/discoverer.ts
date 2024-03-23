@@ -83,7 +83,7 @@ export default class AccountDiscoverer {
         programId: MARINADE_FINANCE_PROGRAM_ID,
         type,
         address: address,
-        data: data,
+        ...data,
       }
     } catch (e) {
       // layout changed on program update?

@@ -8,10 +8,9 @@ import {
   GraphQLNonNull,
   GraphQLList,
   GraphQLInterfaceType,
-  GraphQLUnionType,
 } from 'graphql'
 import { GraphQLBigNumber, GraphQLLong, GraphQLJSON } from '@aleph-indexer/core'
-import { InstructionType } from '../utils/layouts/index.js'
+import { AccountType, InstructionType } from '../utils/layouts/index.js'
 
 // ------------------- TYPES ---------------------------
 
@@ -42,10 +41,24 @@ export const Fee = new GraphQLObjectType({
     basisPoints: { type: new GraphQLNonNull(GraphQLInt) },
   },
 })
+export const FeeValueChange = new GraphQLObjectType({
+  name: 'FeeValueChange',
+  fields: {
+    old: { type: new GraphQLNonNull(Fee) },
+    new: { type: new GraphQLNonNull(Fee) },
+  },
+})
 export const FeeCents = new GraphQLObjectType({
   name: 'FeeCents',
   fields: {
     bpCents: { type: new GraphQLNonNull(GraphQLInt) },
+  },
+})
+export const FeeCentsValueChange = new GraphQLObjectType({
+  name: 'FeeCentsValueChange',
+  fields: {
+    old: { type: new GraphQLNonNull(FeeCents) },
+    new: { type: new GraphQLNonNull(FeeCents) },
   },
 })
 export const PubkeyValueChange = new GraphQLObjectType({
@@ -118,20 +131,6 @@ export const InitializeData = new GraphQLObjectType({
     additionalValidatorRecordSpace: { type: new GraphQLNonNull(GraphQLInt) },
     slotsForStakeDelta: { type: new GraphQLNonNull(GraphQLBigNumber) },
     pauseAuthority: { type: new GraphQLNonNull(GraphQLString) },
-  },
-})
-export const FeeValueChange = new GraphQLObjectType({
-  name: 'FeeValueChange',
-  fields: {
-    old: { type: new GraphQLNonNull(Fee) },
-    new: { type: new GraphQLNonNull(Fee) },
-  },
-})
-export const FeeCentsValueChange = new GraphQLObjectType({
-  name: 'FeeCentsValueChange',
-  fields: {
-    old: { type: new GraphQLNonNull(FeeCents) },
-    new: { type: new GraphQLNonNull(FeeCents) },
   },
 })
 export const LiqPool = new GraphQLObjectType({
@@ -254,18 +253,39 @@ export const AccountsEnum = new GraphQLEnumType({
     State: { value: 'State' },
   },
 })
-export const TicketAccountDataData = new GraphQLObjectType({
-  name: 'TicketAccountDataData',
+
+const commonAccountInfoFields = {
+  name: { type: new GraphQLNonNull(GraphQLString) },
+  programId: { type: new GraphQLNonNull(GraphQLString) },
+  address: { type: new GraphQLNonNull(GraphQLString) },
+  type: { type: new GraphQLNonNull(AccountsEnum) },
+}
+
+const AccountInfo = new GraphQLInterfaceType({
+  name: 'AccountInfo',
   fields: {
+    ...commonAccountInfoFields,
+  },
+})
+
+export const TicketAccountData = new GraphQLObjectType({
+  name: 'TicketAccountData',
+  interfaces: [AccountInfo],
+  isTypeOf: (item) => item.type === AccountType.TicketAccountData,
+  fields: {
+    ...commonAccountInfoFields,
     stateAddress: { type: new GraphQLNonNull(GraphQLString) },
     beneficiary: { type: new GraphQLNonNull(GraphQLString) },
     lamportsAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
     createdEpoch: { type: new GraphQLNonNull(GraphQLBigNumber) },
   },
 })
-export const StateData = new GraphQLObjectType({
-  name: 'StateData',
+export const State = new GraphQLObjectType({
+  name: 'State',
+  interfaces: [AccountInfo],
+  isTypeOf: (item) => item.type === AccountType.State,
   fields: {
+    ...commonAccountInfoFields,
     msolMint: { type: new GraphQLNonNull(GraphQLString) },
     adminAuthority: { type: new GraphQLNonNull(GraphQLString) },
     operationalSolAccount: { type: new GraphQLNonNull(GraphQLString) },
@@ -297,43 +317,6 @@ export const StateData = new GraphQLObjectType({
     maxStakeMovedPerEpoch: { type: new GraphQLNonNull(Fee) },
   },
 })
-export const ParsedAccountsData = new GraphQLUnionType({
-  name: 'ParsedAccountsData',
-  types: [TicketAccountDataData, StateData],
-  resolveType: (obj) => {
-    // here is selected a unique property of each account to discriminate between types
-    if (obj.createdEpoch) {
-      return 'TicketAccountDataData'
-    }
-    if (obj.maxStakeMovedPerEpoch) {
-      return 'StateData'
-    }
-  },
-})
-
-const commonAccountInfoFields = {
-  name: { type: new GraphQLNonNull(GraphQLString) },
-  programId: { type: new GraphQLNonNull(GraphQLString) },
-  address: { type: new GraphQLNonNull(GraphQLString) },
-  type: { type: new GraphQLNonNull(AccountsEnum) },
-}
-
-const Account = new GraphQLInterfaceType({
-  name: 'Account',
-  fields: {
-    ...commonAccountInfoFields,
-  },
-})
-
-export const AccountInfo = new GraphQLObjectType({
-  name: 'AccountInfo',
-  interfaces: [Account],
-  fields: {
-    ...commonAccountInfoFields,
-    data: { type: new GraphQLNonNull(ParsedAccountsData) },
-  },
-})
-
 export const AccountInfoList = new GraphQLList(AccountInfo)
 
 // ------------------- EVENTS --------------------------
@@ -1170,6 +1153,8 @@ export const AccountsArgs = {
 }
 
 export const types = [
+  TicketAccountData,
+  State,
   InitializeEvent,
   ChangeAuthorityEvent,
   AddValidatorEvent,

@@ -64,9 +64,8 @@ function renderTypes(
     programId: string
     address: string
     type: AccountType
-    data: ParsedAccountsData
-  }
-  
+  } & ParsedAccountsData
+
   // -------------------------- STATS --------------------------
   
   export type AccessTimeStats = {

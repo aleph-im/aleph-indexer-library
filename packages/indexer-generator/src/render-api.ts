@@ -15,7 +15,7 @@ export function renderApiFiles(
 
   files.push(['index', createIndexApi()])
   files.push(['resolvers', createResolversApi(Name)])
-  files.push(['schema', createSchemaApi(Name)])
+  files.push(['schema', createSchemaApi()])
   if (accounts && instructions && types) {
     files.push(['types', createTypesApi(Name, accounts, instructions, types)])
   }
@@ -101,7 +101,7 @@ export class APIResolvers {
 }`
 }
 
-function createSchemaApi(Name: string): string {
+function createSchemaApi(): string {
   return `import { GraphQLObjectType } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
@@ -165,10 +165,10 @@ function createTypesApi(
   Name: string,
   accounts: ViewAccounts,
   instructions: ViewInstructions,
-  types: ViewTypes,
+  idlTypes: ViewTypes,
 ): string {
-  // this function mutates types var to get the correct types order
-  checkOrder(types)
+  const types = sortTypes(idlTypes)
+
   let apiTypes = `import {
   GraphQLBoolean, 
   GraphQLFloat, 
@@ -179,10 +179,9 @@ function createTypesApi(
   GraphQLNonNull,
   GraphQLList,
   GraphQLInterfaceType,
-  GraphQLUnionType,
 } from 'graphql'
 import { GraphQLBigNumber, GraphQLLong, GraphQLJSON } from '@aleph-indexer/core'
-import { InstructionType } from '../utils/layouts/index.js'
+import { AccountType, InstructionType } from '../utils/layouts/index.js'
 
 // ------------------- TYPES ---------------------------
 
@@ -272,13 +271,31 @@ export const AccountsEnum = new GraphQLEnumType({
   }
   apiTypes += `
   },
-})`
+})
+
+const commonAccountInfoFields = {
+  name: { type: new GraphQLNonNull(GraphQLString) },
+  programId: { type: new GraphQLNonNull(GraphQLString) },
+  address: { type: new GraphQLNonNull(GraphQLString) },
+  type: { type: new GraphQLNonNull(AccountsEnum) },
+}
+
+const AccountInfo = new GraphQLInterfaceType({
+  name: 'AccountInfo',
+  fields: {
+    ...commonAccountInfoFields,
+  },
+})
+`
 
   for (const account of accounts) {
     apiTypes += `
-export const ${account.name}Data = new GraphQLObjectType({
-  name: '${account.name}Data',
-  fields: {`
+export const ${account.name} = new GraphQLObjectType({
+  name: '${account.name}',
+  interfaces: [AccountInfo],
+  isTypeOf: (item) => item.type === AccountType.${account.name},
+  fields: {
+    ...commonAccountInfoFields,`
     for (const field of account.data.fields) {
       apiTypes += `
     ${field.name}: { type: new GraphQLNonNull(${field.graphqlType}) },`
@@ -289,67 +306,6 @@ export const ${account.name}Data = new GraphQLObjectType({
   }
 
   apiTypes += `
-export const ParsedAccountsData = new GraphQLUnionType({
-  name: "ParsedAccountsData",
-  types: [`
-  for (const account of accounts) {
-    apiTypes += `
-    ${account.name}Data, `
-  }
-  apiTypes += `
-  ],
-  resolveType: (obj) => {
-    // here is selected a unique property of each account to discriminate between types`
-
-  const uniqueAccountProperty: Record<string, string> = {}
-  for (const account of accounts) {
-    for (const field of account.data.fields) {
-      let checksRequired = accounts.length - 1
-      for (const _account of accounts) {
-        if (_account.name == account.name) continue
-        if (_account.data.fields.includes(field)) continue
-        checksRequired--
-      }
-      if (checksRequired == 0) {
-        uniqueAccountProperty[account.name] = field.name
-      }
-    }
-  }
-
-  for (const [account, field] of Object.entries(uniqueAccountProperty)) {
-    apiTypes += `
-    if(obj.${field}) {
-        return '${account}Data'
-    }`
-  }
-
-  apiTypes += `
-  }
-}) 
-
-const commonAccountInfoFields = {
-  name: { type: new GraphQLNonNull(GraphQLString) },
-  programId: { type: new GraphQLNonNull(GraphQLString) },
-  address: { type: new GraphQLNonNull(GraphQLString) },
-  type: { type: new GraphQLNonNull(AccountsEnum) },
-}
-
-const Account = new GraphQLInterfaceType({
-  name: 'Account',
-  fields: {
-    ...commonAccountInfoFields,
-  },
-})
-
-export const AccountInfo = new GraphQLObjectType({
-  name: 'AccountInfo',
-  interfaces: [Account],
-  fields: {
-    ...commonAccountInfoFields,
-    data: { type: new GraphQLNonNull(ParsedAccountsData) },
-  },
-})
-
 export const AccountInfoList = new GraphQLList(AccountInfo)
 
 // ------------------- EVENTS --------------------------
@@ -440,6 +396,10 @@ export const AccountsArgs = {
   
   
   export const types = [`
+  for (const account of accounts) {
+    apiTypes += `   
+    ${account.name},`
+  }
   for (const instruction of instructions.instructions) {
     apiTypes += `   
     ${instruction.name}Event,`
@@ -450,52 +410,51 @@ export const AccountsArgs = {
   return apiTypes
 }
 
-function checkOrder(types: ViewTypes | undefined) {
-  if (types) {
-    modifyOrder(types)
-  }
+function sortTypes(types: ViewTypes): ViewTypes {
+  const graph = new Map<string, { name: string; edges: Set<string> }>()
+  
+  types.types.forEach(type => {
+    const edges = new Set<string>()
+    type.fields.forEach(field => {
+      if (types.types.some(type => type.name === field.type)) {
+        edges.add(field.type)
+      }      
+    })
+    graph.set(type.name, { name: type.name, edges })
+  })
+
+  const namesSorted = topologicalSort(graph)
+  const typesSorted: ViewStruct[] = namesSorted
+    .map(name => types.types.find(type => type.name === name))
+    .filter((type): type is ViewStruct => type !== undefined)
+  
+  return { types: typesSorted, enums: types.enums }
 }
 
-function modifyOrder(types: ViewTypes) {
-  const alreadyIncluded: string[] = []
-  const { nameTypes, auxTypes } = getTypesInfo(types)
-  let modified = false
+function topologicalSort(graph: Map<string, { name: string; edges: Set<string> }>): string[] {
+  let sorted: string[] = []
+  let visited = new Set<string>()
+  let tempMark = new Set<string>()
 
-  for (const type of types.types) {
-    if (type.name) {
-      for (const field of type.fields) {
-        if (
-          nameTypes.includes(field.graphqlType) &&
-          !alreadyIncluded.includes(field.graphqlType)
-        ) {
-          const upperIndex = nameTypes.indexOf(field.graphqlType)
-          const lowerIndex = nameTypes.indexOf(type.name)
+  function visit(nodeName: string) {
+    if (visited.has(nodeName)) return
+    if (tempMark.has(nodeName)) throw new Error(`Cycle detected involving ${nodeName}`)
 
-          types.types[upperIndex] = auxTypes[lowerIndex]
-          types.types[lowerIndex] = auxTypes[upperIndex]
+    tempMark.add(nodeName)
 
-          alreadyIncluded.push(field.graphqlType)
-
-          modified = true
-          break
-        }
-      }
-      alreadyIncluded.push(type.name)
-    }
-  }
-  if (modified) modifyOrder(types)
-}
-
-function getTypesInfo(types: ViewTypes) {
-  const nameTypes: string[] = []
-  const auxTypes: ViewStruct[] = []
-
-  for (const type of types.types) {
-    if (type.name) {
-      nameTypes.push(type.name)
-      auxTypes.push(type)
-    }
+    const node = graph.get(nodeName)
+    if (node) node.edges.forEach(visit)
+    
+    tempMark.delete(nodeName)
+    visited.add(nodeName)
+    sorted.push(nodeName)
   }
 
-  return { nameTypes, auxTypes }
+  graph.forEach((_, nodeName) => {
+    if (!visited.has(nodeName)) {
+      visit(nodeName)
+    }
+  })
+
+  return sorted
 }

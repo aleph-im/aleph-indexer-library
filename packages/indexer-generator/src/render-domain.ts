@@ -502,8 +502,8 @@ export default class AccountDiscoverer {
             programId: ${NAME}_PROGRAM_ID,
             type,
             address: address,
-            data: data,
-        }
+            ...data,
+          }
       } catch (e) {
         // layout changed on program update?
         console.log('Error parsing account', e)
