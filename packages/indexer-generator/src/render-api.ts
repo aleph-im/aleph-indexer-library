@@ -341,8 +341,8 @@ const Account = new GraphQLInterfaceType({
   },
 })
 
-export const AccountsInfo = new GraphQLObjectType({
-  name: 'AccountsInfo',
+export const AccountInfo = new GraphQLObjectType({
+  name: 'AccountInfo',
   interfaces: [Account],
   fields: {
     ...commonAccountInfoFields,
@@ -350,7 +350,7 @@ export const AccountsInfo = new GraphQLObjectType({
   },
 })
 
-export const AccountInfoList = new GraphQLList(AccountsInfo)
+export const AccountInfoList = new GraphQLList(AccountInfo)
 
 // ------------------- EVENTS --------------------------
   

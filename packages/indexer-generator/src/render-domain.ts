@@ -65,8 +65,8 @@ export class AccountDomain {
       throw new Error('400 Bad Request: 1 <= limit <= 1000')
 
     const typesMap = types ? new Set(types) : undefined
-    const from = startDate ? [this.info.address, startDate] : [this.info.address]
-    const to = endDate ? [this.info.address, endDate] : [this.info.address]
+    const from = startDate ? [this.info.address, startDate] : [this.info.address, 0]
+    const to = endDate ? [this.info.address, endDate] : [this.info.address, Date.now()]
     let sk = skip
 
     const result: ${Name}Event[] = []
@@ -327,6 +327,7 @@ export default class MainDomain
   }
 
   async getAccountEvents(args: EventsFilters): Promise<${Name}Event[]> {
+    // note: use primitive/simple types using invokeDomainMethod
     const response = await this.context.apiClient
       .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({

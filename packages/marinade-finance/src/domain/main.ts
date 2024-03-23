@@ -14,7 +14,7 @@ import {
   MarinadeFinanceAccountData,
   MarinadeFinanceAccountInfo,
 } from '../types.js'
-import MarinadeFinanceDiscoverer from './discoverer/marinade-finance.js'
+import AccountDiscoverer from './discoverer.js'
 import { EventsFilters } from '../api/resolvers.js'
 
 export default class MainDomain
@@ -25,7 +25,7 @@ export default class MainDomain
 
   constructor(
     protected context: IndexerMainDomainContext,
-    protected discoverer: MarinadeFinanceDiscoverer = new MarinadeFinanceDiscoverer(),
+    protected discoverer: AccountDiscoverer = new AccountDiscoverer(),
   ) {
     super(context, {
       discoveryInterval: 1000 * 60 * 60 * 1,
@@ -90,6 +90,7 @@ export default class MainDomain
   }
 
   async getAccountEvents(args: EventsFilters): Promise<MarinadeFinanceEvent[]> {
+    // note: use primitive/simple types using invokeDomainMethod
     const response = await this.context.apiClient
       .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({

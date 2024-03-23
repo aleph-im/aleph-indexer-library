@@ -50,8 +50,10 @@ export class AccountDomain {
     const typesMap = types ? new Set(types) : undefined
     const from = startDate
       ? [this.info.address, startDate]
-      : [this.info.address]
-    const to = endDate ? [this.info.address, endDate] : [this.info.address]
+      : [this.info.address, 0]
+    const to = endDate
+      ? [this.info.address, endDate]
+      : [this.info.address, Date.now()]
     let sk = skip
 
     const result: MarinadeFinanceEvent[] = []
