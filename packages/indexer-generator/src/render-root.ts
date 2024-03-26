@@ -54,7 +54,8 @@ services:
 
 function renderEnv(): [string, string] {
   const content = `SOLANA_RPC=
-  
+SOLANA_MAIN_PUBLIC_RPC=
+
 # 16 GB RAM for node.js
 NODE_OPTIONS=--max-old-space-size=16384  
 `
@@ -71,6 +72,7 @@ function renderPackageJson(filename: string): [string, string] {
   "types": "dist/index.d.js",
   "type": "module",
   "scripts": {
+    "start": "./run.sh",
     "build": "tsc -p ./tsconfig.json",
     "test": "echo \\"Error: no test specified\\" && exit 1",
     "up": "docker-compose up -d",
@@ -80,15 +82,9 @@ function renderPackageJson(filename: string): [string, string] {
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/core": "^1.1.10",
-    "@aleph-indexer/framework": "^1.1.11",
     "@aleph-indexer/solana": "^1.1.11",
-    "@coral-xyz/borsh": "^0.28.0",
     "@metaplex-foundation/beet": "0.7.2",
-    "@metaplex-foundation/beet-solana": "0.4.1",
-    "@solana/spl-token": "0.4.0",
-    "@solana/web3.js": "^1.89.1",
-    "bs58": "5.0.0"
+    "@metaplex-foundation/beet-solana": "0.4.1"
   },
   "devDependencies": {
     "@types/luxon": "^3.0.1",
@@ -116,7 +112,7 @@ async function main() {
   const apiSchemaPath = path.join(__dirname, './src/api/index.js')
   const layoutPath = path.join(__dirname, './src/utils/layouts/layout.js')
 
-  const instances = Number(config.INDEXER_INSTANCES || 2)
+  const instances = Number(config.INDEXER_INSTANCES || 1)
   const apiPort = Number(config.INDEXER_API_PORT || 8080)
   const tcpUrls = config.INDEXER_TCP_URLS || undefined
   const natsUrl = config.INDEXER_NATS_URL || undefined
@@ -124,7 +120,7 @@ async function main() {
   const projectId = '${name}'
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const transport =
-    (config.INDEXER_TRANSPORT as TransportType) || TransportType.LocalNet
+    (config.INDEXER_TRANSPORT as TransportType) || TransportType.Thread
 
   const transportConfig: any =
     tcpUrls || natsUrl ? { tcpUrls, natsUrl } : undefined

@@ -8,25 +8,19 @@
 import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 import * as beet from '@metaplex-foundation/beet'
-export type List = {
-  account: web3.PublicKey
-  itemSize: number
-  count: number
-  reserved1: web3.PublicKey
-  reserved2: number
+export type PubkeyValueChange = {
+  old: web3.PublicKey
+  new: web3.PublicKey
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const listBeet = new beet.BeetArgsStruct<List>(
+export const pubkeyValueChangeBeet = new beet.BeetArgsStruct<PubkeyValueChange>(
   [
-    ['account', beetSolana.publicKey],
-    ['itemSize', beet.u32],
-    ['count', beet.u32],
-    ['reserved1', beetSolana.publicKey],
-    ['reserved2', beet.u32],
+    ['old', beetSolana.publicKey],
+    ['new', beetSolana.publicKey],
   ],
-  'List',
+  'PubkeyValueChange',
 )

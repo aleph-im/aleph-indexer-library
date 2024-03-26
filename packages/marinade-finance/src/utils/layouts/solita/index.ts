@@ -4,19 +4,27 @@ export * from './instructions/index.js'
 export * from './types/index.js'
 
 import {
-  State,
-  StateArgs,
   TicketAccountData,
   TicketAccountDataArgs,
+  State,
+  StateArgs,
 } from './accounts/index.js'
 
 import {
-  Fee,
-  LiqPoolInitializeData,
-  InitializeData,
+  SplitStakeAccountInfo,
+  U64ValueChange,
+  U32ValueChange,
+  FeeValueChange,
+  FeeCentsValueChange,
+  PubkeyValueChange,
+  BoolValueChange,
   ChangeAuthorityData,
   ConfigLpParams,
   ConfigMarinadeParams,
+  InitializeData,
+  LiqPoolInitializeData,
+  Fee,
+  FeeCents,
   LiqPool,
   List,
   StakeRecord,
@@ -32,7 +40,6 @@ export type InitializeInstruction = {
 }
 
 export const InitializeAccounts = [
-  'creatorAuthority',
   'state',
   'reservePda',
   'stakeList',
@@ -268,6 +275,7 @@ export const StakeReserveAccounts = [
   'reservePda',
   'stakeAccount',
   'stakeDepositAuthority',
+  'rentPayer',
   'clock',
   'epochSchedule',
   'rent',
@@ -380,6 +388,99 @@ export const MergeStakesAccounts = [
   'stakeProgram',
 ]
 
+export type RedelegateInstruction = {
+  programId: PublicKey
+  keys: AccountMeta[]
+  data: Buffer
+}
+
+export const RedelegateAccounts = [
+  'state',
+  'validatorList',
+  'stakeList',
+  'stakeAccount',
+  'stakeDepositAuthority',
+  'reservePda',
+  'splitStakeAccount',
+  'splitStakeRentPayer',
+  'destValidatorAccount',
+  'redelegateStakeAccount',
+  'clock',
+  'stakeHistory',
+  'stakeConfig',
+  'systemProgram',
+  'stakeProgram',
+]
+
+export type PauseInstruction = {
+  programId: PublicKey
+  keys: AccountMeta[]
+  data: Buffer
+}
+
+export const PauseAccounts = ['state', 'pauseAuthority']
+
+export type ResumeInstruction = {
+  programId: PublicKey
+  keys: AccountMeta[]
+  data: Buffer
+}
+
+export const ResumeAccounts = ['state', 'pauseAuthority']
+
+export type WithdrawStakeAccountInstruction = {
+  programId: PublicKey
+  keys: AccountMeta[]
+  data: Buffer
+}
+
+export const WithdrawStakeAccountAccounts = [
+  'state',
+  'msolMint',
+  'burnMsolFrom',
+  'burnMsolAuthority',
+  'treasuryMsolAccount',
+  'validatorList',
+  'stakeList',
+  'stakeWithdrawAuthority',
+  'stakeDepositAuthority',
+  'stakeAccount',
+  'splitStakeAccount',
+  'splitStakeRentPayer',
+  'clock',
+  'systemProgram',
+  'tokenProgram',
+  'stakeProgram',
+]
+
+export type ReallocValidatorListInstruction = {
+  programId: PublicKey
+  keys: AccountMeta[]
+  data: Buffer
+}
+
+export const ReallocValidatorListAccounts = [
+  'state',
+  'adminAuthority',
+  'validatorList',
+  'rentFunds',
+  'systemProgram',
+]
+
+export type ReallocStakeListInstruction = {
+  programId: PublicKey
+  keys: AccountMeta[]
+  data: Buffer
+}
+
+export const ReallocStakeListAccounts = [
+  'state',
+  'adminAuthority',
+  'stakeList',
+  'rentFunds',
+  'systemProgram',
+]
+
 export type ParsedInstructions =
   | InitializeInstruction
   | ChangeAuthorityInstruction
@@ -403,17 +504,31 @@ export type ParsedInstructions =
   | EmergencyUnstakeInstruction
   | PartialUnstakeInstruction
   | MergeStakesInstruction
-export type ParsedAccounts = State | TicketAccountData
+  | RedelegateInstruction
+  | PauseInstruction
+  | ResumeInstruction
+  | WithdrawStakeAccountInstruction
+  | ReallocValidatorListInstruction
+  | ReallocStakeListInstruction
+export type ParsedAccounts = TicketAccountData | State
 
-export type ParsedAccountsData = StateArgs | TicketAccountDataArgs
+export type ParsedAccountsData = TicketAccountDataArgs | StateArgs
 
 export type ParsedTypes =
-  | Fee
-  | LiqPoolInitializeData
-  | InitializeData
+  | SplitStakeAccountInfo
+  | U64ValueChange
+  | U32ValueChange
+  | FeeValueChange
+  | FeeCentsValueChange
+  | PubkeyValueChange
+  | BoolValueChange
   | ChangeAuthorityData
   | ConfigLpParams
   | ConfigMarinadeParams
+  | InitializeData
+  | LiqPoolInitializeData
+  | Fee
+  | FeeCents
   | LiqPool
   | List
   | StakeRecord

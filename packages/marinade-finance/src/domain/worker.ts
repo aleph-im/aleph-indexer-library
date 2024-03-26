@@ -1,4 +1,3 @@
-import { StorageStream } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
@@ -26,6 +25,7 @@ import {
 import { AccountDomain } from './account.js'
 import { createAccountStats } from './stats/timeSeries.js'
 import { MARINADE_FINANCE_PROGRAM_ID } from '../constants.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -102,14 +102,12 @@ export default class WorkerDomain
     context: ParserContext,
     ixsContext: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    if ('account' in context) {
-      const parsedIxs = ixsContext.map((ix) =>
-        this.eventParser.parse(ix, context.account),
-      )
-      console.log(`indexing ${ixsContext.length} parsed ixs`)
+    const parsedIxs = ixsContext.map((ix) =>
+      this.eventParser.parse(ix, context.account),
+    )
+    console.log(`indexing ${ixsContext.length} parsed ixs`)
 
-      await this.eventDAL.save(parsedIxs)
-    }
+    await this.eventDAL.save(parsedIxs)
   }
 
   // ------------- Custom impl methods -------------------
@@ -126,14 +124,12 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  async getAccountEventsByTime(
+  async getAccountEvents(
     account: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, MarinadeFinanceEvent>> {
+    args: EventsFilters,
+  ): Promise<MarinadeFinanceEvent[]> {
     const res = this.getAccount(account)
-    return await res.getEventsByTime(startDate, endDate, opts)
+    return await res.getEvents(args)
   }
 
   private getAccount(account: string): AccountDomain {

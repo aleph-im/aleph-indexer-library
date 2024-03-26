@@ -1,21 +1,21 @@
 import {
-  stateDiscriminator,
-  stateBeet,
   ticketAccountDataDiscriminator,
   ticketAccountDataBeet,
+  stateDiscriminator,
+  stateBeet,
 } from './solita/index.js'
 
 export enum AccountType {
-  State = 'State',
   TicketAccountData = 'TicketAccountData',
+  State = 'State',
 }
 
 export const ACCOUNT_DISCRIMINATOR: Record<AccountType, Buffer> = {
-  [AccountType.State]: Buffer.from(stateDiscriminator),
   [AccountType.TicketAccountData]: Buffer.from(ticketAccountDataDiscriminator),
+  [AccountType.State]: Buffer.from(stateDiscriminator),
 }
 
 export const ACCOUNTS_DATA_LAYOUT: Record<AccountType, any> = {
-  [AccountType.State]: stateBeet,
   [AccountType.TicketAccountData]: ticketAccountDataBeet,
+  [AccountType.State]: stateBeet,
 }

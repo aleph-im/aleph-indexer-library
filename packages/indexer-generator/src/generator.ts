@@ -26,7 +26,6 @@ import { renderDomainFiles } from './render-domain.js'
 import { renderLayoutsFiles } from './render-layouts.js'
 import { format, Options } from 'prettier'
 import { renderApiFiles } from './render-api.js'
-import { renderDiscovererFiles } from './render-discoverer.js'
 import { logError } from './utils/index.js'
 import { renderStatsFiles } from './render-stats.js'
 import { renderSolitaMods } from './render-solita.js'
@@ -104,11 +103,6 @@ export default async function generate(
   )
   writeFiles(paths.statsDir, renderStatsFiles(Name), (filename) =>
     paths.statsFile(filename),
-  )
-  writeFiles(
-    paths.discovererDir,
-    renderDiscovererFiles(Name, idl.name),
-    (filename) => paths.discovererFile(filename),
   )
 }
 

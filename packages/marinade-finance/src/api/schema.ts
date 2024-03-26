@@ -1,12 +1,4 @@
-import {
-  GraphQLObjectType,
-  GraphQLString,
-  GraphQLList,
-  GraphQLFloat,
-  GraphQLInt,
-  GraphQLBoolean,
-  GraphQLNonNull,
-} from 'graphql'
+import { GraphQLObjectType } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
 import {
@@ -26,17 +18,14 @@ export default class APISchema extends IndexerAPISchema {
       types: Types.types,
 
       customTimeSeriesTypesMap: { access: Types.AccessTimeStats },
-      customStatsType: Types.MarinadeFinanceStats,
+      customStatsType: Types.Stats,
 
       query: new GraphQLObjectType({
         name: 'Query',
         fields: {
           accounts: {
-            type: Types.AccountsInfo,
-            args: {
-              types: { type: new GraphQLList(GraphQLString) },
-              accounts: { type: new GraphQLList(GraphQLString) },
-            },
+            type: Types.AccountInfoList,
+            args: Types.AccountsArgs,
             resolve: (_, ctx, __, info) => {
               ctx.includeStats =
                 !!info.fieldNodes[0].selectionSet?.selections.find(
@@ -49,25 +38,15 @@ export default class APISchema extends IndexerAPISchema {
           },
 
           events: {
-            type: Types.Events,
-            args: {
-              account: { type: new GraphQLNonNull(GraphQLString) },
-              types: { type: new GraphQLList(Types.MarinadeFinanceEvent) },
-              startDate: { type: GraphQLFloat },
-              endDate: { type: GraphQLFloat },
-              limit: { type: GraphQLInt },
-              skip: { type: GraphQLInt },
-              reverse: { type: GraphQLBoolean },
-            },
-            resolve: (_, ctx) => this.resolver.getEvents(ctx as EventsFilters),
+            type: Types.EventsList,
+            args: Types.AccountEventsArgs,
+            resolve: (_, ctx) =>
+              this.resolver.getAccountEvents(ctx as EventsFilters),
           },
 
           globalStats: {
-            type: Types.GlobalMarinadeFinanceStats,
-            args: {
-              types: { type: GraphQLString },
-              accounts: { type: new GraphQLList(GraphQLString) },
-            },
+            type: Types.GlobalStats,
+            args: Types.AccountsArgs,
             resolve: (_, ctx) =>
               resolver.getGlobalStats(ctx as GlobalStatsFilters),
           },

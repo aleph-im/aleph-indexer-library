@@ -61,13 +61,11 @@ function renderTypes(
   const content = `import { AccountType, ${Name}Event, ParsedAccountsData } from './utils/layouts/index.js'
 
   export type ${Name}AccountInfo = {
-    name: string
     programId: string
     address: string
     type: AccountType
-    data: ParsedAccountsData
-  }
-  
+  } & ParsedAccountsData
+
   // -------------------------- STATS --------------------------
   
   export type AccessTimeStats = {

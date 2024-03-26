@@ -36,7 +36,6 @@ export const initializeStruct = new beet.BeetArgsStruct<
 /**
  * Accounts required by the _initialize_ instruction
  *
- * @property [**signer**] creatorAuthority
  * @property [_writable_] state
  * @property [] reservePda
  * @property [_writable_] stakeList
@@ -53,7 +52,6 @@ export const initializeStruct = new beet.BeetArgsStruct<
  * @category generated
  */
 export type InitializeInstructionAccounts = {
-  creatorAuthority: web3.PublicKey
   state: web3.PublicKey
   reservePda: web3.PublicKey
   stakeList: web3.PublicKey
@@ -93,11 +91,6 @@ export function createInitializeInstruction(
     ...args,
   })
   const keys: web3.AccountMeta[] = [
-    {
-      pubkey: accounts.creatorAuthority,
-      isWritable: false,
-      isSigner: true,
-    },
     {
       pubkey: accounts.state,
       isWritable: true,

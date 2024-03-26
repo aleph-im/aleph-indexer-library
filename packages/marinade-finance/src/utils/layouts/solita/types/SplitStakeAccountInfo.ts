@@ -8,25 +8,20 @@
 import * as web3 from '@solana/web3.js'
 import * as beetSolana from '@metaplex-foundation/beet-solana'
 import * as beet from '@metaplex-foundation/beet'
-export type List = {
+export type SplitStakeAccountInfo = {
   account: web3.PublicKey
-  itemSize: number
-  count: number
-  reserved1: web3.PublicKey
-  reserved2: number
+  index: number
 }
 
 /**
  * @category userTypes
  * @category generated
  */
-export const listBeet = new beet.BeetArgsStruct<List>(
-  [
-    ['account', beetSolana.publicKey],
-    ['itemSize', beet.u32],
-    ['count', beet.u32],
-    ['reserved1', beetSolana.publicKey],
-    ['reserved2', beet.u32],
-  ],
-  'List',
-)
+export const splitStakeAccountInfoBeet =
+  new beet.BeetArgsStruct<SplitStakeAccountInfo>(
+    [
+      ['account', beetSolana.publicKey],
+      ['index', beet.u32],
+    ],
+    'SplitStakeAccountInfo',
+  )

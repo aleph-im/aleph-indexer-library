@@ -9,14 +9,14 @@ export function renderDomainFiles(
 
   files.push(['account', createAccountDomain(Name)])
   files.push(['worker', createWorkerDomain(Name, filename)])
-  files.push(['main', createMainDomain(Name, filename, accounts)])
+  files.push(['main', createMainDomain(Name, accounts)])
+  files.push(['discoverer', createDiscovererFile(Name, filename)])
 
   return files
 }
 
 function createAccountDomain(Name: string): string {
-  return `import { StorageStream } from '@aleph-indexer/core'
-import {
+  return `import {
   AccountTimeSeriesStatsManager,
   AccountTimeSeriesStats,
   AccountStatsFilters,
@@ -25,6 +25,7 @@ import {
 import { EventDALIndex, EventStorage } from '../dal/event.js'
 import { ${Name}Event } from '../utils/layouts/index.js'
 import { ${Name}AccountInfo, ${Name}AccountStats } from '../types.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export class AccountDomain {
   constructor(
@@ -48,18 +49,45 @@ export class AccountDomain {
     return this.timeSeriesStats.getStats()
   }
 
-  async getEventsByTime(
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, ${Name}Event>> {
-    return await this.eventDAL
+  async getEvents(
+    args: EventsFilters
+  ): Promise<${Name}Event[]> {
+    const {
+      types,
+      startDate = 0,
+      endDate = Date.now(),
+      limit = 1000,
+      skip = 0,
+      reverse = true,
+    } = args
+
+    if (limit < 1 || limit > 1000)
+      throw new Error('400 Bad Request: 1 <= limit <= 1000')
+
+    const typesMap = types ? new Set(types) : undefined
+    const from = startDate ? [this.info.address, startDate] : [this.info.address, 0]
+    const to = endDate ? [this.info.address, endDate] : [this.info.address, Date.now()]
+    let sk = skip
+
+    const result: ${Name}Event[] = []
+    const events = await this.eventDAL
       .useIndex(EventDALIndex.AccountTimestamp)
-      .getAllFromTo(
-        [this.info.address, startDate],
-        [this.info.address, endDate],
-        opts,
-      )
+      .getAllFromTo(from, to, { reverse, limit })
+
+    for await (const { value } of events) {
+      // @note: Filter by type
+      if (typesMap && !typesMap.has(value.type)) continue
+
+      // @note: Skip first N events
+      if (--sk >= 0) continue
+
+      result.push(value)
+
+      // @note: Stop when after reaching the limit
+      if (limit > 0 && result.length >= limit) return result
+    }
+
+    return result
   }
 }
 `
@@ -68,8 +96,7 @@ export class AccountDomain {
 function createWorkerDomain(Name: string, filename: string): string {
   const NAME = filename.toUpperCase().replace(/-/g, '_')
 
-  return `import { StorageStream } from '@aleph-indexer/core'
-import {
+  return `import {
   IndexerDomainContext,
   AccountIndexerConfigWithMeta,
   IndexerWorkerDomain,
@@ -93,6 +120,7 @@ import { ${Name}AccountStats, ${Name}AccountInfo } from '../types.js'
 import { AccountDomain } from './account.js'
 import { createAccountStats } from './stats/timeSeries.js'
 import { ${NAME}_PROGRAM_ID } from '../constants.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -163,14 +191,12 @@ export default class WorkerDomain
     context: ParserContext,
     ixsContext: SolanaParsedInstructionContext[],
   ): Promise<void> {
-    if ('account' in context) {
-      const parsedIxs = ixsContext.map((ix) =>
-        this.eventParser.parse(ix, context.account),
-      )
-      console.log(\`indexing \${ixsContext.length} parsed ixs\`)
+    const parsedIxs = ixsContext.map((ix) =>
+      this.eventParser.parse(ix, context.account),
+    )
+    console.log(\`indexing \${ixsContext.length} parsed ixs\`)
 
-      await this.eventDAL.save(parsedIxs)
-    }
+    await this.eventDAL.save(parsedIxs)
   }
 
   // ------------- Custom impl methods -------------------
@@ -185,14 +211,12 @@ export default class WorkerDomain
     return res.getStats()
   }
 
-  async getAccountEventsByTime(
+  async getAccountEvents(
     account: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, ${Name}Event>> {
+    args: EventsFilters
+  ): Promise<${Name}Event[]> {
     const res = this.getAccount(account)
-    return await res.getEventsByTime(startDate, endDate, opts)
+    return await res.getEvents(args)
   }
 
   private getAccount(account: string): AccountDomain {
@@ -206,11 +230,9 @@ export default class WorkerDomain
 
 function createMainDomain(
   Name: string,
-  filename: string,
   accounts: ViewAccounts | undefined,
 ): string {
-  let mainDomain = `import { StorageStream } from '@aleph-indexer/core'
-import {
+  let mainDomain = `import {
   IndexerMainDomain,
   IndexerMainDomainWithDiscovery,
   IndexerMainDomainWithStats,
@@ -229,7 +251,8 @@ import {
   ${Name}AccountData,
   ${Name}AccountInfo,
 } from '../types.js'
-import ${Name}Discoverer from './discoverer/${filename}.js'
+import AccountDiscoverer from './discoverer.js'
+import { EventsFilters } from '../api/resolvers.js'
 
 export default class MainDomain
   extends IndexerMainDomain
@@ -239,7 +262,7 @@ export default class MainDomain
 
   constructor(
     protected context: IndexerMainDomainContext,
-    protected discoverer: ${Name}Discoverer = new ${Name}Discoverer(),
+    protected discoverer: AccountDiscoverer = new AccountDiscoverer(),
   ) {
     super(context, {
       discoveryInterval: 1000 * 60 * 60 * 1,
@@ -258,10 +281,7 @@ export default class MainDomain
         account: meta.address,
         meta,
         index: {
-          transactions: {
-            chunkDelay: 0,
-            chunkTimeframe: 1000 * 60 * 60 * 24,
-          },
+          transactions: true,
           content: false,
         },
       }
@@ -306,21 +326,17 @@ export default class MainDomain
     return { info, stats }
   }
 
-  async getAccountEventsByTime(
-    account: string,
-    startDate: number,
-    endDate: number,
-    opts: any,
-  ): Promise<StorageStream<string, ${Name}Event>> {
-    const stream = await this.context.apiClient
+  async getAccountEvents(args: EventsFilters): Promise<${Name}Event[]> {
+    // note: use primitive/simple types using invokeDomainMethod
+    const response = await this.context.apiClient
       .useBlockchain(BlockchainChain.Solana)
       .invokeDomainMethod({
-        account,
-        method: 'getAccountEventsByTime',
-        args: [startDate, endDate, opts],
+        account: args.account,
+        method: 'getAccountEvents',
+        args: [args],
       })
 
-    return stream as StorageStream<string, ${Name}Event>
+    return response as ${Name}Event[]
   }
 
   async updateStats(now: number): Promise<void> {
@@ -398,4 +414,102 @@ export default class MainDomain
 }
 `
   return mainDomain
+}
+
+function createDiscovererFile(Name: string, filename: string): string {
+  const NAME = filename.toUpperCase().replace(/-/g, '_')
+
+  return `import {
+    ${NAME}_PROGRAM_ID,
+    ${NAME}_PROGRAM_ID_PK,
+} from '../constants.js'
+import { AccountType } from '../utils/layouts/index.js'
+import { ${Name}AccountInfo } from '../types.js'
+import {
+    ACCOUNT_DISCRIMINATOR,
+    ACCOUNTS_DATA_LAYOUT,
+} from '../utils/layouts/accounts.js'
+import { solanaPrivateRPC } from '@aleph-indexer/solana'
+import bs58 from 'bs58'
+import { AccountInfo, PublicKey } from '@solana/web3.js'
+
+export default class AccountDiscoverer {
+    constructor(
+        public accountTypes: Set<AccountType> = new Set(Object.values(AccountType)),
+        protected cache: Record<string, ${Name}AccountInfo> = {},
+    ) {}
+
+    async loadAccounts(): Promise<${Name}AccountInfo[]> {
+        const newAccounts:${Name}AccountInfo[] = []
+        const accounts = await this.getAllAccounts()
+
+        for (const accountInfo of accounts) {
+            if (this.cache[accountInfo.address]) continue
+    
+            this.cache[accountInfo.address] = accountInfo
+            newAccounts.push(this.cache[accountInfo.address])
+        }
+
+        return newAccounts
+    }
+
+    getAccountType(address: string): AccountType {
+        return this.cache[address].type
+    }
+
+  /**
+   * Fetches all accounts from the program. Useful to filter which accounts should be indexed.
+   */
+    async getAllAccounts(): Promise<${Name}AccountInfo[]> {
+        const connection = solanaPrivateRPC.getConnection()
+        const accountsInfo: ${Name}AccountInfo[] = []
+        // todo: If you want to only index a subset of account types, you can filter them here
+        const accountTypesToFilter: AccountType[] = [/*AccountType.*/]
+        for (const type of this.accountTypes) {
+          if (accountTypesToFilter.includes(type)) continue
+            const accounts = await connection.getProgramAccounts(
+              ${NAME}_PROGRAM_ID_PK,
+              {
+                filters: [
+                  {
+                    memcmp: {
+                      bytes: bs58.encode(ACCOUNT_DISCRIMINATOR[type]),
+                      offset: 0,
+                    },
+                  },
+                ],
+              },
+            )
+            accounts.map(
+                (value: { pubkey: PublicKey; account: AccountInfo<Buffer> }) => {
+                  const accountInfo = this.deserializeAccountResponse(value, type)
+                  if (accountInfo) accountsInfo.push(accountInfo)
+                }
+            )
+        }
+        return accountsInfo
+    }
+
+    deserializeAccountResponse(
+        resp: { pubkey: PublicKey; account: AccountInfo<Buffer> },
+        type: AccountType,
+    ): ${Name}AccountInfo | undefined {
+      try {
+        const data = ACCOUNTS_DATA_LAYOUT[type].deserialize(resp.account.data)[0]
+        const address = resp.pubkey.toBase58()
+
+        return {
+            programId: ${NAME}_PROGRAM_ID,
+            type,
+            address: address,
+            ...data,
+          }
+      } catch (e) {
+        // layout changed on program update?
+        console.log('Error parsing account', e)
+        return
+      }
+    }
+}
+`
 }

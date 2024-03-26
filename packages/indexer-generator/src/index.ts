@@ -56,6 +56,7 @@ async function main() {
     const idl: Idl = JSON.parse(
       readFileSync(paths.idlFile(idlFilename), 'utf8'),
     )
+    idl.name = idl.name.replace(/_/g, '-')
     paths = new Paths(`./`, idl.name)
 
     if (!idl.metadata) {
@@ -73,6 +74,7 @@ async function main() {
       TemplateType.Instructions,
       TemplateType.Accounts,
     ])
+    executeCommand('chmod +x ./packages/' + idl.name + '/run.sh')
   } else if (options.address) {
     try {
       const stdout = await executeCommand(
@@ -94,6 +96,7 @@ async function main() {
         [TemplateType.Types, TemplateType.Instructions, TemplateType.Accounts],
         options.address,
       )
+      executeCommand('chmod +x ./packages/' + idl.name + '/run.sh')
     } catch (error) {
       console.error('An error occurred while fetching the IDL:', error)
     }

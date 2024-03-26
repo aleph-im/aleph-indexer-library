@@ -17,11 +17,12 @@ export type InitializeData = {
   adminAuthority: web3.PublicKey
   validatorManagerAuthority: web3.PublicKey
   minStake: beet.bignum
-  rewardFee: Fee
+  rewardsFee: Fee
   liqPool: LiqPoolInitializeData
   additionalStakeRecordSpace: number
   additionalValidatorRecordSpace: number
   slotsForStakeDelta: beet.bignum
+  pauseAuthority: web3.PublicKey
 }
 
 /**
@@ -33,11 +34,12 @@ export const initializeDataBeet = new beet.BeetArgsStruct<InitializeData>(
     ['adminAuthority', beetSolana.publicKey],
     ['validatorManagerAuthority', beetSolana.publicKey],
     ['minStake', beet.u64],
-    ['rewardFee', feeBeet],
+    ['rewardsFee', feeBeet],
     ['liqPool', liqPoolInitializeDataBeet],
     ['additionalStakeRecordSpace', beet.u32],
     ['additionalValidatorRecordSpace', beet.u32],
     ['slotsForStakeDelta', beet.u64],
+    ['pauseAuthority', beetSolana.publicKey],
   ],
   'InitializeData',
 )
