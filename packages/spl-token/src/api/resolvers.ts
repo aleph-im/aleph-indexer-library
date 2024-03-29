@@ -86,6 +86,7 @@ export class APIResolver {
       startDate,
       endDate,
       reverse,
+      types,
       limit: !typesMap ? limit + skip : undefined,
     })
 
