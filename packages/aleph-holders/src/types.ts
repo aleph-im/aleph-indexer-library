@@ -9,7 +9,7 @@ export type AlephEvent = {
   transaction: string
 }
 
-export type ERC20TransferEvent = AlephEvent & {
+export type TransferEvent = AlephEvent & {
   from: string
   to: string
   value: string // uint256 hex
@@ -29,7 +29,7 @@ export enum EventType {
   Transfer = 'Transfer(address,address,uint256)',
 }
 
-export type ERC20TransferEventQueryArgs = {
+export type TransferEventQueryArgs = {
   blockchain: BlockchainId
   account?: string
   startDate?: number
@@ -47,4 +47,21 @@ export type BalanceQueryArgs = {
   limit?: number
   skip?: number
   reverse?: boolean
+}
+
+export type SnapshotQueryArgs = {
+  timestamp?: number
+}
+
+export type SolanaBalance = {
+  account: string
+  owner: string
+  balance: string // uint256 hex
+  balanceNum?: number
+  balanceBN?: BN
+}
+
+export type Snapshot = {
+  timestamp: number
+  balances: SolanaBalance[]
 }

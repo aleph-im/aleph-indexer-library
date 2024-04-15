@@ -1,17 +1,17 @@
 import { BlockchainId } from '@aleph-indexer/framework'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
-import { AlephEvent, Balance, ERC20TransferEvent } from '../types.js'
+import { AlephEvent, Balance, TransferEvent } from '../types.js'
 import {
   bigNumberToString,
   uint256ToBigNumber,
   uint256ToString,
 } from '../utils/index.js'
 
-export class EventParser {
+export class EthereumEventParser {
   parseERC20TransferEvent(
     blockchain: BlockchainId,
     entity: EthereumParsedLog,
-  ): ERC20TransferEvent {
+  ): TransferEvent {
     const parsedEvent = this.parseCommonScheme(blockchain, entity)
 
     const [rawFrom, rawTo, rawValue] = entity.parsed?.args || []

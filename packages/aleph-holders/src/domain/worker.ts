@@ -2,7 +2,7 @@
 import {
   IndexerDomainContext,
   IndexerWorkerDomain,
-  AccountIndexerRequestArgs,
+  AccountIndexerConfigWithMeta,
   ParserContext,
   BlockchainChain,
   BlockchainId,
@@ -11,62 +11,64 @@ import {
   EthereumLogIndexerWorkerDomainI,
   EthereumParsedLog,
 } from '@aleph-indexer/ethereum'
-import { BscLogIndexerWorkerDomainI, BscParsedLog } from '@aleph-indexer/bsc'
+import { 
+  BscLogIndexerWorkerDomainI, 
+  BscParsedLog 
+} from '@aleph-indexer/bsc'
 import {
   EventType,
-  ERC20TransferEventQueryArgs,
-  ERC20TransferEvent,
+  TransferEventQueryArgs,
+  TransferEvent,
   BalanceQueryArgs,
   Balance,
+  SolanaBalance,
 } from '../types.js'
 import {
-  ERC20TransferEventDALIndex,
-  createERC20TransferEventDAL,
-} from '../dal/erc20TransferEvent.js'
-import { EventParser } from './parser.js'
+  TransferEventDALIndex,
+  createTransferEventDAL,
+} from '../dal/transfer.js'
+import { EthereumEventParser } from './ethereumParser.js'
 import { BalanceDALIndex, createBalanceDAL } from '../dal/balance.js'
 import {
   blockchainDeployerAccount,
   blockchainTotalSupply,
 } from '../utils/index.js'
+import { SolanaIndexerWorkerDomainI, SolanaParsedInstructionContext } from '@aleph-indexer/solana'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
-  implements EthereumLogIndexerWorkerDomainI, BscLogIndexerWorkerDomainI
-{
+  implements
+    EthereumLogIndexerWorkerDomainI,
+    BscLogIndexerWorkerDomainI,
+    SolanaIndexerWorkerDomainI {
+
   constructor(
     protected context: IndexerDomainContext,
-    protected erc20TransferEventDAL = createERC20TransferEventDAL(
-      context.dataPath,
-    ),
+    protected ethParser = new EthereumEventParser(),
+    protected transferEventDAL = createTransferEventDAL(context.dataPath),
     protected balanceDAL = createBalanceDAL(context.dataPath),
-    protected parser = new EventParser(),
   ) {
     super(context)
   }
 
-  async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
-    const { blockchainId: blockchain, account: contract } = config
+  async onNewAccount(
+    config: AccountIndexerConfigWithMeta<SolanaBalance>,
+  ): Promise<void> {
+    const { blockchainId: blockchain, account, meta } = config
     const { instanceName } = this.context
 
-    const deployer = blockchainDeployerAccount[blockchain]
-    const accountBalance = await this.balanceDAL.get([blockchain, deployer])
+    console.log('Account indexing', instanceName, blockchain, account)
 
-    console.log(
-      'Account indexing',
-      instanceName,
-      blockchain,
-      contract,
-      deployer,
-      accountBalance,
-    )
+    if (!meta) {
+      // @note: Init the initial supply if it is the first run
+      const deployer = blockchainDeployerAccount[blockchain]
+      const accountBalance = await this.balanceDAL.get([blockchain, deployer])
+      if (!accountBalance) {
+        const balance = blockchainTotalSupply[blockchain].toString('hex')
+        await this.balanceDAL.save({ blockchain, account: deployer, balance })
 
-    // @note: Init the initial supply if it is the first it run
-    if (!accountBalance) {
-      const balance = blockchainTotalSupply[blockchain].toString('hex')
-      await this.balanceDAL.save({ blockchain, account: deployer, balance })
-
-      console.log('Init supply', blockchain, deployer, balance)
+        console.log('Init supply', blockchain, deployer, balance)
+      }
     }
   }
 
@@ -117,22 +119,22 @@ export default class WorkerDomain
   ): Promise<void> {
     console.log(`Index ${blockchainId} logs`, JSON.stringify(entities, null, 2))
 
-    const parsedEvents: ERC20TransferEvent[] = []
+    const parsedEvents: TransferEvent[] = []
     const parsedBalances: Balance[] = []
 
     for (const entity of entities) {
-      const parsedEvent = this.parser.parseERC20TransferEvent(
+      const parsedEvent = this.ethParser.parseERC20TransferEvent(
         blockchainId,
         entity,
       )
       parsedEvents.push(parsedEvent)
 
-      const parsedBalance = this.parser.parseBalance(blockchainId, entity)
+      const parsedBalance = this.ethParser.parseBalance(blockchainId, entity)
       parsedBalances.push(...parsedBalance)
     }
 
     if (parsedEvents.length) {
-      await this.erc20TransferEventDAL.save(parsedEvents)
+      await this.transferEventDAL.save(parsedEvents)
     }
 
     if (parsedBalances.length) {
@@ -140,12 +142,24 @@ export default class WorkerDomain
     }
   }
 
+  async solanaFilterInstruction(
+    context: ParserContext,
+    entity: SolanaParsedInstructionContext,
+  ): Promise<boolean> {
+    return false
+  }
+
+  async solanaIndexInstructions(
+    context: ParserContext,
+    entities: SolanaParsedInstructionContext[],
+  ): Promise<void> {}
+
   // API methods
 
   protected async getEvents(
     account: string,
-    args: ERC20TransferEventQueryArgs,
-  ): Promise<ERC20TransferEvent[]> {
+    args: TransferEventQueryArgs,
+  ): Promise<TransferEvent[]> {
     let {
       startDate,
       endDate,
@@ -162,7 +176,7 @@ export default class WorkerDomain
 
     let skip = opts.skip || 0
     const limit = opts.limit || 1000
-    const result: ERC20TransferEvent[] = []
+    const result: TransferEvent[] = []
 
     let entries
 
@@ -171,8 +185,8 @@ export default class WorkerDomain
         startDate = startDate !== undefined ? startDate : 0
         endDate = endDate !== undefined ? endDate : Date.now()
 
-        entries = await this.erc20TransferEventDAL
-          .useIndex(ERC20TransferEventDALIndex.BlockchainAccountTimestamp)
+        entries = await this.transferEventDAL
+          .useIndex(TransferEventDALIndex.BlockchainAccountTimestamp)
           .getAllValuesFromTo(
             [blockchain, acc, startDate],
             [blockchain, acc, endDate],
@@ -183,8 +197,8 @@ export default class WorkerDomain
         endHeight =
           endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
-        entries = await this.erc20TransferEventDAL
-          .useIndex(ERC20TransferEventDALIndex.BlockchainAccountHeight)
+        entries = await this.transferEventDAL
+          .useIndex(TransferEventDALIndex.BlockchainAccountHeight)
           .getAllValuesFromTo(
             [blockchain, acc, startHeight],
             [blockchain, acc, endHeight],
@@ -197,8 +211,8 @@ export default class WorkerDomain
       startDate = startDate !== undefined ? startDate : 0
       endDate = endDate !== undefined ? endDate : Date.now()
 
-      entries = await this.erc20TransferEventDAL
-        .useIndex(ERC20TransferEventDALIndex.BlockchainTimestamp)
+      entries = await this.transferEventDAL
+        .useIndex(TransferEventDALIndex.BlockchainTimestamp)
         .getAllValuesFromTo(
           [blockchain, startDate],
           [blockchain, endDate],
@@ -210,8 +224,8 @@ export default class WorkerDomain
       startHeight = startHeight !== undefined ? startHeight : 0
       endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
-      entries = await this.erc20TransferEventDAL
-        .useIndex(ERC20TransferEventDALIndex.BlockchainHeight)
+      entries = await this.transferEventDAL
+        .useIndex(TransferEventDALIndex.BlockchainHeight)
         .getAllValuesFromTo(
           [blockchain, startHeight],
           [blockchain, endHeight],
