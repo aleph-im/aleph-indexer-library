@@ -1,11 +1,11 @@
 import { BlockchainId } from '@aleph-indexer/framework'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
-import { AlephEvent, Balance, TransferEvent } from '../../types.js'
+import { AlephEvent, Balance, TransferEvent } from '../types.js'
 import {
   bigNumberToString,
   uint256ToBigNumber,
   uint256ToString,
-} from '../../utils/index.js'
+} from '../utils/index.js'
 
 export class EthereumEventParser {
   parseERC20TransferEvent(

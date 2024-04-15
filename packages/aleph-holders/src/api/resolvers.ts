@@ -2,6 +2,7 @@ import MainDomain from '../domain/main.js'
 import {
   Balance,
   BalanceQueryArgs,
+  Snapshot,
   TransferEvent,
   TransferEventQueryArgs,
 } from '../types.js'
@@ -15,5 +16,9 @@ export class APIResolver {
 
   async getBalances(args: BalanceQueryArgs): Promise<Balance[]> {
     return this.domain.getBalances(args)
+  }
+
+  async getSnapshot(timestamp?: number): Promise<Snapshot> {
+    return this.domain.getSnapshot(timestamp)
   }
 }

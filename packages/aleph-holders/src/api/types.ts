@@ -40,4 +40,12 @@ export const Balance = new GraphQLObjectType({
 
 export const BalanceList = new GraphQLList(Balance)
 
-export const types = [TransferEvent, Balance]
+export const Snapshot = new GraphQLObjectType({
+  name: 'Snapshot',
+  fields: {
+    timestamp: { type: new GraphQLNonNull(GraphQLString) },
+    balances: { type: new GraphQLNonNull(BalanceList) },
+  },
+})
+
+export const types = [TransferEvent, Balance, Snapshot]

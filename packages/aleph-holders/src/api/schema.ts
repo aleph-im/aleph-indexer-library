@@ -1,10 +1,11 @@
-import { GraphQLObjectType } from 'graphql'
+import { GraphQLInt, GraphQLObjectType } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
 import * as Args from './args.js'
 import { APIResolver } from './resolvers.js'
 import MainDomain from '../domain/main.js'
 import { BalanceQueryArgs, TransferEventQueryArgs } from '../types.js'
+import { GraphQLLong } from '@aleph-indexer/core'
 
 export default class APISchema extends IndexerAPISchema {
   constructor(
@@ -28,6 +29,14 @@ export default class APISchema extends IndexerAPISchema {
             args: Args.BalanceQueryArgs,
             resolve: (_, args) =>
               this.resolver.getBalances(args as BalanceQueryArgs),
+          },
+          snapshot: {
+            type: Types.Snapshot,
+            args: {
+              timestamp: { type: GraphQLLong },
+            },
+            resolve: (_, args) =>
+              this.resolver.getSnapshot(args.timestamp),
           },
         },
       }),
