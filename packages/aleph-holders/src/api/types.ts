@@ -40,24 +40,4 @@ export const Balance = new GraphQLObjectType({
 
 export const BalanceList = new GraphQLList(Balance)
 
-export const SolanaBalance = new GraphQLObjectType({
-  name: 'SolanaBalance',
-  fields: {
-    account: { type: new GraphQLNonNull(GraphQLString) },
-    owner: { type: new GraphQLNonNull(GraphQLString) },
-    balance: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    balanceNum: { type: GraphQLFloat },
-  },
-})
-
-export const SolanaBalanceList = new GraphQLList(SolanaBalance)
-
-export const Snapshot = new GraphQLObjectType({
-  name: 'Snapshot',
-  fields: {
-    timestamp: { type: new GraphQLNonNull(GraphQLString) },
-    balances: { type: new GraphQLNonNull(SolanaBalanceList) },
-  },
-})
-
-export const types = [TransferEvent, Balance, Snapshot]
+export const types = [TransferEvent, Balance]

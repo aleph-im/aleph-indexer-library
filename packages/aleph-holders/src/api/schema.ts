@@ -30,14 +30,6 @@ export default class APISchema extends IndexerAPISchema {
             resolve: (_, args) =>
               this.resolver.getBalances(args as BalanceQueryArgs),
           },
-          snapshot: {
-            type: Types.Snapshot,
-            args: {
-              timestamp: { type: GraphQLLong },
-            },
-            resolve: (_, args) =>
-              this.resolver.getSnapshot(args.timestamp),
-          },
         },
       }),
     })

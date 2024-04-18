@@ -2,10 +2,10 @@
 import {
   IndexerDomainContext,
   IndexerWorkerDomain,
-  AccountIndexerConfigWithMeta,
   ParserContext,
   BlockchainChain,
   BlockchainId,
+  AccountIndexerRequestArgs,
 } from '@aleph-indexer/framework'
 import {
   EthereumLogIndexerWorkerDomainI,
@@ -21,19 +21,34 @@ import {
   TransferEvent,
   BalanceQueryArgs,
   Balance,
-  SolanaBalance,
+  SPLTokenEventType,
 } from '../types.js'
 import {
   TransferEventDALIndex,
   createTransferEventDAL,
 } from '../dal/transfer.js'
-import { EthereumEventParser } from './ethereumParser.js'
+import { EthereumEventParser } from './parser/ethereum.js'
 import { BalanceDALIndex, createBalanceDAL } from '../dal/balance.js'
 import {
+  bigNumberToString,
+  blockchainDecimals,
   blockchainDeployerAccount,
+  blockchainTokenContract,
   blockchainTotalSupply,
+  uint256ToBigNumber,
+  uint256ToNumber,
 } from '../utils/index.js'
 import { SolanaIndexerWorkerDomainI, SolanaParsedInstructionContext } from '@aleph-indexer/solana'
+import { 
+  isSPLTokenInstruction, 
+  isInitInstruction, 
+  isMovementWithMint, 
+  validateExpectedAta, 
+  solanaSnapshot, 
+  getEventBase 
+} from '../utils/solana.js'
+import { SolanaEventParser } from './parser/solana.js'
+import { createTokenAccounttDAL } from '../dal/tokenAccount.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -42,24 +57,58 @@ export default class WorkerDomain
     BscLogIndexerWorkerDomainI,
     SolanaIndexerWorkerDomainI {
 
+  // used as reference to process events from on Solana
+  protected snapshotTimestamp = Date.now()
+
   constructor(
     protected context: IndexerDomainContext,
     protected ethParser = new EthereumEventParser(),
+    protected solParser = new SolanaEventParser(),
     protected transferEventDAL = createTransferEventDAL(context.dataPath),
     protected balanceDAL = createBalanceDAL(context.dataPath),
+    protected tokenAccountDAL = createTokenAccounttDAL(context.dataPath),
   ) {
     super(context)
   }
 
-  async onNewAccount(
-    config: AccountIndexerConfigWithMeta<SolanaBalance>,
-  ): Promise<void> {
-    const { blockchainId: blockchain, account, meta } = config
+  async init(): Promise<void> {
+    await super.init()
+
+    const balances: Balance[] = []
+    const accounts = await solanaSnapshot()
+    this.snapshotTimestamp = Date.now()
+    await this.tokenAccountDAL.save(accounts)
+
+    for (const account of accounts) {
+      balances.push({
+        blockchain: BlockchainChain.Solana,
+        account: account.owner,
+        balance: account.balance,
+        balanceBN: uint256ToBigNumber(account.balance),
+        balanceNum: uint256ToNumber(
+          account.balance,
+          blockchainDecimals[BlockchainChain.Solana],
+        )
+      })
+
+      await this.context.apiClient
+        .useBlockchain(BlockchainChain.Solana)
+        .indexAccount({
+          account: account.address,
+          index: { transactions: true },
+        })
+    }
+
+    await this.balanceDAL.save(balances)
+  }
+
+  async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
+    const { blockchainId: blockchain, account } = config
     const { instanceName } = this.context
 
     console.log('Account indexing', instanceName, blockchain, account)
 
-    if (!meta) {
+    if (Object.values(blockchainTokenContract).includes(account)) {
       // @note: Init the initial supply if it is the first run
       const deployer = blockchainDeployerAccount[blockchain]
       const accountBalance = await this.balanceDAL.get([blockchain, deployer])
@@ -146,13 +195,109 @@ export default class WorkerDomain
     context: ParserContext,
     entity: SolanaParsedInstructionContext,
   ): Promise<boolean> {
+    if (!isSPLTokenInstruction(entity.instruction)) return false
+
+    const { id, timestamp } = getEventBase(entity)
+    const eventProcessed = await this.transferEventDAL.get(id)
+    if (eventProcessed) return false
+    // only process events after the snapshot
+    if (timestamp < this.snapshotTimestamp) return false
+
+    console.log('New event', entity)
+    const alephMint = blockchainTokenContract[BlockchainChain.Solana]
+    const parsed = entity.instruction.parsed as any
+
+    if (isInitInstruction(parsed, alephMint)) {
+      console.log('Indexed account', parsed.info.account)
+
+      await this.context.apiClient
+        .useBlockchain(BlockchainChain.Solana)
+        .indexAccount({
+          account: parsed.info.account,
+          index: { transactions: true },
+        })
+
+      return false
+    }
+
+    if (parsed.type === SPLTokenEventType.CloseAccount) {
+      const exists = await this.tokenAccountDAL.get(parsed.info.account)
+      if (!exists) return false
+
+      console.log('Deleted account', parsed.info.account)
+      await this.context.apiClient
+        .useBlockchain(BlockchainChain.Solana)
+        .deleteAccount({
+          account: parsed.info.account,
+          index: { transactions: true },
+        })
+
+      return false
+    }
+
+    return await this.isMovementInstruction(parsed, alephMint)
+  }
+    
+  protected async isMovementInstruction(
+    parsed: any,
+    alephMint: string,
+  ): Promise<boolean> {
+    if (isMovementWithMint(parsed, alephMint)) return true
+    if (parsed.type !== SPLTokenEventType.Transfer) return false
+
+    const accounts = [parsed.info.source, parsed.info.destination]
+    for (const account of accounts) {
+      const exists = await this.tokenAccountDAL.get(account)
+      if (exists) return true
+    }
+
+    const expectedAtaValidation = validateExpectedAta(parsed, alephMint)
+    if (expectedAtaValidation) return true
+    
     return false
   }
-
+  
   async solanaIndexInstructions(
     context: ParserContext,
     entities: SolanaParsedInstructionContext[],
-  ): Promise<void> {}
+  ) {
+    console.log(`indexing ${entities.length} parsed ixs`)
+
+    for (const entity of entities) {
+      const event = this.solParser.parseEvent(entity)
+
+      const from = await this.tokenAccountDAL.get(event.from)
+      const to = await this.tokenAccountDAL.get(event.to)
+  
+      if (!from || !to) continue
+      const value = parseInt(event.amount, 10).toString(16)
+      const valueBN = uint256ToBigNumber(value)
+  
+      const balances: Balance[] = [{
+        blockchain: BlockchainChain.Solana,
+        account: from.owner,
+        balance: bigNumberToString(valueBN.ineg()),
+      }, {
+        blockchain: BlockchainChain.Solana,
+        account: to.owner,
+        balance: value,
+      }]
+  
+      const transfer: TransferEvent = {
+        blockchain: BlockchainChain.Solana,
+        id: event.id,
+        timestamp: event.timestamp,
+        height: event.height,
+        transaction: event.transaction,
+        from: from.owner,
+        to: to.owner,
+        value,
+      }
+  
+      await this.balanceDAL.save(balances)
+      await this.transferEventDAL.save(transfer)
+    }
+  }
 
   // API methods
 
