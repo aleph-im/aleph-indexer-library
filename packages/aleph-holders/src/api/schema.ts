@@ -1,10 +1,11 @@
-import { GraphQLObjectType } from 'graphql'
+import { GraphQLInt, GraphQLObjectType } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
 import * as Types from './types.js'
 import * as Args from './args.js'
 import { APIResolver } from './resolvers.js'
 import MainDomain from '../domain/main.js'
-import { BalanceQueryArgs, ERC20TransferEventQueryArgs } from '../types.js'
+import { BalanceQueryArgs, TransferEventQueryArgs } from '../types.js'
+import { GraphQLLong } from '@aleph-indexer/core'
 
 export default class APISchema extends IndexerAPISchema {
   constructor(
@@ -18,14 +19,14 @@ export default class APISchema extends IndexerAPISchema {
         name: 'Query',
         fields: {
           events: {
-            type: Types.ERC20TransferEventList,
-            args: Args.ERC20TransferEventQueryArgs,
+            type: Types.TransferEventList,
+            args: Args.TransferEventQueryArgs,
             resolve: (_, args) =>
-              this.resolver.getEvents(args as ERC20TransferEventQueryArgs),
+              this.resolver.getEvents(args as TransferEventQueryArgs),
           },
           balances: {
-            type: Types.ERC20BalanceList,
-            args: Args.ERC20BalanceQueryArgs,
+            type: Types.BalanceList,
+            args: Args.BalanceQueryArgs,
             resolve: (_, args) =>
               this.resolver.getBalances(args as BalanceQueryArgs),
           },

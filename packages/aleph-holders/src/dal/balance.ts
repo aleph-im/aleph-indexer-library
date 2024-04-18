@@ -15,7 +15,7 @@ export enum BalanceDALIndex {
 
 const accountKey = {
   get: (e: Balance) => e.account,
-  length: EntityStorage.EthereumAddressLength,
+  length: EntityStorage.AddressLength,
 }
 
 const blockchainKey = {
@@ -49,7 +49,7 @@ const mapValueFn = async (value: any) => {
 
 export function createBalanceDAL(path: string): BalanceStorage {
   return new EntityStorage<Balance>({
-    name: 'erc20_balance',
+    name: 'balance',
     path,
     key: [blockchainKey, accountKey],
     indexes: [

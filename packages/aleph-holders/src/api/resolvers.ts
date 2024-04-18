@@ -2,16 +2,14 @@ import MainDomain from '../domain/main.js'
 import {
   Balance,
   BalanceQueryArgs,
-  ERC20TransferEvent,
-  ERC20TransferEventQueryArgs,
+  TransferEvent,
+  TransferEventQueryArgs,
 } from '../types.js'
 
 export class APIResolver {
   constructor(protected domain: MainDomain) {}
 
-  async getEvents(
-    args: ERC20TransferEventQueryArgs,
-  ): Promise<ERC20TransferEvent[]> {
+  async getEvents(args: TransferEventQueryArgs): Promise<TransferEvent[]> {
     return this.domain.getEvents(args)
   }
 
