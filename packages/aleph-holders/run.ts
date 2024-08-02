@@ -18,7 +18,7 @@ async function main() {
 
   const projectId = config.INDEXER_NAMESPACE || 'aleph-holders'
   const supportedBlockchains = (
-    config.INDEXER_BLOCKCHAINS || 'ethereum,bsc'
+    config.INDEXER_BLOCKCHAINS || 'ethereum,bsc,base,avalanche'
   ).split(',') as Blockchain[]
   const dataPath = config.INDEXER_DATA_PATH || undefined // 'data'
   const transport =

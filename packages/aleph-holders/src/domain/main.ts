@@ -18,6 +18,16 @@ export default class MainDomain extends IndexerMainDomain {
         account: blockchainTokenContract[BlockchainChain.Ethereum],
         index: { logs: true },
       },
+      {
+        blockchainId: BlockchainChain.Avalanche,
+        account: blockchainTokenContract[BlockchainChain.Avalanche],
+        index: { logs: true },
+      },
+      // {
+      //   blockchainId: BlockchainChain.Base,
+      //   account: blockchainTokenContract[BlockchainChain.Base],
+      //   index: { logs: true },
+      // },
       // {
       //   blockchainId: BlockchainChain.Bsc,
       //   account: blockchainTokenContract[BlockchainChain.Bsc],
