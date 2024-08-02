@@ -10,7 +10,6 @@ import {
 import {
   EthereumLogIndexerWorkerDomainI,
   EthereumParsedLog,
-  EthereumParsedTransaction,
 } from '@aleph-indexer/ethereum'
 import { BscLogIndexerWorkerDomainI, BscParsedLog } from '@aleph-indexer/bsc'
 import {
@@ -34,12 +33,14 @@ import {
   AvalancheLogIndexerWorkerDomainI,
   AvalancheParsedLog,
 } from '@aleph-indexer/avalanche'
+import { BaseLogIndexerWorkerDomainI, BaseParsedLog } from '@aleph-indexer/base'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
   implements
     EthereumLogIndexerWorkerDomainI,
     AvalancheLogIndexerWorkerDomainI,
+    BaseLogIndexerWorkerDomainI,
     BscLogIndexerWorkerDomainI
 {
   constructor(
@@ -52,6 +53,7 @@ export default class WorkerDomain
   ) {
     super(context)
   }
+  ethereumLogBufferLength?: number | undefined
   avalancheTransactionBufferLength?: number | undefined
 
   avalancheLogBufferLength?: number | undefined
@@ -97,10 +99,19 @@ export default class WorkerDomain
 
   async bscFilterLog(
     context: ParserContext,
-    entity: EthereumParsedLog,
+    entity: BscParsedLog,
   ): Promise<boolean> {
     return this.filterEVMLog(BlockchainChain.Bsc, context, entity)
   }
+
+  async baseFilterLog(
+    context: ParserContext,
+    entity: BaseParsedLog,
+  ): Promise<boolean> {
+    return this.filterEVMLog(BlockchainChain.Base, context, entity)
+  }
+
+  // ---
 
   async ethereumIndexLogs(
     context: ParserContext,
@@ -121,6 +132,13 @@ export default class WorkerDomain
     entities: BscParsedLog[],
   ): Promise<void> {
     return this.indexEVMLogs(BlockchainChain.Bsc, context, entities)
+  }
+
+  async baseIndexLogs(
+    context: ParserContext,
+    entities: BaseParsedLog[],
+  ): Promise<void> {
+    return this.indexEVMLogs(BlockchainChain.Base, context, entities)
   }
 
   protected async filterEVMLog(
