@@ -1,5 +1,5 @@
 import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
-import { Balance } from '../types.js'
+import { ERC20Balance as ERC20Balance } from '../types.js'
 import {
   bigNumberToString,
   blockchainDecimals,
@@ -7,24 +7,24 @@ import {
   uint256ToNumber,
 } from '../utils/index.js'
 
-export type BalanceStorage = EntityStorage<Balance>
+export type ERC20BalanceStorage = EntityStorage<ERC20Balance>
 
-export enum BalanceDALIndex {
+export enum ERC20BalanceDALIndex {
   BlockchainBalance = 'blockchain_balance',
 }
 
 const accountKey = {
-  get: (e: Balance) => e.account,
+  get: (e: ERC20Balance) => e.account,
   length: EntityStorage.EthereumAddressLength,
 }
 
 const blockchainKey = {
-  get: (e: Balance) => e.blockchain,
+  get: (e: ERC20Balance) => e.blockchain,
   length: EntityStorage.VariableLength,
 }
 
 const balanceKey = {
-  get: (e: Balance) => e.balance,
+  get: (e: ERC20Balance) => e.balance,
   length: 65, // @note: uint256 => 32 bytes => 64 characters + 1 char sign (-) => 65
 }
 
@@ -47,14 +47,14 @@ const mapValueFn = async (value: any) => {
   return value
 }
 
-export function createBalanceDAL(path: string): BalanceStorage {
-  return new EntityStorage<Balance>({
+export function createERC20BalanceDAL(path: string): ERC20BalanceStorage {
+  return new EntityStorage<ERC20Balance>({
     name: 'erc20_balance',
     path,
     key: [blockchainKey, accountKey],
     indexes: [
       {
-        name: BalanceDALIndex.BlockchainBalance,
+        name: ERC20BalanceDALIndex.BlockchainBalance,
         key: [blockchainKey, balanceKey],
       },
     ],

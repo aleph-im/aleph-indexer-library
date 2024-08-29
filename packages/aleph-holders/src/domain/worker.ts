@@ -16,7 +16,15 @@ import {
   EventType,
   ERC20TransferEventQueryArgs,
   ERC20TransferEvent,
-  BalanceQueryArgs,
+  CommonBalanceQueryArgs,
+  ERC20Balance,
+  StreamFlowUpdatedEvent,
+  StreamFlowUpdatedEventQueryArgs,
+  CommonEventQueryArgs,
+  CommonEvent,
+  StreamFlowUpdatedExtensionEvent,
+  StreamBalance,
+  CommonBalance,
   Balance,
 } from '../types.js'
 import {
@@ -24,16 +32,35 @@ import {
   createERC20TransferEventDAL,
 } from '../dal/erc20TransferEvent.js'
 import { EventParser } from './parser.js'
-import { BalanceDALIndex, createBalanceDAL } from '../dal/balance.js'
 import {
-  blockchainDeployerAccount,
+  ERC20BalanceDALIndex,
+  createERC20BalanceDAL,
+} from '../dal/erc20Balance.js'
+import {
+  initialSupplyAccount,
   blockchainTotalSupply,
+  blockchainTokenContract,
+  bigNumberToString,
+  uint256ToNumber,
+  bigNumberToNumber,
+  blockchainDecimals,
 } from '../utils/index.js'
 import {
   AvalancheLogIndexerWorkerDomainI,
   AvalancheParsedLog,
 } from '@aleph-indexer/avalanche'
 import { BaseLogIndexerWorkerDomainI, BaseParsedLog } from '@aleph-indexer/base'
+import {
+  StreamFlowUpdatedEventDALIndex,
+  createStreamFlowUpdatedEventDAL,
+} from '../dal/streamFlowUpdatedEvent.js'
+import { EntityStorage, Utils } from '@aleph-indexer/core'
+import { createStreamFlowUpdatedExtensionEventDAL } from '../dal/streamFlowUpdatedExtensionEvent.js'
+import BN from 'bn.js'
+import {
+  StreamBalanceDALIndex,
+  createStreamBalanceDAL,
+} from '../dal/streamBalance.js'
 
 export default class WorkerDomain
   extends IndexerWorkerDomain
@@ -48,38 +75,55 @@ export default class WorkerDomain
     protected erc20TransferEventDAL = createERC20TransferEventDAL(
       context.dataPath,
     ),
-    protected balanceDAL = createBalanceDAL(context.dataPath),
+    protected streamFlowUpdatedEventDAL = createStreamFlowUpdatedEventDAL(
+      context.dataPath,
+    ),
+    protected streamFlowUpdatedExtensionEventDAL = createStreamFlowUpdatedExtensionEventDAL(
+      context.dataPath,
+    ),
+    protected erc20BalanceDAL = createERC20BalanceDAL(context.dataPath),
+    protected streamBalanceDAL = createStreamBalanceDAL(context.dataPath),
+    protected processFlowsBuffer: Utils.BufferExec<string>,
     protected parser = new EventParser(),
   ) {
     super(context)
-  }
-  ethereumLogBufferLength?: number | undefined
-  avalancheTransactionBufferLength?: number | undefined
 
-  avalancheLogBufferLength?: number | undefined
+    this.processFlowsBuffer = new Utils.BufferExec<string>(
+      this.handleProcessFlows.bind(this),
+      10,
+      1000 * 30,
+    )
+  }
 
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
     const { blockchainId: blockchain, account: contract } = config
     const { instanceName } = this.context
 
-    const deployer = blockchainDeployerAccount[blockchain]
-    const accountBalance = await this.balanceDAL.get([blockchain, deployer])
+    const supplier = initialSupplyAccount[blockchain]
+    const accountBalance = await this.erc20BalanceDAL.get([
+      blockchain,
+      supplier,
+    ])
 
     console.log(
       'Account indexing',
       instanceName,
       blockchain,
       contract,
-      deployer,
+      supplier,
       accountBalance,
     )
 
     // @note: Init the initial supply if it is the first it run
     if (!accountBalance) {
       const balance = blockchainTotalSupply[blockchain].toString('hex')
-      await this.balanceDAL.save({ blockchain, account: deployer, balance })
+      await this.erc20BalanceDAL.save({
+        blockchain,
+        account: supplier,
+        balance,
+      })
 
-      console.log('Init supply', blockchain, deployer, balance)
+      console.log('Init supply', blockchain, supplier, balance)
     }
   }
 
@@ -150,7 +194,22 @@ export default class WorkerDomain
 
     console.log(`Filter ${blockchainId} logs`, eventSignature)
 
-    return eventSignature === EventType.Transfer
+    switch (eventSignature) {
+      case EventType.Transfer: {
+        return true
+      }
+      case EventType.FlowUpdated: {
+        const tokenAddress = entity.parsed?.args[0]
+        if (tokenAddress === blockchainTokenContract[blockchainId]) return true
+        break
+      }
+      case EventType.FlowUpdatedExtension: {
+        // @note: We are indexing all token events, cause there is no way to filter them by token address
+        return true
+      }
+    }
+
+    return false
   }
 
   protected async indexEVMLogs(
@@ -160,35 +219,192 @@ export default class WorkerDomain
   ): Promise<void> {
     console.log(`Index ${blockchainId} logs`, JSON.stringify(entities, null, 2))
 
-    const parsedEvents: ERC20TransferEvent[] = []
-    const parsedBalances: Balance[] = []
+    const parsedTransferEvents: ERC20TransferEvent[] = []
+    const parsedFlowUpdatedEvents: StreamFlowUpdatedEvent[] = []
+    const parsedFlowUpdatedExtensionEvents: StreamFlowUpdatedExtensionEvent[] =
+      []
+    const parsedBalances: ERC20Balance[] = []
 
     for (const entity of entities) {
-      const parsedEvent = this.parser.parseERC20TransferEvent(
-        blockchainId,
-        entity,
-      )
-      parsedEvents.push(parsedEvent)
+      const eventSignature = entity.parsed?.signature
 
-      const parsedBalance = this.parser.parseBalance(blockchainId, entity)
-      parsedBalances.push(...parsedBalance)
+      switch (eventSignature) {
+        case EventType.Transfer: {
+          const parsedTransferEvent = this.parser.parseERC20TransferEvent(
+            blockchainId,
+            entity,
+          )
+          parsedTransferEvents.push(parsedTransferEvent)
+
+          const parsedBalance = this.parser.parseBalance(blockchainId, entity)
+          parsedBalances.push(...parsedBalance)
+
+          break
+        }
+        case EventType.FlowUpdated: {
+          const parsedFlowUpdatedEvent =
+            this.parser.parseStreamFlowUpdatedEvent(blockchainId, entity)
+          parsedFlowUpdatedEvents.push(parsedFlowUpdatedEvent)
+
+          break
+        }
+        case EventType.FlowUpdatedExtension: {
+          const parsedFlowUpdatedExtensionEvent =
+            this.parser.parseStreamFlowUpdatedExtensionEvent(
+              blockchainId,
+              entity,
+            )
+          parsedFlowUpdatedExtensionEvents.push(parsedFlowUpdatedExtensionEvent)
+
+          break
+        }
+      }
     }
 
-    if (parsedEvents.length) {
-      await this.erc20TransferEventDAL.save(parsedEvents)
+    if (parsedTransferEvents.length) {
+      await this.erc20TransferEventDAL.save(parsedTransferEvents)
     }
 
     if (parsedBalances.length) {
-      await this.balanceDAL.save(parsedBalances)
+      await this.erc20BalanceDAL.save(parsedBalances)
+    }
+
+    if (parsedFlowUpdatedExtensionEvents.length) {
+      await this.streamFlowUpdatedExtensionEventDAL.save(
+        parsedFlowUpdatedExtensionEvents,
+      )
+    }
+
+    console.log('🌈 0', parsedFlowUpdatedEvents.length)
+
+    if (parsedFlowUpdatedEvents.length) {
+      await this.streamFlowUpdatedEventDAL.save(parsedFlowUpdatedEvents)
+
+      const updatedAccounts = parsedFlowUpdatedEvents.flatMap((event) => [
+        `${event.blockchain}:${event.from}`,
+        `${event.blockchain}:${event.to}`,
+      ])
+
+      // @note: don't block the indexing, just notify there should be a new calculation
+      console.log('🌈 1', updatedAccounts.length)
+      this.processFlowsBuffer.add(updatedAccounts).catch(() => 'ignore')
+    }
+  }
+
+  protected async handleProcessFlows(bcAccounts: string[]): Promise<void> {
+    console.log('🌈 2', bcAccounts.length)
+
+    const uniqueAccounts = [...new Set(bcAccounts)]
+
+    console.log('🌈 3', uniqueAccounts, uniqueAccounts.length)
+    try {
+      for (const bcAccount of uniqueAccounts) {
+        const [blockchain, account] = bcAccount.split(':')
+
+        const entries = await this.streamFlowUpdatedEventDAL
+          .useIndex(StreamFlowUpdatedEventDALIndex.BlockchainAccountTimestamp)
+          .getAllValuesFromTo([blockchain, account], [blockchain, account], {
+            reverse: false,
+          })
+
+        const lastestStates: Record<
+          string,
+          {
+            staticBalanceBN: BN
+            flowRateBN: BN
+            timestamp: number
+            updates: number
+          }
+        > = {}
+
+        for await (const e of entries) {
+          const id = `${e.from}:${e.to}`
+
+          console.log('✅ 0', id, e.timestamp)
+
+          const lastState = (lastestStates[id] = lastestStates[id] || {
+            staticBalanceBN: new BN(0),
+            flowRateBN: new BN(0),
+            timestamp: 0,
+            updates: 0,
+          })
+
+          const oldFlowRate = lastState.flowRateBN
+          const oldTimestamp = lastState.timestamp
+          const elapsedTime = new BN(
+            Math.trunc((e.timestamp - oldTimestamp) / 1000),
+          )
+
+          const streamedDelta = oldFlowRate.mul(elapsedTime)
+          const newStaticBalance = lastState.staticBalanceBN.add(streamedDelta)
+
+          lastState.staticBalanceBN = newStaticBalance
+          lastState.flowRateBN =
+            account === e.from
+              ? (e.flowRateBN as BN).neg()
+              : (e.flowRateBN as BN)
+          lastState.timestamp = e.timestamp
+          lastState.updates++
+
+          // const isCreate = oldFlowRate.isZero()
+          // const isDelete = e.flowRateBN.isZero()
+        }
+
+        for (const lastState of Object.values(lastestStates)) {
+          const streamBalance: StreamBalance = {
+            blockchain,
+            account,
+            staticBalance: bigNumberToString(lastState.staticBalanceBN),
+            flowRate: bigNumberToString(lastState.flowRateBN),
+            timestamp: lastState.timestamp,
+            updates: lastState.updates,
+          }
+
+          await this.streamBalanceDAL.save(streamBalance)
+        }
+      }
+    } catch (e) {
+      console.log(e)
     }
   }
 
   // API methods
 
-  protected async getEvents(
+  async getTransferEvents(
     account: string,
     args: ERC20TransferEventQueryArgs,
   ): Promise<ERC20TransferEvent[]> {
+    return this.getEvents(
+      account,
+      args,
+      this.erc20TransferEventDAL,
+      ERC20TransferEventDALIndex,
+    )
+  }
+
+  async getFlowUpdatedEvents(
+    account: string,
+    args: StreamFlowUpdatedEventQueryArgs,
+  ): Promise<StreamFlowUpdatedEvent[]> {
+    return this.getEvents(
+      account,
+      args,
+      this.streamFlowUpdatedEventDAL,
+      StreamFlowUpdatedEventDALIndex,
+    )
+  }
+
+  protected async getEvents<T extends CommonEvent>(
+    account: string,
+    args: CommonEventQueryArgs,
+    eventDAL: EntityStorage<T>,
+    eventIndexes: {
+      BlockchainAccountTimestamp: string
+      BlockchainAccountHeight: string
+      BlockchainTimestamp: string
+      BlockchainHeight: string
+    },
+  ): Promise<T[]> {
     let {
       startDate,
       endDate,
@@ -205,7 +421,7 @@ export default class WorkerDomain
 
     let skip = opts.skip || 0
     const limit = opts.limit || 1000
-    const result: ERC20TransferEvent[] = []
+    const result: T[] = []
 
     let entries
 
@@ -214,8 +430,8 @@ export default class WorkerDomain
         startDate = startDate !== undefined ? startDate : 0
         endDate = endDate !== undefined ? endDate : Date.now()
 
-        entries = await this.erc20TransferEventDAL
-          .useIndex(ERC20TransferEventDALIndex.BlockchainAccountTimestamp)
+        entries = await eventDAL
+          .useIndex(eventIndexes.BlockchainAccountTimestamp)
           .getAllValuesFromTo(
             [blockchain, acc, startDate],
             [blockchain, acc, endDate],
@@ -226,8 +442,8 @@ export default class WorkerDomain
         endHeight =
           endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
-        entries = await this.erc20TransferEventDAL
-          .useIndex(ERC20TransferEventDALIndex.BlockchainAccountHeight)
+        entries = await eventDAL
+          .useIndex(eventIndexes.BlockchainAccountHeight)
           .getAllValuesFromTo(
             [blockchain, acc, startHeight],
             [blockchain, acc, endHeight],
@@ -240,8 +456,8 @@ export default class WorkerDomain
       startDate = startDate !== undefined ? startDate : 0
       endDate = endDate !== undefined ? endDate : Date.now()
 
-      entries = await this.erc20TransferEventDAL
-        .useIndex(ERC20TransferEventDALIndex.BlockchainTimestamp)
+      entries = await eventDAL
+        .useIndex(eventIndexes.BlockchainTimestamp)
         .getAllValuesFromTo(
           [blockchain, startDate],
           [blockchain, endDate],
@@ -253,8 +469,8 @@ export default class WorkerDomain
       startHeight = startHeight !== undefined ? startHeight : 0
       endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
-      entries = await this.erc20TransferEventDAL
-        .useIndex(ERC20TransferEventDALIndex.BlockchainHeight)
+      entries = await eventDAL
+        .useIndex(eventIndexes.BlockchainHeight)
         .getAllValuesFromTo(
           [blockchain, startHeight],
           [blockchain, endHeight],
@@ -275,10 +491,114 @@ export default class WorkerDomain
     return result
   }
 
-  protected async getBalances(
+  // ------------------------
+
+  async getERC20Balances(
     account: string,
-    args: BalanceQueryArgs,
+    args: CommonBalanceQueryArgs,
+  ): Promise<ERC20Balance[]> {
+    return this.getCommonBalances(
+      account,
+      args,
+      this.erc20BalanceDAL,
+      ERC20BalanceDALIndex,
+    )
+  }
+
+  async getStreamBalances(
+    account: string,
+    args: CommonBalanceQueryArgs,
+  ): Promise<StreamBalance[]> {
+    const balances = await this.getCommonBalances(
+      account,
+      args,
+      this.streamBalanceDAL,
+      StreamBalanceDALIndex,
+    )
+
+    return balances.map((balance) => {
+      const elapsedTime = new BN(
+        Math.trunc((Date.now() - balance.timestamp) / 1000),
+      )
+      const realTimeBalanceBN = (balance.flowRateBN as BN).mul(elapsedTime)
+      const balanceBN = (balance.staticBalanceBN as BN).add(realTimeBalanceBN)
+
+      balance.realTimeBalance = bigNumberToString(realTimeBalanceBN)
+      balance.realTimeBalanceBN = realTimeBalanceBN
+      balance.realTimeBalanceNum = bigNumberToNumber(
+        realTimeBalanceBN,
+        blockchainDecimals[balance.blockchain],
+      )
+
+      balance.balance = bigNumberToString(balanceBN)
+      balance.balanceBN = balanceBN
+      balance.balanceNum = bigNumberToNumber(
+        balanceBN,
+        blockchainDecimals[balance.blockchain],
+      )
+
+      return balance
+    })
+  }
+
+  // @note: Improve performance
+  async getBalances(
+    account: string,
+    args: CommonBalanceQueryArgs,
   ): Promise<Balance[]> {
+    const { blockchain } = args
+
+    const [erc20Balances, streamBalances] = await Promise.all([
+      this.getERC20Balances(account, args),
+      this.getStreamBalances(account, args),
+    ])
+
+    const erc20BalancesMap = erc20Balances.reduce((ac, cv) => {
+      ac[cv.account] = cv
+      return ac
+    }, {} as Record<string, ERC20Balance>)
+
+    const streamBalancesMap = streamBalances.reduce((ac, cv) => {
+      ac[cv.account] = cv
+      return ac
+    }, {} as Record<string, StreamBalance>)
+
+    const allAccounts = [
+      ...new Set([
+        ...Object.keys(erc20BalancesMap),
+        ...Object.keys(streamBalancesMap),
+      ]),
+    ]
+
+    return allAccounts.map((account) => {
+      const erc20Balance = erc20BalancesMap[account]
+      const streamBalance = streamBalancesMap[account]
+
+      const newBalance = (erc20Balance?.balanceBN || new BN(0)).add(
+        streamBalance?.balanceBN || new BN(0),
+      )
+
+      return {
+        blockchain,
+        account,
+        balance: bigNumberToString(newBalance),
+        balanceBN: newBalance,
+        balanceNum: bigNumberToNumber(
+          newBalance,
+          blockchainDecimals[args.blockchain],
+        ),
+      }
+    })
+  }
+
+  protected async getCommonBalances<T extends CommonBalance>(
+    account: string,
+    args: CommonBalanceQueryArgs,
+    balanceDAL: EntityStorage<T>,
+    balanceIndexes: {
+      BlockchainBalance: string
+    },
+  ): Promise<T[]> {
     let { blockchain, account: acc, ...opts } = args
 
     console.log('QUERY BALANCE ', account, args)
@@ -287,12 +607,12 @@ export default class WorkerDomain
 
     let skip = opts.skip || 0
     const limit = opts.limit || 1000
-    const result: Balance[] = []
+    const result: T[] = []
 
     let entries
 
     if (!entries && acc) {
-      entries = await this.balanceDAL.getAllValuesFromTo(
+      entries = await balanceDAL.getAllValuesFromTo(
         [blockchain, acc],
         [blockchain, acc],
         opts,
@@ -300,8 +620,8 @@ export default class WorkerDomain
     }
 
     if (!entries) {
-      entries = await this.balanceDAL
-        .useIndex(BalanceDALIndex.BlockchainBalance)
+      entries = await balanceDAL
+        .useIndex(balanceIndexes.BlockchainBalance)
         .getAllValuesFromTo([blockchain], [blockchain], opts)
     }
 

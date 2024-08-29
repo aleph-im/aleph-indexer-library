@@ -17,6 +17,10 @@ export function uint256ToNumber(hex: string, decimals: number): number {
   return bnDiv(uint256ToBigNumber(hex), decimals)
 }
 
+export function bigNumberToNumber(bn: BN, decimals: number): number {
+  return bnDiv(bn, decimals)
+}
+
 export function bnDiv(num: BN, decimals: number): number {
   const den = new BN(10).pow(new BN(decimals))
 

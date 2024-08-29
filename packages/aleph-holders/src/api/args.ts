@@ -19,10 +19,20 @@ export const ERC20TransferEventQueryArgs = {
   reverse: { type: GraphQLBoolean },
 }
 
+export const StreamFlowUpdatedEventQueryArgs = {
+  ...ERC20TransferEventQueryArgs,
+}
+
+// ---------------------
+
 export const ERC20BalanceQueryArgs = {
   blockchain: { type: new GraphQLNonNull(GraphQLBlockchain) },
   account: { type: GraphQLString },
   limit: { type: GraphQLInt },
   skip: { type: GraphQLInt },
   reverse: { type: GraphQLBoolean },
+}
+
+export const StreamBalanceQueryArgs = {
+  ...ERC20BalanceQueryArgs,
 }

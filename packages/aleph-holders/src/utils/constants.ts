@@ -18,13 +18,30 @@ export const blockchainTotalSupply: Record<BlockchainId, BN> = {
 export const blockchainTokenContract: Record<BlockchainId, string> = {
   [BlockchainChain.Ethereum]: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
   [BlockchainChain.Bsc]: '0x82D2f8E02Afb160Dd5A480a617692e62de9038C4',
-  [BlockchainChain.Base]: '__TODO__',
+  [BlockchainChain.Base]: '0xc0Fbc4967259786C743361a5885ef49380473dCF',
   [BlockchainChain.Avalanche]: '0xc0Fbc4967259786C743361a5885ef49380473dCF',
+}
+
+// @note: https://console.superfluid.finance/base-mainnet/protocol
+// @note: Used to track "FlowUpdated" events
+// @todo: Refactor
+export const blockchainSuperfluidCFAContract: Record<BlockchainId, string> = {
+  [BlockchainChain.Ethereum]: '',
+  [BlockchainChain.Bsc]: '',
+  [BlockchainChain.Base]: '0x19ba78B9cDB05A877718841c574325fdB53601bb',
+  [BlockchainChain.Avalanche]: '0x6946c5B38Ffea373b0a2340b4AEf0De8F6782e58',
 }
 
 export const blockchainDeployerAccount: Record<BlockchainId, string> = {
   [BlockchainChain.Ethereum]: '0xb6e45ADfa0C7D70886bBFC990790d64620F1BAE8',
   [BlockchainChain.Bsc]: '0xb6e45ADfa0C7D70886bBFC990790d64620F1BAE8',
-  [BlockchainChain.Base]: '__TODO__',
+  [BlockchainChain.Base]: '0xBC5Fe50c691D1AF2975E66A15a7e80FC066a8257',
   [BlockchainChain.Avalanche]: '0xBC5Fe50c691D1AF2975E66A15a7e80FC066a8257',
+}
+
+export const initialSupplyAccount: Record<BlockchainId, string> = {
+  [BlockchainChain.Ethereum]: '0xb6e45ADfa0C7D70886bBFC990790d64620F1BAE8',
+  [BlockchainChain.Bsc]: '0xb6e45ADfa0C7D70886bBFC990790d64620F1BAE8',
+  [BlockchainChain.Base]: '0x0000000000000000000000000000000000000000',
+  [BlockchainChain.Avalanche]: '0x0000000000000000000000000000000000000000',
 }
