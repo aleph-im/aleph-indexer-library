@@ -303,6 +303,7 @@ export default class WorkerDomain
         const lastestStates: Record<
           string,
           {
+            id: string
             staticBalanceBN: BN
             flowRateBN: BN
             timestamp: number
@@ -314,6 +315,7 @@ export default class WorkerDomain
           const id = `${e.from}:${e.to}`
 
           const lastState = (lastestStates[id] = lastestStates[id] || {
+            id,
             staticBalanceBN: new BN(0),
             flowRateBN: new BN(0),
             timestamp: 0,
@@ -341,18 +343,22 @@ export default class WorkerDomain
           // const isDelete = e.flowRateBN.isZero()
         }
 
-        for (const lastState of Object.values(lastestStates)) {
+        const saveEntities = Object.values(lastestStates).map((state) => {
           const streamBalance: StreamBalance = {
+            id: state.id,
             blockchain,
             account,
-            staticBalance: bigNumberToString(lastState.staticBalanceBN),
-            flowRate: bigNumberToString(lastState.flowRateBN),
-            timestamp: lastState.timestamp,
-            updates: lastState.updates,
+            staticBalance: bigNumberToString(state.staticBalanceBN),
+            flowRate: bigNumberToString(state.flowRateBN),
+            timestamp: state.timestamp,
+            updates: state.updates,
           }
+          return streamBalance
+        })
 
-          await this.streamBalanceDAL.save(streamBalance)
-        }
+        console.log('🍕', saveEntities)
+
+        await this.streamBalanceDAL.save(saveEntities)
       }
     } catch (e) {
       console.log(e)
@@ -550,7 +556,23 @@ export default class WorkerDomain
     }, {} as Record<string, ERC20Balance>)
 
     const streamBalancesMap = streamBalances.reduce((ac, cv) => {
-      ac[cv.account] = cv
+      const b = ac[cv.account]
+
+      if (!b) {
+        ac[cv.account] = cv
+        return ac
+      }
+
+      const newBalance = (b?.balanceBN || new BN(0)).add(
+        cv?.balanceBN || new BN(0),
+      )
+
+      ;(b.balance = bigNumberToString(newBalance)), (b.balanceBN = newBalance)
+      b.balanceNum = bigNumberToNumber(
+        newBalance,
+        blockchainDecimals[args.blockchain],
+      )
+
       return ac
     }, {} as Record<string, StreamBalance>)
 
@@ -587,6 +609,7 @@ export default class WorkerDomain
     args: CommonBalanceQueryArgs,
     balanceDAL: EntityStorage<T>,
     balanceIndexes: {
+      BlockchainAccount: string
       BlockchainBalance: string
     },
   ): Promise<T[]> {
@@ -603,11 +626,9 @@ export default class WorkerDomain
     let entries
 
     if (!entries && acc) {
-      entries = await balanceDAL.getAllValuesFromTo(
-        [blockchain, acc],
-        [blockchain, acc],
-        opts,
-      )
+      entries = await balanceDAL
+        .useIndex(balanceIndexes.BlockchainAccount)
+        .getAllValuesFromTo([blockchain, acc], [blockchain, acc], opts)
     }
 
     if (!entries) {

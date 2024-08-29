@@ -69,6 +69,7 @@ export type ERC20Balance = CommonBalance & {
 }
 
 export type StreamBalance = CommonBalance & {
+  id: string
   timestamp: number
   staticBalance: string // uint256 hex
   staticBalanceNum?: number

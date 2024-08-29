@@ -1,7 +1,6 @@
-import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
+import { EntityStorage } from '@aleph-indexer/core'
 import { StreamBalance } from '../types.js'
 import {
-  bigNumberToString,
   blockchainDecimals,
   uint256ToBigNumber,
   uint256ToNumber,
@@ -10,7 +9,13 @@ import {
 export type StreamBalanceStorage = EntityStorage<StreamBalance>
 
 export enum StreamBalanceDALIndex {
+  BlockchainAccount = 'blockchain_account',
   BlockchainBalance = 'blockchain_balance',
+}
+
+const idKey = {
+  get: (e: StreamBalance) => e.id,
+  length: EntityStorage.VariableLength,
 }
 
 const accountKey = {
@@ -23,6 +28,7 @@ const blockchainKey = {
   length: EntityStorage.VariableLength,
 }
 
+// @todo: Take into account flowRate to sort by total balance (static + real time)
 const staticBalanceKey = {
   get: (e: StreamBalance) => e.staticBalance,
   length: 65, // @note: uint256 => 32 bytes => 64 characters + 1 char sign (-) => 65
@@ -56,43 +62,28 @@ export function createStreamBalanceDAL(path: string): StreamBalanceStorage {
   return new EntityStorage<StreamBalance>({
     name: 'stream_balance',
     path,
-    key: [blockchainKey, accountKey],
+    key: [blockchainKey, accountKey, idKey],
     indexes: [
+      {
+        name: StreamBalanceDALIndex.BlockchainAccount,
+        key: [blockchainKey, accountKey],
+      },
       {
         name: StreamBalanceDALIndex.BlockchainBalance,
         key: [blockchainKey, staticBalanceKey],
       },
     ],
     mapValueFn,
-    updateCheckFn: async (oldEntity, newEntity) => {
-      let entity = newEntity
+    // updateCheckFn: async (oldEntity, newEntity) => {
+    //   const entity = newEntity
 
-      if (oldEntity) {
-        const oldStaticBalance = uint256ToBigNumber(oldEntity.staticBalance)
-        const oldFlowRate = uint256ToBigNumber(oldEntity.flowRate)
+    //   const staticBalance = uint256ToBigNumber(entity.staticBalance)
+    //   const flowRate = uint256ToBigNumber(entity.flowRate)
 
-        const newStaticBalance = uint256ToBigNumber(newEntity.staticBalance)
-        const newFlowRate = uint256ToBigNumber(newEntity.flowRate)
+    //   if (staticBalance.isZero() && flowRate.isZero())
+    //     return { op: EntityUpdateOp.Delete }
 
-        const staticBalance = bigNumberToString(
-          oldStaticBalance.add(newStaticBalance),
-        )
-        const flowRate = bigNumberToString(oldFlowRate.add(newFlowRate))
-
-        entity = {
-          ...newEntity,
-          staticBalance,
-          flowRate,
-        }
-      }
-
-      const staticBalance = uint256ToBigNumber(entity.staticBalance)
-      const flowRate = uint256ToBigNumber(entity.flowRate)
-
-      if (staticBalance.isZero() && flowRate.isZero())
-        return { op: EntityUpdateOp.Delete }
-
-      return { op: EntityUpdateOp.Update, entity }
-    },
+    //   return { op: EntityUpdateOp.Update, entity }
+    // },
   })
 }
