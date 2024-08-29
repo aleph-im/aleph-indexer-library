@@ -1,6 +1,7 @@
-import { EntityStorage } from '@aleph-indexer/core'
+import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
 import { StreamBalance } from '../types.js'
 import {
+  bigNumberToString,
   blockchainDecimals,
   uint256ToBigNumber,
   uint256ToNumber,
@@ -63,5 +64,35 @@ export function createStreamBalanceDAL(path: string): StreamBalanceStorage {
       },
     ],
     mapValueFn,
+    updateCheckFn: async (oldEntity, newEntity) => {
+      let entity = newEntity
+
+      if (oldEntity) {
+        const oldStaticBalance = uint256ToBigNumber(oldEntity.staticBalance)
+        const oldFlowRate = uint256ToBigNumber(oldEntity.flowRate)
+
+        const newStaticBalance = uint256ToBigNumber(newEntity.staticBalance)
+        const newFlowRate = uint256ToBigNumber(newEntity.flowRate)
+
+        const staticBalance = bigNumberToString(
+          oldStaticBalance.add(newStaticBalance),
+        )
+        const flowRate = bigNumberToString(oldFlowRate.add(newFlowRate))
+
+        entity = {
+          ...newEntity,
+          staticBalance,
+          flowRate,
+        }
+      }
+
+      const staticBalance = uint256ToBigNumber(entity.staticBalance)
+      const flowRate = uint256ToBigNumber(entity.flowRate)
+
+      if (staticBalance.isZero() && flowRate.isZero())
+        return { op: EntityUpdateOp.Delete }
+
+      return { op: EntityUpdateOp.Update, entity }
+    },
   })
 }

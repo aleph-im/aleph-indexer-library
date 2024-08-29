@@ -41,7 +41,6 @@ import {
   blockchainTotalSupply,
   blockchainTokenContract,
   bigNumberToString,
-  uint256ToNumber,
   bigNumberToNumber,
   blockchainDecimals,
 } from '../utils/index.js'
@@ -275,8 +274,6 @@ export default class WorkerDomain
       )
     }
 
-    console.log('🌈 0', parsedFlowUpdatedEvents.length)
-
     if (parsedFlowUpdatedEvents.length) {
       await this.streamFlowUpdatedEventDAL.save(parsedFlowUpdatedEvents)
 
@@ -286,17 +283,13 @@ export default class WorkerDomain
       ])
 
       // @note: don't block the indexing, just notify there should be a new calculation
-      console.log('🌈 1', updatedAccounts.length)
       this.processFlowsBuffer.add(updatedAccounts).catch(() => 'ignore')
     }
   }
 
   protected async handleProcessFlows(bcAccounts: string[]): Promise<void> {
-    console.log('🌈 2', bcAccounts.length)
-
     const uniqueAccounts = [...new Set(bcAccounts)]
 
-    console.log('🌈 3', uniqueAccounts, uniqueAccounts.length)
     try {
       for (const bcAccount of uniqueAccounts) {
         const [blockchain, account] = bcAccount.split(':')
@@ -319,8 +312,6 @@ export default class WorkerDomain
 
         for await (const e of entries) {
           const id = `${e.from}:${e.to}`
-
-          console.log('✅ 0', id, e.timestamp)
 
           const lastState = (lastestStates[id] = lastestStates[id] || {
             staticBalanceBN: new BN(0),
