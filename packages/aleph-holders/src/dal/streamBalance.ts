@@ -45,9 +45,16 @@ const mapValueFn = async (value: any) => {
       value.staticBalance,
       blockchainDecimals[value.blockchain],
     )
+
     value.flowRateBN = uint256ToBigNumber(value.flowRate)
     value.flowRateNum = uint256ToNumber(
       value.flowRate,
+      blockchainDecimals[value.blockchain],
+    )
+
+    value.depositBN = uint256ToBigNumber(value.deposit)
+    value.depositNum = uint256ToNumber(
+      value.deposit,
       blockchainDecimals[value.blockchain],
     )
   } catch (e) {

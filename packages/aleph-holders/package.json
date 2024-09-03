@@ -22,5 +22,8 @@
     "@aleph-indexer/core": "^1.2.0",
     "@aleph-indexer/ethereum": "^1.4.0",
     "@aleph-indexer/framework": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.2"
   }
 }

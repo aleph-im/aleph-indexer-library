@@ -53,6 +53,8 @@ export type StreamFlowUpdatedEvent = CommonEvent & {
 export type StreamFlowUpdatedExtensionEvent = CommonEvent & {
   flowOperator: string
   deposit: string // uint256 hex
+  depositNum?: number
+  depositBN?: BN
 }
 
 // ------------------------
@@ -83,6 +85,9 @@ export type StreamBalance = CommonBalance & {
   balance?: string // uint256 hex
   balanceNum?: number
   balanceBN?: BN
+  deposit: string // uint256 hex
+  depositNum?: number
+  depositBN?: BN
   updates: number
 }
 
@@ -115,6 +120,8 @@ export type CommonEventQueryArgs = {
 export type ERC20TransferEventQueryArgs = CommonEventQueryArgs
 
 export type StreamFlowUpdatedEventQueryArgs = CommonEventQueryArgs
+
+export type StreamFlowUpdatedExtensionEventQueryArgs = CommonEventQueryArgs
 
 // ------------------------
 

@@ -51,6 +51,19 @@ export const StreamFlowUpdatedEventList = new GraphQLList(
   StreamFlowUpdatedEvent,
 )
 
+export const StreamFlowUpdatedExtensionEvent = new GraphQLObjectType({
+  name: 'StreamFlowUpdatedExtensionEvent',
+  fields: {
+    ...eventCommonFields,
+    flowOperator: { type: new GraphQLNonNull(GraphQLString) },
+    deposit: { type: new GraphQLNonNull(GraphQLBigNumber) },
+  },
+})
+
+export const StreamFlowUpdatedExtensionEventList = new GraphQLList(
+  StreamFlowUpdatedExtensionEvent,
+)
+
 // -------------
 
 const balanceCommonFields = {
@@ -75,12 +88,14 @@ export const StreamBalance = new GraphQLObjectType({
     ...balanceCommonFields,
     staticBalance: { type: new GraphQLNonNull(GraphQLBigNumber) },
     staticBalanceNum: { type: GraphQLFloat },
-    flowRate: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    flowRateNum: { type: GraphQLFloat },
     realTimeBalance: { type: new GraphQLNonNull(GraphQLBigNumber) },
     realTimeBalanceNum: { type: GraphQLFloat },
     balance: { type: new GraphQLNonNull(GraphQLBigNumber) },
     balanceNum: { type: GraphQLFloat },
+    deposit: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    depositNum: { type: GraphQLFloat },
+    flowRate: { type: new GraphQLNonNull(GraphQLBigNumber) },
+    flowRateNum: { type: GraphQLFloat },
     timestamp: { type: new GraphQLNonNull(GraphQLLong) },
     updates: { type: GraphQLInt },
   },
@@ -93,6 +108,7 @@ export const StreamBalanceList = new GraphQLList(StreamBalance)
 export const types = [
   ERC20TransferEvent,
   StreamFlowUpdatedEvent,
+  StreamFlowUpdatedExtensionEvent,
   ERC20Balance,
   StreamBalance,
 ]

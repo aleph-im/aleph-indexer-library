@@ -7,7 +7,7 @@ import {
 } from 'graphql'
 import { GraphQLBlockchain } from '@aleph-indexer/framework'
 
-export const ERC20TransferEventQueryArgs = {
+export const commonEventQueryArgs = {
   blockchain: { type: new GraphQLNonNull(GraphQLBlockchain) },
   account: { type: GraphQLString },
   startDate: { type: GraphQLFloat },
@@ -19,8 +19,16 @@ export const ERC20TransferEventQueryArgs = {
   reverse: { type: GraphQLBoolean },
 }
 
+export const ERC20TransferEventQueryArgs = {
+  ...commonEventQueryArgs,
+}
+
 export const StreamFlowUpdatedEventQueryArgs = {
-  ...ERC20TransferEventQueryArgs,
+  ...commonEventQueryArgs,
+}
+
+export const StreamFlowUpdatedExtensionEventQueryArgs = {
+  ...commonEventQueryArgs,
 }
 
 // ---------------------

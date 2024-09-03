@@ -10,6 +10,8 @@ import {
   Balance,
   StreamBalanceQueryArgs,
   StreamBalance,
+  StreamFlowUpdatedExtensionEventQueryArgs,
+  StreamFlowUpdatedExtensionEvent,
 } from '../types.js'
 
 export class APIResolver {
@@ -25,6 +27,12 @@ export class APIResolver {
     args: StreamFlowUpdatedEventQueryArgs,
   ): Promise<StreamFlowUpdatedEvent[]> {
     return this.domain.getFlowUpdatedEvents(args)
+  }
+
+  async getFlowUpdatedExtensionEvents(
+    args: StreamFlowUpdatedExtensionEventQueryArgs,
+  ): Promise<StreamFlowUpdatedExtensionEvent[]> {
+    return this.domain.getFlowUpdatedExtensionEvents(args)
   }
 
   async getERC20Balances(args: ERC20BalanceQueryArgs): Promise<ERC20Balance[]> {

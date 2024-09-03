@@ -9,7 +9,7 @@ import {
 export type StreamFlowUpdatedExtensionEventStorage =
   EntityStorage<StreamFlowUpdatedExtensionEvent>
 
-export enum SuperfluidFlowUpdatedExtensionEventDALIndex {
+export enum StreamFlowUpdatedExtensionEventDALIndex {
   BlockchainTimestamp = 'blockchain_timestamp',
   BlockchainHeight = 'blockchain_height',
   BlockchainAccountTimestamp = 'blockchain_account_timestamp',
@@ -48,9 +48,9 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    value.valueBN = uint256ToBigNumber(value.value)
-    value.valueNum = uint256ToNumber(
-      value.value,
+    value.depositBN = uint256ToBigNumber(value.deposit)
+    value.depositNum = uint256ToNumber(
+      value.deposit,
       blockchainDecimals[value.blockchain],
     )
   } catch (e) {
@@ -70,22 +70,22 @@ export function createStreamFlowUpdatedExtensionEventDAL(
     key: [idKey],
     indexes: [
       {
-        name: SuperfluidFlowUpdatedExtensionEventDALIndex.BlockchainTimestamp,
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainTimestamp,
         key: [blockchainKey, timestampKey],
       },
       {
-        name: SuperfluidFlowUpdatedExtensionEventDALIndex.BlockchainHeight,
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainHeight,
         key: [blockchainKey, heightKey],
       },
       {
-        name: SuperfluidFlowUpdatedExtensionEventDALIndex.BlockchainAccountTimestamp,
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainAccountTimestamp,
         key: [blockchainKey, accountKey, timestampKey],
       },
       {
-        name: SuperfluidFlowUpdatedExtensionEventDALIndex.BlockchainAccountHeight,
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainAccountHeight,
         key: [blockchainKey, accountKey, heightKey],
       },
     ],
-    // mapValueFn,
+    mapValueFn,
   })
 }

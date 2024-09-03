@@ -10,6 +10,7 @@ import {
   ERC20TransferEventQueryArgs,
   StreamBalanceQueryArgs,
   StreamFlowUpdatedEventQueryArgs,
+  StreamFlowUpdatedExtensionEventQueryArgs,
 } from '../types.js'
 
 export default class APISchema extends IndexerAPISchema {
@@ -37,6 +38,14 @@ export default class APISchema extends IndexerAPISchema {
             resolve: (_, args) =>
               this.resolver.getFlowUpdatedEvents(
                 args as StreamFlowUpdatedEventQueryArgs,
+              ),
+          },
+          flowUpdatedExtensionEvents: {
+            type: Types.StreamFlowUpdatedExtensionEventList,
+            args: Args.StreamFlowUpdatedExtensionEventQueryArgs,
+            resolve: (_, args) =>
+              this.resolver.getFlowUpdatedExtensionEvents(
+                args as StreamFlowUpdatedExtensionEventQueryArgs,
               ),
           },
           erc20Balances: {
