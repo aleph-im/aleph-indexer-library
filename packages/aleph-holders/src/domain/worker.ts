@@ -101,10 +101,17 @@ export default class WorkerDomain
   }
 
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
-    const { blockchainId: blockchain, account: contract } = config
-    const { instanceName } = this.context
+    const { blockchainId: blockchain, account } = config
 
+    // @note: base and avalanche are tracking multiple accounts
+    // only update initial supply if the account is the token contract
+    if (blockchainTokenContract[blockchain] !== account) return
+
+    const { instanceName } = this.context
     const supplier = initialSupplyAccount[blockchain]
+
+    // @note: Check if there is at leasst one transfer before overriding the
+    // balance with the initial supply
     const supplierLastTransfer = await this.erc20TransferEventDAL
       .useIndex(ERC20TransferEventDALIndex.BlockchainAccountTimestamp)
       .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
@@ -113,7 +120,7 @@ export default class WorkerDomain
       'Account indexing',
       instanceName,
       blockchain,
-      contract,
+      account,
       supplier,
       supplierLastTransfer,
     )
