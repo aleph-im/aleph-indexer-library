@@ -2,8 +2,8 @@ import { EntityStorage } from '@aleph-indexer/core'
 import { StreamFlowUpdatedEvent } from '../types.js'
 import {
   blockchainDecimals,
-  uint256ToBigNumber,
-  uint256ToNumber,
+  hexStringToBigNumber,
+  hexStringToNumber,
 } from '../utils/index.js'
 
 export type StreamFlowUpdatedEventStorage =
@@ -48,8 +48,8 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    value.flowRateBN = uint256ToBigNumber(value.flowRate)
-    value.flowRateNum = uint256ToNumber(
+    value.flowRateBN = hexStringToBigNumber(value.flowRate)
+    value.flowRateNum = hexStringToNumber(
       value.flowRate,
       blockchainDecimals[value.blockchain],
     )

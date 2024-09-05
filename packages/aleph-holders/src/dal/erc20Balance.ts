@@ -1,10 +1,10 @@
 import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
 import { ERC20Balance as ERC20Balance } from '../types.js'
 import {
-  bigNumberToString,
+  bigNumberToUint256,
   blockchainDecimals,
-  uint256ToBigNumber,
-  uint256ToNumber,
+  hexStringToBigNumber,
+  hexStringToNumber,
 } from '../utils/index.js'
 
 export type ERC20BalanceStorage = EntityStorage<ERC20Balance>
@@ -35,8 +35,8 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    value.balanceBN = uint256ToBigNumber(value.balance)
-    value.balanceNum = uint256ToNumber(
+    value.balanceBN = hexStringToBigNumber(value.balance)
+    value.balanceNum = hexStringToNumber(
       value.balance,
       blockchainDecimals[value.blockchain],
     )
@@ -68,9 +68,9 @@ export function createERC20BalanceDAL(path: string): ERC20BalanceStorage {
       let entity = newEntity
 
       if (oldEntity) {
-        const oldBalance = uint256ToBigNumber(oldEntity.balance)
-        const newBalance = uint256ToBigNumber(newEntity.balance)
-        const balance = bigNumberToString(oldBalance.add(newBalance))
+        const oldBalance = hexStringToBigNumber(oldEntity.balance)
+        const newBalance = hexStringToBigNumber(newEntity.balance)
+        const balance = bigNumberToUint256(oldBalance.add(newBalance))
 
         entity = {
           ...newEntity,
@@ -78,7 +78,7 @@ export function createERC20BalanceDAL(path: string): ERC20BalanceStorage {
         }
       }
 
-      const balance = uint256ToBigNumber(entity.balance)
+      const balance = hexStringToBigNumber(entity.balance)
       if (balance.isZero()) return { op: EntityUpdateOp.Delete }
 
       return { op: EntityUpdateOp.Update, entity }

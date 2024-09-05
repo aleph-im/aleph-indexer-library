@@ -41,9 +41,10 @@ import {
   initialSupplyAccount,
   blockchainTotalSupply,
   blockchainTokenContract,
-  bigNumberToString,
+  bigNumberToUint256,
   bigNumberToNumber,
   blockchainDecimals,
+  bigNumberToInt96,
 } from '../utils/index.js'
 import {
   AvalancheLogIndexerWorkerDomainI,
@@ -103,10 +104,11 @@ export default class WorkerDomain
     const { instanceName } = this.context
 
     const supplier = initialSupplyAccount[blockchain]
-    const accountBalance = await this.erc20BalanceDAL.get([
-      blockchain,
-      supplier,
-    ])
+    const supplierLastTransfer =
+      await this.erc20TransferEventDAL.getLastValueFromTo(
+        [blockchain, supplier],
+        [blockchain, supplier],
+      )
 
     console.log(
       'Account indexing',
@@ -114,11 +116,11 @@ export default class WorkerDomain
       blockchain,
       contract,
       supplier,
-      accountBalance,
+      supplierLastTransfer,
     )
 
-    // @note: Init the initial supply if it is the first it run
-    if (!accountBalance) {
+    // @note: Init the initial supply if it is the first run (no transfers yet)
+    if (!supplierLastTransfer) {
       const balance = blockchainTotalSupply[blockchain].toString('hex')
       await this.erc20BalanceDAL.save({
         blockchain,
@@ -383,9 +385,9 @@ export default class WorkerDomain
               id: state.id,
               blockchain,
               account,
-              staticBalance: bigNumberToString(state.staticBalanceBN),
-              flowRate: bigNumberToString(state.flowRateBN),
-              deposit: bigNumberToString(depositBN),
+              staticBalance: bigNumberToUint256(state.staticBalanceBN),
+              flowRate: bigNumberToInt96(state.flowRateBN),
+              deposit: bigNumberToUint256(depositBN),
               timestamp: state.timestamp,
               updates: state.updates,
             }
@@ -473,14 +475,14 @@ export default class WorkerDomain
         .sub(balance.depositBN as BN)
         .add(realTimeBalanceBN)
 
-      balance.realTimeBalance = bigNumberToString(realTimeBalanceBN)
+      balance.realTimeBalance = bigNumberToUint256(realTimeBalanceBN)
       balance.realTimeBalanceBN = realTimeBalanceBN
       balance.realTimeBalanceNum = bigNumberToNumber(
         realTimeBalanceBN,
         blockchainDecimals[balance.blockchain],
       )
 
-      balance.balance = bigNumberToString(balanceBN)
+      balance.balance = bigNumberToUint256(balanceBN)
       balance.balanceBN = balanceBN
       balance.balanceNum = bigNumberToNumber(
         balanceBN,
@@ -509,19 +511,20 @@ export default class WorkerDomain
     }, {} as Record<string, ERC20Balance>)
 
     const streamBalancesMap = streamBalances.reduce((ac, cv) => {
-      const b = ac[cv.account]
+      const prevBalance = ac[cv.account]
 
-      if (!b) {
+      if (!prevBalance) {
         ac[cv.account] = cv
         return ac
       }
 
-      const newBalance = (b?.balanceBN || new BN(0)).add(
-        cv?.balanceBN || new BN(0),
-      )
+      const prevBalanceBN = prevBalance?.balanceBN || new BN(0)
+      const currBalanceBN = cv?.balanceBN || new BN(0)
+      const newBalance = prevBalanceBN.add(currBalanceBN)
 
-      ;(b.balance = bigNumberToString(newBalance)), (b.balanceBN = newBalance)
-      b.balanceNum = bigNumberToNumber(
+      prevBalance.balance = bigNumberToUint256(newBalance)
+      prevBalance.balanceBN = newBalance
+      prevBalance.balanceNum = bigNumberToNumber(
         newBalance,
         blockchainDecimals[args.blockchain],
       )
@@ -536,25 +539,27 @@ export default class WorkerDomain
       ]),
     ]
 
-    return allAccounts.map((account) => {
-      const erc20Balance = erc20BalancesMap[account]
-      const streamBalance = streamBalancesMap[account]
+    return allAccounts
+      .map((account) => {
+        const erc20Balance = erc20BalancesMap[account]
+        const streamBalance = streamBalancesMap[account]
 
-      const newBalance = (erc20Balance?.balanceBN || new BN(0)).add(
-        streamBalance?.balanceBN || new BN(0),
-      )
+        const erc20BalanceBN = erc20Balance?.balanceBN || new BN(0)
+        const streamBalanceBN = streamBalance?.balanceBN || new BN(0)
+        const newBalance = erc20BalanceBN.add(streamBalanceBN)
 
-      return {
-        blockchain,
-        account,
-        balance: bigNumberToString(newBalance),
-        balanceBN: newBalance,
-        balanceNum: bigNumberToNumber(
-          newBalance,
-          blockchainDecimals[args.blockchain],
-        ),
-      }
-    })
+        return {
+          blockchain,
+          account,
+          balance: bigNumberToUint256(newBalance),
+          balanceBN: newBalance,
+          balanceNum: bigNumberToNumber(
+            newBalance,
+            blockchainDecimals[args.blockchain],
+          ),
+        }
+      })
+      .filter(({ balanceBN }) => !balanceBN.isZero())
   }
 
   // ------------------------------------

@@ -8,9 +8,10 @@ import {
   StreamFlowUpdatedExtensionEvent,
 } from '../types.js'
 import {
-  bigNumberToString,
-  uint256ToBigNumber,
-  uint256ToString,
+  bigNumberToUint256,
+  hexStringToBigNumber,
+  hexStringToInt96,
+  hexStringToUint256,
 } from '../utils/index.js'
 
 export class EventParser {
@@ -24,7 +25,7 @@ export class EventParser {
 
     const from = String(rawFrom)
     const to = String(rawTo)
-    const value = uint256ToString(rawValue.hex)
+    const value = hexStringToUint256(rawValue.hex)
 
     return {
       ...parsedEvent,
@@ -53,7 +54,7 @@ export class EventParser {
 
     const from = String(rawFrom)
     const to = String(rawTo)
-    const flowRate = uint256ToString(rawFlowRate.hex)
+    const flowRate = hexStringToInt96(rawFlowRate.hex)
     // const totalSenderFlowRate = uint256ToString(rawTotalSenderFlowRate.hex)
     // const totalReceiverFlowRate = uint256ToString(rawTotalReceiverFlowRate.hex)
     // const userData = String(rawUserData)
@@ -78,7 +79,7 @@ export class EventParser {
     const [rawflowOperator, rawDeposit] = entity.parsed?.args || []
 
     const flowOperator = String(rawflowOperator)
-    const deposit = uint256ToString(rawDeposit.hex)
+    const deposit = hexStringToUint256(rawDeposit.hex)
 
     return {
       ...parsedEvent,
@@ -97,7 +98,7 @@ export class EventParser {
       {
         blockchain,
         account: from,
-        balance: bigNumberToString(uint256ToBigNumber(value).ineg()),
+        balance: bigNumberToUint256(hexStringToBigNumber(value).ineg()),
       },
       {
         blockchain,

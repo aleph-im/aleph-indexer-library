@@ -2,8 +2,8 @@ import { EntityStorage } from '@aleph-indexer/core'
 import { StreamBalance } from '../types.js'
 import {
   blockchainDecimals,
-  uint256ToBigNumber,
-  uint256ToNumber,
+  hexStringToBigNumber,
+  hexStringToNumber,
 } from '../utils/index.js'
 
 export type StreamBalanceStorage = EntityStorage<StreamBalance>
@@ -40,20 +40,20 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    value.staticBalanceBN = uint256ToBigNumber(value.staticBalance)
-    value.staticBalanceNum = uint256ToNumber(
+    value.staticBalanceBN = hexStringToBigNumber(value.staticBalance)
+    value.staticBalanceNum = hexStringToNumber(
       value.staticBalance,
       blockchainDecimals[value.blockchain],
     )
 
-    value.flowRateBN = uint256ToBigNumber(value.flowRate)
-    value.flowRateNum = uint256ToNumber(
+    value.flowRateBN = hexStringToBigNumber(value.flowRate)
+    value.flowRateNum = hexStringToNumber(
       value.flowRate,
       blockchainDecimals[value.blockchain],
     )
 
-    value.depositBN = uint256ToBigNumber(value.deposit)
-    value.depositNum = uint256ToNumber(
+    value.depositBN = hexStringToBigNumber(value.deposit)
+    value.depositNum = hexStringToNumber(
       value.deposit,
       blockchainDecimals[value.blockchain],
     )
@@ -81,16 +81,5 @@ export function createStreamBalanceDAL(path: string): StreamBalanceStorage {
       },
     ],
     mapValueFn,
-    // updateCheckFn: async (oldEntity, newEntity) => {
-    //   const entity = newEntity
-
-    //   const staticBalance = uint256ToBigNumber(entity.staticBalance)
-    //   const flowRate = uint256ToBigNumber(entity.flowRate)
-
-    //   if (staticBalance.isZero() && flowRate.isZero())
-    //     return { op: EntityUpdateOp.Delete }
-
-    //   return { op: EntityUpdateOp.Update, entity }
-    // },
   })
 }

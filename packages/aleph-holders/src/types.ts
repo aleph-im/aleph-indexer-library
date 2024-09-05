@@ -37,11 +37,11 @@ export type StreamFlowUpdatedEvent = CommonEvent & {
   // token: string
   from: string
   to: string
-  flowRate: string // uint256 hex
+  flowRate: string // int96 hex
   flowRateNum?: number
   flowRateBN?: BN
-  // totalSenderFlowRate: string // uint256 hex
-  // totalReceiverFlowRate: string // uint256 hex
+  // totalSenderFlowRate: string // int256 hex
+  // totalReceiverFlowRate: string // int256 hex
   // userData: string
 }
 

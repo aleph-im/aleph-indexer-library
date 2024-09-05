@@ -1,25 +1,41 @@
 import BN from 'bn.js'
 
-export function uint256ToBigNumber(hex: string): BN {
+export function hexStringToBigNumber(hex: string): BN {
   hex = hex.replace('0x', '')
   return new BN(hex, 'hex')
 }
 
-export function bigNumberToString(bn: BN): string {
-  return bn.toString('hex', 64)
+export function hexStringToNumber(hex: string, decimals: number): number {
+  return bnDiv(hexStringToBigNumber(hex), decimals)
 }
 
-export function uint256ToString(hex: string): string {
-  return bigNumberToString(uint256ToBigNumber(hex))
+export function hexStringToUint256(hex: string): string {
+  return bigNumberToUint256(hexStringToBigNumber(hex))
 }
 
-export function uint256ToNumber(hex: string, decimals: number): number {
-  return bnDiv(uint256ToBigNumber(hex), decimals)
+export function hexStringToInt96(hex: string): string {
+  return bigNumberToInt96(hexStringToBigNumber(hex))
+}
+
+// -----
+
+export function bigNumberToHexString(bn: BN, l = 64): string {
+  return bn.toString('hex', l)
 }
 
 export function bigNumberToNumber(bn: BN, decimals: number): number {
   return bnDiv(bn, decimals)
 }
+
+export function bigNumberToUint256(bn: BN): string {
+  return bigNumberToHexString(bn, 64)
+}
+
+export function bigNumberToInt96(bn: BN): string {
+  return bigNumberToHexString(bn, 24)
+}
+
+// -----
 
 export function bnDiv(num: BN, decimals: number): number {
   const den = new BN(10).pow(new BN(decimals))

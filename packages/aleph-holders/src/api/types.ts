@@ -26,7 +26,7 @@ export const ERC20TransferEvent = new GraphQLObjectType({
     from: { type: new GraphQLNonNull(GraphQLString) },
     to: { type: new GraphQLNonNull(GraphQLString) },
     value: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    valueNum: { type: GraphQLFloat },
+    valueNum: { type: new GraphQLNonNull(GraphQLFloat) },
   },
 })
 
@@ -36,14 +36,10 @@ export const StreamFlowUpdatedEvent = new GraphQLObjectType({
   name: 'StreamFlowUpdatedEvent',
   fields: {
     ...eventCommonFields,
-    // token: { type: new GraphQLNonNull(GraphQLString) },
     from: { type: new GraphQLNonNull(GraphQLString) },
     to: { type: new GraphQLNonNull(GraphQLString) },
     flowRate: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    flowRateNum: { type: GraphQLFloat },
-    // totalSenderFlowRate: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // totalReceiverFlowRate: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    // userData: { type: GraphQLString },
+    flowRateNum: { type: new GraphQLNonNull(GraphQLFloat) },
   },
 })
 
@@ -69,14 +65,14 @@ export const StreamFlowUpdatedExtensionEventList = new GraphQLList(
 const balanceCommonFields = {
   blockchain: { type: new GraphQLNonNull(GraphQLBlockchain) },
   account: { type: new GraphQLNonNull(GraphQLString) },
+  balance: { type: new GraphQLNonNull(GraphQLBigNumber) },
+  balanceNum: { type: new GraphQLNonNull(GraphQLFloat) },
 }
 
 export const ERC20Balance = new GraphQLObjectType({
   name: 'ERC20Balance',
   fields: {
     ...balanceCommonFields,
-    balance: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    balanceNum: { type: GraphQLFloat },
   },
 })
 
@@ -86,16 +82,15 @@ export const StreamBalance = new GraphQLObjectType({
   name: 'StreamBalance',
   fields: {
     ...balanceCommonFields,
+    id: { type: new GraphQLNonNull(GraphQLString) },
     staticBalance: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    staticBalanceNum: { type: GraphQLFloat },
+    staticBalanceNum: { type: new GraphQLNonNull(GraphQLFloat) },
     realTimeBalance: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    realTimeBalanceNum: { type: GraphQLFloat },
-    balance: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    balanceNum: { type: GraphQLFloat },
+    realTimeBalanceNum: { type: new GraphQLNonNull(GraphQLFloat) },
     deposit: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    depositNum: { type: GraphQLFloat },
+    depositNum: { type: new GraphQLNonNull(GraphQLFloat) },
     flowRate: { type: new GraphQLNonNull(GraphQLBigNumber) },
-    flowRateNum: { type: GraphQLFloat },
+    flowRateNum: { type: new GraphQLNonNull(GraphQLFloat) },
     timestamp: { type: new GraphQLNonNull(GraphQLLong) },
     updates: { type: GraphQLInt },
   },
