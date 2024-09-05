@@ -103,9 +103,13 @@ export default class WorkerDomain
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
     const { blockchainId: blockchain, account } = config
 
+    const tokenContractAccount = this.context.apiClient
+      .useBlockchain(blockchain)
+      .normalizeAccount(blockchainTokenContract[blockchain])
+
     // @note: base and avalanche are tracking multiple accounts
     // only update initial supply if the account is the token contract
-    if (blockchainTokenContract[blockchain] !== account) return
+    if (tokenContractAccount !== account) return
 
     const { instanceName } = this.context
     const supplier = initialSupplyAccount[blockchain]
