@@ -1,6 +1,6 @@
 import BN from 'bn.js'
-import { blockchainDecimals } from './constants'
 import { BlockchainId } from '@aleph-indexer/framework'
+import { blockchainDecimals } from './constants.js'
 
 export function hexStringToBigNumber(hex: string): BN {
   hex = hex.replace('0x', '')
