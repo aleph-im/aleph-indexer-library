@@ -42,9 +42,10 @@ import {
   blockchainTotalSupply,
   blockchainTokenContract,
   bigNumberToUint256,
-  bigNumberToNumber,
-  blockchainDecimals,
   bigNumberToInt96,
+  getBNFormats,
+  getStreamRealTimeBalance,
+  getStreamTotalBalance,
 } from '../utils/index.js'
 import {
   AvalancheLogIndexerWorkerDomainI,
@@ -188,6 +189,316 @@ export default class WorkerDomain
     entities: BaseParsedLog[],
   ): Promise<void> {
     return this.indexEVMLogs(BlockchainChain.Base, context, entities)
+  }
+
+  // API methods
+
+  async getTransferEvents(
+    account: string,
+    args: ERC20TransferEventQueryArgs,
+  ): Promise<ERC20TransferEvent[]> {
+    return this.getCommonEvents(
+      account,
+      args,
+      this.erc20TransferEventDAL,
+      ERC20TransferEventDALIndex,
+    )
+  }
+
+  async getFlowUpdatedEvents(
+    account: string,
+    args: StreamFlowUpdatedEventQueryArgs,
+  ): Promise<StreamFlowUpdatedEvent[]> {
+    return this.getCommonEvents(
+      account,
+      args,
+      this.streamFlowUpdatedEventDAL,
+      StreamFlowUpdatedEventDALIndex,
+    )
+  }
+
+  async getFlowUpdatedExtensionEvents(
+    account: string,
+    args: StreamFlowUpdatedExtensionEventQueryArgs,
+  ): Promise<StreamFlowUpdatedExtensionEvent[]> {
+    return this.getCommonEvents(
+      account,
+      args,
+      this.streamFlowUpdatedExtensionEventDAL,
+      StreamFlowUpdatedExtensionEventDALIndex,
+    )
+  }
+
+  async getERC20Balances(
+    account: string,
+    args: CommonBalanceQueryArgs,
+  ): Promise<ERC20Balance[]> {
+    return this.getCommonBalances(
+      account,
+      args,
+      this.erc20BalanceDAL,
+      ERC20BalanceDALIndex,
+    )
+  }
+
+  async getStreamBalances(
+    account: string,
+    args: CommonBalanceQueryArgs,
+  ): Promise<StreamBalance[]> {
+    const balances = await this.getCommonBalances(
+      account,
+      args,
+      this.streamBalanceDAL,
+      StreamBalanceDALIndex,
+    )
+
+    return balances.map((balance) => {
+      const { timestamp } = balance
+      const staticBalanceBN = balance.staticBalanceBN as BN
+      const depositBN = balance.depositBN as BN
+      const flowRateBN = balance.flowRateBN as BN
+
+      const realTimeBalanceBN = getStreamRealTimeBalance(flowRateBN, timestamp)
+      const balanceBN = getStreamTotalBalance(
+        depositBN,
+        staticBalanceBN,
+        realTimeBalanceBN,
+      )
+
+      const rtb = getBNFormats(realTimeBalanceBN, balance.blockchain)
+      balance.realTimeBalance = rtb.value
+      balance.realTimeBalanceBN = rtb.valueBN
+      balance.realTimeBalanceNum = rtb.valueNum
+
+      const b = getBNFormats(balanceBN, balance.blockchain)
+      balance.balance = b.value
+      balance.balanceBN = b.valueBN
+      balance.balanceNum = b.valueNum
+
+      return balance
+    })
+  }
+
+  // @note: Improve performance
+  async getBalances(
+    account: string,
+    args: CommonBalanceQueryArgs,
+  ): Promise<Balance[]> {
+    const { blockchain } = args
+
+    const [erc20Balances, streamBalances] = await Promise.all([
+      this.getERC20Balances(account, args),
+      this.getStreamBalances(account, args),
+    ])
+
+    const erc20BalancesMap = erc20Balances.reduce((ac, cv) => {
+      ac[cv.account] = cv
+      return ac
+    }, {} as Record<string, ERC20Balance>)
+
+    const streamBalancesMap = streamBalances.reduce((ac, cv) => {
+      const prevBalance = ac[cv.account]
+
+      if (!prevBalance) {
+        ac[cv.account] = cv
+        return ac
+      }
+
+      const prevBalanceBN = prevBalance?.balanceBN || new BN(0)
+      const currBalanceBN = cv?.balanceBN || new BN(0)
+      const newBalance = prevBalanceBN.add(currBalanceBN)
+
+      const b = getBNFormats(newBalance, args.blockchain)
+      prevBalance.balance = b.value
+      prevBalance.balanceBN = b.valueBN
+      prevBalance.balanceNum = b.valueNum
+
+      return ac
+    }, {} as Record<string, StreamBalance>)
+
+    const allAccounts = [
+      ...new Set([
+        ...Object.keys(erc20BalancesMap),
+        ...Object.keys(streamBalancesMap),
+      ]),
+    ]
+
+    return allAccounts
+      .map((account) => {
+        const erc20Balance = erc20BalancesMap[account]
+        const streamBalance = streamBalancesMap[account]
+
+        const erc20BalanceBN = erc20Balance?.balanceBN || new BN(0)
+        const streamBalanceBN = streamBalance?.balanceBN || new BN(0)
+        const newBalance = erc20BalanceBN.add(streamBalanceBN)
+
+        const b = getBNFormats(newBalance, args.blockchain)
+
+        return {
+          blockchain,
+          account,
+          balance: b.value,
+          balanceBN: b.valueBN,
+          balanceNum: b.valueNum,
+        }
+      })
+      .filter(({ balanceBN }) => !balanceBN.isZero())
+      .sort(({ balanceBN: a }, { balanceBN: b }) =>
+        a.lt(b) ? -1 : a.gt(b) ? 1 : 0,
+      )
+  }
+
+  protected async getCommonEvents<T extends CommonEvent>(
+    account: string,
+    args: CommonEventQueryArgs,
+    eventDAL: EntityStorage<T>,
+    eventIndexes: {
+      BlockchainAccountTimestamp: string
+      BlockchainAccountHeight: string
+      BlockchainTimestamp: string
+      BlockchainHeight: string
+    },
+  ): Promise<T[]> {
+    let {
+      startDate,
+      endDate,
+      startHeight,
+      endHeight,
+      blockchain,
+      account: acc,
+      ...opts
+    } = args
+
+    console.log('QUERY EVENTS ', account, args)
+
+    opts.reverse = opts.reverse !== undefined ? opts.reverse : true
+
+    let skip = opts.skip || 0
+    const limit = opts.limit || 1000
+    const result: T[] = []
+
+    let entries
+
+    if (!entries && acc) {
+      if (startDate !== undefined || endDate !== undefined) {
+        startDate = startDate !== undefined ? startDate : 0
+        endDate = endDate !== undefined ? endDate : Date.now()
+
+        entries = await eventDAL
+          .useIndex(eventIndexes.BlockchainAccountTimestamp)
+          .getAllValuesFromTo(
+            [blockchain, acc, startDate],
+            [blockchain, acc, endDate],
+            opts,
+          )
+      } else {
+        startHeight = startHeight !== undefined ? startHeight : 0
+        endHeight =
+          endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
+
+        entries = await eventDAL
+          .useIndex(eventIndexes.BlockchainAccountHeight)
+          .getAllValuesFromTo(
+            [blockchain, acc, startHeight],
+            [blockchain, acc, endHeight],
+            opts,
+          )
+      }
+    }
+
+    if (!entries && (startDate !== undefined || endDate !== undefined)) {
+      startDate = startDate !== undefined ? startDate : 0
+      endDate = endDate !== undefined ? endDate : Date.now()
+
+      entries = await eventDAL
+        .useIndex(eventIndexes.BlockchainTimestamp)
+        .getAllValuesFromTo(
+          [blockchain, startDate],
+          [blockchain, endDate],
+          opts,
+        )
+    }
+
+    if (!entries) {
+      startHeight = startHeight !== undefined ? startHeight : 0
+      endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
+
+      entries = await eventDAL
+        .useIndex(eventIndexes.BlockchainHeight)
+        .getAllValuesFromTo(
+          [blockchain, startHeight],
+          [blockchain, endHeight],
+          opts,
+        )
+    }
+
+    for await (const entry of entries) {
+      // @note: Skip first N entries
+      if (--skip >= 0) continue
+
+      result.push(entry)
+
+      // @note: Stop when after reaching the limit
+      if (limit > 0 && result.length >= limit) return result
+    }
+
+    return result
+  }
+
+  protected async getCommonBalances<T extends CommonBalance>(
+    account: string,
+    args: CommonBalanceQueryArgs,
+    balanceDAL: EntityStorage<T>,
+    balanceIndexes: {
+      BlockchainAccount: string
+      BlockchainBalance: string
+    },
+  ): Promise<T[]> {
+    let { blockchain, account: acc, ...opts } = args
+
+    console.log('QUERY BALANCE ', account, args)
+
+    opts.reverse = opts.reverse !== undefined ? opts.reverse : true
+
+    let skip = opts.skip || 0
+    const limit = opts.limit || 1000
+    const result: T[] = []
+
+    let entries
+
+    if (!entries && acc) {
+      entries = await balanceDAL
+        .useIndex(balanceIndexes.BlockchainAccount)
+        .getAllValuesFromTo([blockchain, acc], [blockchain, acc], opts)
+    }
+
+    if (!entries) {
+      entries = await balanceDAL
+        .useIndex(balanceIndexes.BlockchainBalance)
+        .getAllValuesFromTo([blockchain], [blockchain], opts)
+    }
+
+    for await (const entry of entries) {
+      // @note: Skip first N entries
+      if (--skip >= 0) continue
+
+      result.push(entry)
+
+      // @note: Stop when after reaching the limit
+      if (limit > 0 && result.length >= limit) return result
+    }
+
+    return result
+  }
+
+  // --------------------------------
+
+  protected getFlowUpdatedExtensionId(event: StreamFlowUpdatedEvent): string {
+    // @note: FlowUpdated event looks like "base_19025563_0x19ba78b9cdb05a877718841c574325fdb53601bb_231"
+    // @note: FlowUpdatedExtension is always the next log index in the same transaction, so it would be: "base_19025563_0x19ba78b9cdb05a877718841c574325fdb53601bb_232"
+    const [blockchain, blockNumber, account, logIndex] = event.id.split('_')
+
+    return `${blockchain}_${blockNumber}_${account}_${Number(logIndex) + 1}`
   }
 
   protected async filterEVMLog(
@@ -347,20 +658,17 @@ export default class WorkerDomain
             event: e,
           })
 
-          const oldFlowRate = lastState.flowRateBN
-          const oldTimestamp = lastState.timestamp
-          const elapsedTime = new BN(
-            Math.trunc((e.timestamp - oldTimestamp) / 1000),
-          )
-
-          const streamedDelta = oldFlowRate.mul(elapsedTime)
+          const { flowRateBN, timestamp } = lastState
+          const streamedDelta = getStreamRealTimeBalance(flowRateBN, timestamp)
           const newStaticBalance = lastState.staticBalanceBN.add(streamedDelta)
 
-          lastState.staticBalanceBN = newStaticBalance
-          lastState.flowRateBN =
+          const newFlowRate =
             account === e.from
               ? (e.flowRateBN as BN).neg()
               : (e.flowRateBN as BN)
+
+          lastState.staticBalanceBN = newStaticBalance
+          lastState.flowRateBN = newFlowRate
           lastState.timestamp = e.timestamp
           lastState.updates++
           lastState.event = e
@@ -401,317 +709,5 @@ export default class WorkerDomain
     } catch (e) {
       console.log(e)
     }
-  }
-
-  // API methods
-
-  async getTransferEvents(
-    account: string,
-    args: ERC20TransferEventQueryArgs,
-  ): Promise<ERC20TransferEvent[]> {
-    return this.getCommonEvents(
-      account,
-      args,
-      this.erc20TransferEventDAL,
-      ERC20TransferEventDALIndex,
-    )
-  }
-
-  async getFlowUpdatedEvents(
-    account: string,
-    args: StreamFlowUpdatedEventQueryArgs,
-  ): Promise<StreamFlowUpdatedEvent[]> {
-    return this.getCommonEvents(
-      account,
-      args,
-      this.streamFlowUpdatedEventDAL,
-      StreamFlowUpdatedEventDALIndex,
-    )
-  }
-
-  async getFlowUpdatedExtensionEvents(
-    account: string,
-    args: StreamFlowUpdatedExtensionEventQueryArgs,
-  ): Promise<StreamFlowUpdatedExtensionEvent[]> {
-    return this.getCommonEvents(
-      account,
-      args,
-      this.streamFlowUpdatedExtensionEventDAL,
-      StreamFlowUpdatedExtensionEventDALIndex,
-    )
-  }
-
-  // ------------------------
-
-  async getERC20Balances(
-    account: string,
-    args: CommonBalanceQueryArgs,
-  ): Promise<ERC20Balance[]> {
-    return this.getCommonBalances(
-      account,
-      args,
-      this.erc20BalanceDAL,
-      ERC20BalanceDALIndex,
-    )
-  }
-
-  async getStreamBalances(
-    account: string,
-    args: CommonBalanceQueryArgs,
-  ): Promise<StreamBalance[]> {
-    const balances = await this.getCommonBalances(
-      account,
-      args,
-      this.streamBalanceDAL,
-      StreamBalanceDALIndex,
-    )
-
-    return balances.map((balance) => {
-      const elapsedTime = new BN(
-        Math.trunc((Date.now() - balance.timestamp) / 1000),
-      )
-      const realTimeBalanceBN = (balance.flowRateBN as BN).mul(elapsedTime)
-      const balanceBN = (balance.staticBalanceBN as BN)
-        .sub(balance.depositBN as BN)
-        .add(realTimeBalanceBN)
-
-      balance.realTimeBalance = bigNumberToUint256(realTimeBalanceBN)
-      balance.realTimeBalanceBN = realTimeBalanceBN
-      balance.realTimeBalanceNum = bigNumberToNumber(
-        realTimeBalanceBN,
-        blockchainDecimals[balance.blockchain],
-      )
-
-      balance.balance = bigNumberToUint256(balanceBN)
-      balance.balanceBN = balanceBN
-      balance.balanceNum = bigNumberToNumber(
-        balanceBN,
-        blockchainDecimals[balance.blockchain],
-      )
-
-      return balance
-    })
-  }
-
-  // @note: Improve performance
-  async getBalances(
-    account: string,
-    args: CommonBalanceQueryArgs,
-  ): Promise<Balance[]> {
-    const { blockchain } = args
-
-    const [erc20Balances, streamBalances] = await Promise.all([
-      this.getERC20Balances(account, args),
-      this.getStreamBalances(account, args),
-    ])
-
-    const erc20BalancesMap = erc20Balances.reduce((ac, cv) => {
-      ac[cv.account] = cv
-      return ac
-    }, {} as Record<string, ERC20Balance>)
-
-    const streamBalancesMap = streamBalances.reduce((ac, cv) => {
-      const prevBalance = ac[cv.account]
-
-      if (!prevBalance) {
-        ac[cv.account] = cv
-        return ac
-      }
-
-      const prevBalanceBN = prevBalance?.balanceBN || new BN(0)
-      const currBalanceBN = cv?.balanceBN || new BN(0)
-      const newBalance = prevBalanceBN.add(currBalanceBN)
-
-      prevBalance.balance = bigNumberToUint256(newBalance)
-      prevBalance.balanceBN = newBalance
-      prevBalance.balanceNum = bigNumberToNumber(
-        newBalance,
-        blockchainDecimals[args.blockchain],
-      )
-
-      return ac
-    }, {} as Record<string, StreamBalance>)
-
-    const allAccounts = [
-      ...new Set([
-        ...Object.keys(erc20BalancesMap),
-        ...Object.keys(streamBalancesMap),
-      ]),
-    ]
-
-    return allAccounts
-      .map((account) => {
-        const erc20Balance = erc20BalancesMap[account]
-        const streamBalance = streamBalancesMap[account]
-
-        const erc20BalanceBN = erc20Balance?.balanceBN || new BN(0)
-        const streamBalanceBN = streamBalance?.balanceBN || new BN(0)
-        const newBalance = erc20BalanceBN.add(streamBalanceBN)
-
-        return {
-          blockchain,
-          account,
-          balance: bigNumberToUint256(newBalance),
-          balanceBN: newBalance,
-          balanceNum: bigNumberToNumber(
-            newBalance,
-            blockchainDecimals[args.blockchain],
-          ),
-        }
-      })
-      .filter(({ balanceBN }) => !balanceBN.isZero())
-  }
-
-  // ------------------------------------
-
-  protected async getCommonEvents<T extends CommonEvent>(
-    account: string,
-    args: CommonEventQueryArgs,
-    eventDAL: EntityStorage<T>,
-    eventIndexes: {
-      BlockchainAccountTimestamp: string
-      BlockchainAccountHeight: string
-      BlockchainTimestamp: string
-      BlockchainHeight: string
-    },
-  ): Promise<T[]> {
-    let {
-      startDate,
-      endDate,
-      startHeight,
-      endHeight,
-      blockchain,
-      account: acc,
-      ...opts
-    } = args
-
-    console.log('QUERY EVENTS ', account, args)
-
-    opts.reverse = opts.reverse !== undefined ? opts.reverse : true
-
-    let skip = opts.skip || 0
-    const limit = opts.limit || 1000
-    const result: T[] = []
-
-    let entries
-
-    if (!entries && acc) {
-      if (startDate !== undefined || endDate !== undefined) {
-        startDate = startDate !== undefined ? startDate : 0
-        endDate = endDate !== undefined ? endDate : Date.now()
-
-        entries = await eventDAL
-          .useIndex(eventIndexes.BlockchainAccountTimestamp)
-          .getAllValuesFromTo(
-            [blockchain, acc, startDate],
-            [blockchain, acc, endDate],
-            opts,
-          )
-      } else {
-        startHeight = startHeight !== undefined ? startHeight : 0
-        endHeight =
-          endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
-
-        entries = await eventDAL
-          .useIndex(eventIndexes.BlockchainAccountHeight)
-          .getAllValuesFromTo(
-            [blockchain, acc, startHeight],
-            [blockchain, acc, endHeight],
-            opts,
-          )
-      }
-    }
-
-    if (!entries && (startDate !== undefined || endDate !== undefined)) {
-      startDate = startDate !== undefined ? startDate : 0
-      endDate = endDate !== undefined ? endDate : Date.now()
-
-      entries = await eventDAL
-        .useIndex(eventIndexes.BlockchainTimestamp)
-        .getAllValuesFromTo(
-          [blockchain, startDate],
-          [blockchain, endDate],
-          opts,
-        )
-    }
-
-    if (!entries) {
-      startHeight = startHeight !== undefined ? startHeight : 0
-      endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
-
-      entries = await eventDAL
-        .useIndex(eventIndexes.BlockchainHeight)
-        .getAllValuesFromTo(
-          [blockchain, startHeight],
-          [blockchain, endHeight],
-          opts,
-        )
-    }
-
-    for await (const entry of entries) {
-      // @note: Skip first N entries
-      if (--skip >= 0) continue
-
-      result.push(entry)
-
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && result.length >= limit) return result
-    }
-
-    return result
-  }
-
-  protected async getCommonBalances<T extends CommonBalance>(
-    account: string,
-    args: CommonBalanceQueryArgs,
-    balanceDAL: EntityStorage<T>,
-    balanceIndexes: {
-      BlockchainAccount: string
-      BlockchainBalance: string
-    },
-  ): Promise<T[]> {
-    let { blockchain, account: acc, ...opts } = args
-
-    console.log('QUERY BALANCE ', account, args)
-
-    opts.reverse = opts.reverse !== undefined ? opts.reverse : true
-
-    let skip = opts.skip || 0
-    const limit = opts.limit || 1000
-    const result: T[] = []
-
-    let entries
-
-    if (!entries && acc) {
-      entries = await balanceDAL
-        .useIndex(balanceIndexes.BlockchainAccount)
-        .getAllValuesFromTo([blockchain, acc], [blockchain, acc], opts)
-    }
-
-    if (!entries) {
-      entries = await balanceDAL
-        .useIndex(balanceIndexes.BlockchainBalance)
-        .getAllValuesFromTo([blockchain], [blockchain], opts)
-    }
-
-    for await (const entry of entries) {
-      // @note: Skip first N entries
-      if (--skip >= 0) continue
-
-      result.push(entry)
-
-      // @note: Stop when after reaching the limit
-      if (limit > 0 && result.length >= limit) return result
-    }
-
-    return result
-  }
-
-  protected getFlowUpdatedExtensionId(event: StreamFlowUpdatedEvent): string {
-    // @note: FlowUpdated event looks like "base_19025563_0x19ba78b9cdb05a877718841c574325fdb53601bb_231"
-    // @note: FlowUpdatedExtension is always the next log index in the same transaction, so it would be: "base_19025563_0x19ba78b9cdb05a877718841c574325fdb53601bb_232"
-    const [blockchain, blockNumber, account, logIndex] = event.id.split('_')
-
-    return `${blockchain}_${blockNumber}_${account}_${Number(logIndex) + 1}`
   }
 }

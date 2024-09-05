@@ -1,10 +1,6 @@
 import { EntityStorage } from '@aleph-indexer/core'
 import { StreamBalance } from '../types.js'
-import {
-  blockchainDecimals,
-  hexStringToBigNumber,
-  hexStringToNumber,
-} from '../utils/index.js'
+import { getBNFormats } from '../utils/index.js'
 
 export type StreamBalanceStorage = EntityStorage<StreamBalance>
 
@@ -40,23 +36,20 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    value.staticBalanceBN = hexStringToBigNumber(value.staticBalance)
-    value.staticBalanceNum = hexStringToNumber(
-      value.staticBalance,
-      blockchainDecimals[value.blockchain],
-    )
+    const sb = getBNFormats(value.staticBalance, value.blockchain)
+    value.staticBalance = sb.value
+    value.staticBalanceBN = sb.valueBN
+    value.staticBalanceNum = sb.valueNum
 
-    value.flowRateBN = hexStringToBigNumber(value.flowRate)
-    value.flowRateNum = hexStringToNumber(
-      value.flowRate,
-      blockchainDecimals[value.blockchain],
-    )
+    const fr = getBNFormats(value.flowRate, value.blockchain)
+    value.flowRate = fr.value
+    value.flowRateBN = fr.valueBN
+    value.flowRateNum = fr.valueNum
 
-    value.depositBN = hexStringToBigNumber(value.deposit)
-    value.depositNum = hexStringToNumber(
-      value.deposit,
-      blockchainDecimals[value.blockchain],
-    )
+    const d = getBNFormats(value.deposit, value.blockchain)
+    value.deposit = d.value
+    value.depositBN = d.valueBN
+    value.depositNum = d.valueNum
   } catch (e) {
     console.log(e)
     console.log('ERR VAL', value)

@@ -1,10 +1,6 @@
 import { EntityStorage } from '@aleph-indexer/core'
 import { ERC20TransferEvent } from '../types.js'
-import {
-  blockchainDecimals,
-  hexStringToBigNumber,
-  hexStringToNumber,
-} from '../utils/index.js'
+import { getBNFormats } from '../utils/index.js'
 
 export type ERC20TransferEventStorage = EntityStorage<ERC20TransferEvent>
 
@@ -47,11 +43,10 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    value.valueBN = hexStringToBigNumber(value.value)
-    value.valueNum = hexStringToNumber(
-      value.value,
-      blockchainDecimals[value.blockchain],
-    )
+    const b = getBNFormats(value.value, value.blockchain)
+    value.value = b.value
+    value.valueBN = b.valueBN
+    value.valueNum = b.valueNum
   } catch (e) {
     console.log(e)
     console.log('ERR VAL', value)

@@ -2,9 +2,8 @@ import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
 import { ERC20Balance as ERC20Balance } from '../types.js'
 import {
   bigNumberToUint256,
-  blockchainDecimals,
+  getBNFormats,
   hexStringToBigNumber,
-  hexStringToNumber,
 } from '../utils/index.js'
 
 export type ERC20BalanceStorage = EntityStorage<ERC20Balance>
@@ -35,11 +34,10 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    value.balanceBN = hexStringToBigNumber(value.balance)
-    value.balanceNum = hexStringToNumber(
-      value.balance,
-      blockchainDecimals[value.blockchain],
-    )
+    const b = getBNFormats(value.balance, value.blockchain)
+    value.balance = b.value
+    value.balanceBN = b.valueBN
+    value.balanceNum = b.valueNum
   } catch (e) {
     console.log(e)
     console.log('ERR VAL', value)
