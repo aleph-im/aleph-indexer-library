@@ -355,7 +355,7 @@ export default class WorkerDomain
       .filter(({ balanceBN }) => !balanceBN.isZero())
       .sort(
         ({ balanceBN: a }, { balanceBN: b }) =>
-          (args.reverse ? -1 : 1) * (a.lt(b) ? -1 : a.gt(b) ? 1 : 0),
+          (reverse ? -1 : 1) * (a.lt(b) ? -1 : a.gt(b) ? 1 : 0),
       )
   }
 
