@@ -105,11 +105,9 @@ export default class WorkerDomain
     const { instanceName } = this.context
 
     const supplier = initialSupplyAccount[blockchain]
-    const supplierLastTransfer =
-      await this.erc20TransferEventDAL.getLastValueFromTo(
-        [blockchain, supplier],
-        [blockchain, supplier],
-      )
+    const supplierLastTransfer = await this.erc20TransferEventDAL
+      .useIndex(ERC20TransferEventDALIndex.BlockchainAccountTimestamp)
+      .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
 
     console.log(
       'Account indexing',
