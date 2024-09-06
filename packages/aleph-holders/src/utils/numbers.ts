@@ -21,7 +21,7 @@ export function hexStringToInt96(hex: string): string {
 
 // -----
 
-export function bigNumberToHexString(bn: BN, l = 64): string {
+export function bigNumberToHexString(bn: BN, l: number): string {
   return bn.toString('hex', l)
 }
 
@@ -40,9 +40,10 @@ export function bigNumberToInt96(bn: BN): string {
 // -----
 
 export function bnDiv(num: BN, decimals: number): number {
+  const copy = num.clone()
   const den = new BN(10).pow(new BN(decimals))
 
-  const { div, mod: rem } = num.divmod(den)
+  const { div, mod: rem } = copy.divmod(den)
   const quotient = div.toNumber()
 
   let remN

@@ -44,7 +44,7 @@ const mapValueFn = async (value: any) => {
 
   try {
     // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    const fr = getBNFormats(value.flowRate, value.blockchain)
+    const fr = getBNFormats(value.flowRate, value.blockchain, 'int96')
     value.flowRate = fr.value
     value.flowRateBN = fr.valueBN
     value.flowRateNum = fr.valueNum

@@ -316,9 +316,9 @@ export default class WorkerDomain
 
       const prevBalanceBN = prevBalance?.balanceBN || new BN(0)
       const currBalanceBN = cv?.balanceBN || new BN(0)
-      const newBalance = prevBalanceBN.add(currBalanceBN)
+      const newBalanceBN = prevBalanceBN.add(currBalanceBN)
 
-      const b = getBNFormats(newBalance, args.blockchain)
+      const b = getBNFormats(newBalanceBN, args.blockchain)
       prevBalance.balance = b.value
       prevBalance.balanceBN = b.valueBN
       prevBalance.balanceNum = b.valueNum
@@ -340,9 +340,9 @@ export default class WorkerDomain
 
         const erc20BalanceBN = erc20Balance?.balanceBN || new BN(0)
         const streamBalanceBN = streamBalance?.balanceBN || new BN(0)
-        const newBalance = erc20BalanceBN.add(streamBalanceBN)
+        const newBalanceBN = erc20BalanceBN.add(streamBalanceBN)
 
-        const b = getBNFormats(newBalance, args.blockchain)
+        const b = getBNFormats(newBalanceBN, args.blockchain)
 
         return {
           blockchain,

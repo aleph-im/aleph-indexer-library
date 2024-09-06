@@ -20,9 +20,10 @@ export function uint256ToNumber(hex: string, decimals: number): number {
 }
 
 export function bnDiv(num: BN, decimals: number): number {
+  const copy = num.clone()
   const den = new BN(10).pow(new BN(decimals))
 
-  const { div, mod: rem } = num.divmod(den)
+  const { div, mod: rem } = copy.divmod(den)
   const quotient = div.toNumber()
 
   let remN

@@ -41,7 +41,7 @@ const mapValueFn = async (value: any) => {
     value.staticBalanceBN = sb.valueBN
     value.staticBalanceNum = sb.valueNum
 
-    const fr = getBNFormats(value.flowRate, value.blockchain)
+    const fr = getBNFormats(value.flowRate, value.blockchain, 'int96')
     value.flowRate = fr.value
     value.flowRateBN = fr.valueBN
     value.flowRateNum = fr.valueNum
