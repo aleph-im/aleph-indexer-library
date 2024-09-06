@@ -74,21 +74,25 @@ export function round(num: number, decimals = 2): number {
 export function getStreamRealTimeBalance(
   flowRateBN: BN,
   timestamp: number,
+  currentTimestamp = Date.now(),
 ): BN {
-  const elapsedTime = new BN(Math.trunc((Date.now() - timestamp) / 1000))
+  const elapsedTime = new BN(Math.trunc((currentTimestamp - timestamp) / 1000))
   return flowRateBN.mul(elapsedTime)
 }
 
 export function getStreamTotalBalance(
   depositBN: BN,
   staticBalanceBN: BN,
-  realTimeBalanceBN: BN | { flowRateBN: BN; timestamp: number },
+  realTimeBalanceBN:
+    | BN
+    | { flowRateBN: BN; timestamp: number; currentTimestamp?: number },
 ): BN {
   realTimeBalanceBN = BN.isBN(realTimeBalanceBN)
     ? realTimeBalanceBN
     : getStreamRealTimeBalance(
         realTimeBalanceBN.flowRateBN,
         realTimeBalanceBN.timestamp,
+        realTimeBalanceBN.currentTimestamp,
       )
 
   return staticBalanceBN.sub(depositBN).add(realTimeBalanceBN)

@@ -670,7 +670,11 @@ export default class WorkerDomain
           })
 
           const { flowRateBN, timestamp } = lastState
-          const streamedDelta = getStreamRealTimeBalance(flowRateBN, timestamp)
+          const streamedDelta = getStreamRealTimeBalance(
+            flowRateBN,
+            timestamp,
+            e.timestamp,
+          )
           const newStaticBalance = lastState.staticBalanceBN.add(streamedDelta)
 
           const newFlowRate =
