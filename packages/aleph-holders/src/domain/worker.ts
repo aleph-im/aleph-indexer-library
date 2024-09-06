@@ -696,7 +696,7 @@ export default class WorkerDomain
               await this.streamFlowUpdatedExtensionEventDAL.get(extensionId)
 
             const depositBN =
-              (lastExtension?.flowOperator === account
+              (state.event.from === account
                 ? lastExtension?.depositBN
                 : undefined) || new BN(0)
 
