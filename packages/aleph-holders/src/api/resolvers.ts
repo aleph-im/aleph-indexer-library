@@ -1,18 +1,17 @@
 import MainDomain from '../domain/main.js'
+import { CommonBalanceQueryArgs, Balance } from '../types/common.js'
 import {
   ERC20Balance,
-  CommonBalanceQueryArgs,
   ERC20TransferEvent,
   ERC20TransferEventQueryArgs,
   StreamFlowUpdatedEvent,
   StreamFlowUpdatedEventQueryArgs,
   ERC20BalanceQueryArgs,
-  Balance,
   StreamBalanceQueryArgs,
   StreamBalance,
   StreamFlowUpdatedExtensionEventQueryArgs,
   StreamFlowUpdatedExtensionEvent,
-} from '../types.js'
+} from '../types/evm.js'
 
 export class APIResolver {
   constructor(protected domain: MainDomain) {}

@@ -1,6 +1,6 @@
 import { EntityStorage } from '@aleph-indexer/core'
-import { StreamBalance } from '../types.js'
-import { getBNFormats } from '../utils/index.js'
+import { StreamBalance } from '../../types/evm.js'
+import { createBNMapper } from '../../utils/index.js'
 
 export type StreamBalanceStorage = EntityStorage<StreamBalance>
 
@@ -30,34 +30,6 @@ const staticBalanceKey = {
   length: 65, // @note: uint256 => 32 bytes => 64 characters + 1 char sign (-) => 65
 }
 
-const mapValueFn = async (value: any) => {
-  // @note: Indexes sometimes are not synced with main storage
-  if (!value) return value
-
-  try {
-    // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    const sb = getBNFormats(value.staticBalance, value.blockchain)
-    value.staticBalance = sb.value
-    value.staticBalanceBN = sb.valueBN
-    value.staticBalanceNum = sb.valueNum
-
-    const fr = getBNFormats(value.flowRate, value.blockchain, 'int96')
-    value.flowRate = fr.value
-    value.flowRateBN = fr.valueBN
-    value.flowRateNum = fr.valueNum
-
-    const d = getBNFormats(value.deposit, value.blockchain)
-    value.deposit = d.value
-    value.depositBN = d.valueBN
-    value.depositNum = d.valueNum
-  } catch (e) {
-    console.log(e)
-    console.log('ERR VAL', value)
-  }
-
-  return value
-}
-
 export function createStreamBalanceDAL(path: string): StreamBalanceStorage {
   return new EntityStorage<StreamBalance>({
     name: 'stream_balance',
@@ -73,6 +45,6 @@ export function createStreamBalanceDAL(path: string): StreamBalanceStorage {
         key: [blockchainKey, staticBalanceKey],
       },
     ],
-    mapValueFn,
+    mapValueFn: createBNMapper(['staticBalance', 'flowRate', 'deposit']),
   })
 }

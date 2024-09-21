@@ -1,6 +1,6 @@
 import { EntityStorage } from '@aleph-indexer/core'
-import { ERC20TransferEvent } from '../types.js'
-import { getBNFormats } from '../utils/index.js'
+import { ERC20TransferEvent } from '../../types/evm.js'
+import { createBNMapper } from '../../utils/index.js'
 
 export type ERC20TransferEventStorage = EntityStorage<ERC20TransferEvent>
 
@@ -33,26 +33,8 @@ const timestampKey = {
 
 const heightKey = {
   get: (e: ERC20TransferEvent) => e.height,
-  // @note: up to 10**9 [9 digits] enough for 300 years in ethereum
-  length: 8,
-}
-
-const mapValueFn = async (value: any) => {
-  // @note: Indexes sometimes are not synced with main storage
-  if (!value) return value
-
-  try {
-    // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    const b = getBNFormats(value.value, value.blockchain)
-    value.value = b.value
-    value.valueBN = b.valueBN
-    value.valueNum = b.valueNum
-  } catch (e) {
-    console.log(e)
-    console.log('ERR VAL', value)
-  }
-
-  return value
+  // @note: up to 10**9 [9 digits] enough for +300 years in ethereum (10s block time)
+  length: 9,
 }
 
 export function createERC20TransferEventDAL(
@@ -80,6 +62,6 @@ export function createERC20TransferEventDAL(
         key: [blockchainKey, accountKey, heightKey],
       },
     ],
-    mapValueFn,
+    mapValueFn: createBNMapper(['value']),
   })
 }

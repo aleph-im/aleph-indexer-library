@@ -21,7 +21,8 @@
     "@aleph-indexer/bsc": "^1.4.3",
     "@aleph-indexer/core": "^1.2.0",
     "@aleph-indexer/ethereum": "^1.4.3",
-    "@aleph-indexer/framework": "^1.4.1"
+    "@aleph-indexer/framework": "^1.4.1",
+    "@aleph-indexer/solana": "^1.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.5.2"

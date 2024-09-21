@@ -1,25 +1,82 @@
 import { BlockchainId } from '@aleph-indexer/framework'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
 import {
-  CommonEvent,
   ERC20Balance,
   ERC20TransferEvent,
+  EVMEvent,
+  EventSignature,
+  EVMEventType,
   StreamFlowUpdatedEvent,
   StreamFlowUpdatedExtensionEvent,
-} from '../types.js'
+} from '../../types/evm.js'
 import {
   bigNumberToUint256,
   hexStringToBigNumber,
   hexStringToInt96,
   hexStringToUint256,
-} from '../utils/index.js'
+} from '../../utils/index.js'
+import { CommonEvent } from '../../types/common.js'
 
-export class EventParser {
-  parseERC20TransferEvent(
+export class EVMEventParser {
+  parseBalance(
+    blockchain: BlockchainId,
+    entity: EthereumParsedLog,
+  ): ERC20Balance[] {
+    const event = this.parseEvent(blockchain, entity)
+    if (!event) return []
+
+    return this.parseBalanceFromEvent(event)
+  }
+
+  parseBalanceFromEvent(event: EVMEvent): ERC20Balance[] {
+    if (event.type !== EVMEventType.Transfer) return []
+
+    const { blockchain, from, to, value } = event
+
+    const balances = [
+      {
+        blockchain,
+        account: from,
+        balance: bigNumberToUint256(hexStringToBigNumber(value).ineg()),
+      },
+      {
+        blockchain,
+        account: to,
+        balance: value,
+      },
+    ]
+
+    return balances
+  }
+
+  parseEvent(
+    blockchain: BlockchainId,
+    entity: EthereumParsedLog,
+  ): EVMEvent | undefined {
+    const eventSignature = entity.parsed?.signature
+
+    switch (eventSignature) {
+      case EventSignature.Transfer: {
+        return this.parseERC20TransferEvent(blockchain, entity)
+      }
+      case EventSignature.FlowUpdated: {
+        return this.parseStreamFlowUpdatedEvent(blockchain, entity)
+      }
+      case EventSignature.FlowUpdatedExtension: {
+        return this.parseStreamFlowUpdatedExtensionEvent(blockchain, entity)
+      }
+    }
+  }
+
+  protected parseERC20TransferEvent(
     blockchain: BlockchainId,
     entity: EthereumParsedLog,
   ): ERC20TransferEvent {
-    const parsedEvent = this.parseCommonScheme(blockchain, entity)
+    const parsedEvent = this.parseCommonScheme(
+      blockchain,
+      entity,
+      EVMEventType.Transfer,
+    )
 
     const [rawFrom, rawTo, rawValue] = entity.parsed?.args || []
 
@@ -35,11 +92,15 @@ export class EventParser {
     } as ERC20TransferEvent
   }
 
-  parseStreamFlowUpdatedEvent(
+  protected parseStreamFlowUpdatedEvent(
     blockchain: BlockchainId,
     entity: EthereumParsedLog,
   ): StreamFlowUpdatedEvent {
-    const parsedEvent = this.parseCommonScheme(blockchain, entity)
+    const parsedEvent = this.parseCommonScheme(
+      blockchain,
+      entity,
+      EVMEventType.FlowUpdated,
+    )
 
     const [
       ,
@@ -70,11 +131,15 @@ export class EventParser {
     } as StreamFlowUpdatedEvent
   }
 
-  parseStreamFlowUpdatedExtensionEvent(
+  protected parseStreamFlowUpdatedExtensionEvent(
     blockchain: BlockchainId,
     entity: EthereumParsedLog,
   ): StreamFlowUpdatedExtensionEvent {
-    const parsedEvent = this.parseCommonScheme(blockchain, entity)
+    const parsedEvent = this.parseCommonScheme(
+      blockchain,
+      entity,
+      EVMEventType.FlowUpdatedExtension,
+    )
 
     const [rawflowOperator, rawDeposit] = entity.parsed?.args || []
 
@@ -85,34 +150,13 @@ export class EventParser {
       ...parsedEvent,
       flowOperator,
       deposit,
-    }
-  }
-
-  parseBalance(
-    blockchain: BlockchainId,
-    entity: EthereumParsedLog,
-  ): ERC20Balance[] {
-    const { from, to, value } = this.parseERC20TransferEvent(blockchain, entity)
-
-    const balances = [
-      {
-        blockchain,
-        account: from,
-        balance: bigNumberToUint256(hexStringToBigNumber(value).ineg()),
-      },
-      {
-        blockchain,
-        account: to,
-        balance: value,
-      },
-    ]
-
-    return balances
+    } as StreamFlowUpdatedExtensionEvent
   }
 
   protected parseCommonScheme(
     blockchain: BlockchainId,
     entity: EthereumParsedLog,
+    type: EVMEventType,
   ): CommonEvent {
     const timestamp = entity.timestamp
     const id = `${blockchain}_${entity.id}`
@@ -124,6 +168,7 @@ export class EventParser {
       timestamp,
       height,
       transaction,
+      type,
     }
   }
 }

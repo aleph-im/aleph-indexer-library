@@ -2,7 +2,6 @@ import { BlockchainChain } from '@aleph-indexer/framework'
 import { IndexerMainDomain } from '@aleph-indexer/framework'
 import {
   ERC20Balance,
-  CommonBalanceQueryArgs,
   ERC20TransferEvent,
   ERC20TransferEventQueryArgs,
   StreamFlowUpdatedEvent,
@@ -12,7 +11,7 @@ import {
   ERC20BalanceQueryArgs,
   StreamFlowUpdatedExtensionEventQueryArgs,
   StreamFlowUpdatedExtensionEvent,
-} from '../types.js'
+} from '../types/evm.js'
 import {
   blockchainSuperfluidCFAContract,
   blockchainTokenContract,
@@ -21,6 +20,8 @@ import fs, { CopyOptions } from 'node:fs'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
+import { SPLTokenAccountMeta, SPLTokenAccountType } from '../types/solana.js'
+import { CommonBalanceQueryArgs } from '../types/common.js'
 
 export default class MainDomain extends IndexerMainDomain {
   async init(): Promise<void> {
@@ -82,8 +83,35 @@ export default class MainDomain extends IndexerMainDomain {
             },
           ]
         : []),
+      ...(supportedBlockchains.includes(BlockchainChain.Solana)
+        ? [
+            {
+              blockchainId: BlockchainChain.Solana,
+              account: blockchainTokenContract[BlockchainChain.Solana],
+              index: { transactions: true },
+              meta: { type: SPLTokenAccountType.Mint } as SPLTokenAccountMeta,
+            },
+          ]
+        : []),
     ])
   }
+
+  async getBalances(args: CommonBalanceQueryArgs): Promise<ERC20Balance[]> {
+    const { blockchain } = args
+    const [alephTokenSC] = this.accounts[blockchain].values()
+
+    const response = await this.context.apiClient
+      .useBlockchain(blockchain)
+      .invokeDomainMethod({
+        account: alephTokenSC,
+        method: 'getBalances',
+        args: [args],
+      })
+
+    return response as ERC20Balance[]
+  }
+
+  // ------------------- DEBUG METHODS --------------
 
   async getTransferEvents(
     args: ERC20TransferEventQueryArgs,
@@ -166,21 +194,6 @@ export default class MainDomain extends IndexerMainDomain {
       })
 
     return response as StreamBalance[]
-  }
-
-  async getBalances(args: CommonBalanceQueryArgs): Promise<ERC20Balance[]> {
-    const { blockchain } = args
-    const [alephTokenSC] = this.accounts[blockchain].values()
-
-    const response = await this.context.apiClient
-      .useBlockchain(blockchain)
-      .invokeDomainMethod({
-        account: alephTokenSC,
-        method: 'getBalances',
-        args: [args],
-      })
-
-    return response as ERC20Balance[]
   }
 
   // @note: Quick fix to copy abis to the parser dir (needed until we detect proxy contracts to forward the address to get the destination contract abi)

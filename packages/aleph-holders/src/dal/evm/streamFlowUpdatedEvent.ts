@@ -1,6 +1,6 @@
 import { EntityStorage } from '@aleph-indexer/core'
-import { StreamFlowUpdatedEvent } from '../types.js'
-import { getBNFormats } from '../utils/index.js'
+import { StreamFlowUpdatedEvent } from '../../types/evm.js'
+import { createBNMapper } from '../../utils/index.js'
 
 export type StreamFlowUpdatedEventStorage =
   EntityStorage<StreamFlowUpdatedEvent>
@@ -34,26 +34,8 @@ const timestampKey = {
 
 const heightKey = {
   get: (e: StreamFlowUpdatedEvent) => e.height,
-  // @note: up to 10**9 [9 digits] enough for 300 years in ethereum
-  length: 8,
-}
-
-const mapValueFn = async (value: any) => {
-  // @note: Indexes sometimes are not synced with main storage
-  if (!value) return value
-
-  try {
-    // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    const fr = getBNFormats(value.flowRate, value.blockchain, 'int96')
-    value.flowRate = fr.value
-    value.flowRateBN = fr.valueBN
-    value.flowRateNum = fr.valueNum
-  } catch (e) {
-    console.log(e)
-    console.log('ERR VAL', value)
-  }
-
-  return value
+  // @note: up to 10**9 [9 digits] enough for +300 years in ethereum (10s block time)
+  length: 9,
 }
 
 export function createStreamFlowUpdatedEventDAL(
@@ -81,6 +63,6 @@ export function createStreamFlowUpdatedEventDAL(
         key: [blockchainKey, accountKey, heightKey],
       },
     ],
-    mapValueFn,
+    mapValueFn: createBNMapper(['flowRate']),
   })
 }

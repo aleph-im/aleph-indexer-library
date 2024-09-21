@@ -1,6 +1,11 @@
 import BN from 'bn.js'
 import { BlockchainId } from '@aleph-indexer/framework'
 import { blockchainDecimals } from './constants.js'
+import {
+  StorageEntry,
+  StorageMapFn,
+  StorageMapValueFn,
+} from '@aleph-indexer/core'
 
 export function hexStringToBigNumber(hex: string): BN {
   hex = hex.replace('0x', '')
@@ -99,6 +104,8 @@ export function getStreamTotalBalance(
   return staticBalanceBN.sub(depositBN).add(realTimeBalanceBN)
 }
 
+// ----------
+
 export function getBNFormats(
   bnOrHex: string | BN,
   blockchain: BlockchainId,
@@ -122,5 +129,38 @@ export function getBNFormats(
     value,
     valueBN,
     valueNum,
+  }
+}
+
+// @todo: Fix typing in framework
+// @todo: Fix & support mapFn
+export function createBNMapper(propsToMap: string[]): StorageMapValueFn<any> {
+  return async (value: any): Promise<any> => {
+    // @note: Indexes sometimes are not synced with main storage
+    if (!value) return value
+
+    try {
+      // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
+      for (const propKey of propsToMap) {
+        const rawPropValue = value[propKey]
+
+        if (typeof rawPropValue !== 'string') continue
+
+        const {
+          value: valString,
+          valueBN,
+          valueNum,
+        } = getBNFormats(rawPropValue, value.blockchain)
+
+        value[propKey] = valString
+        value[`${propKey}BN`] = valueBN
+        value[`${propKey}Num`] = valueNum
+      }
+    } catch (e) {
+      console.log(e)
+      console.log('ERR VAL', value)
+    }
+
+    return value
   }
 }

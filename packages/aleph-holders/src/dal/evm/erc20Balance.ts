@@ -1,10 +1,10 @@
 import { EntityStorage, EntityUpdateOp } from '@aleph-indexer/core'
-import { ERC20Balance as ERC20Balance } from '../types.js'
+import { ERC20Balance as ERC20Balance } from '../../types/evm.js'
 import {
   bigNumberToUint256,
-  getBNFormats,
+  createBNMapper,
   hexStringToBigNumber,
-} from '../utils/index.js'
+} from '../../utils/index.js'
 
 export type ERC20BalanceStorage = EntityStorage<ERC20Balance>
 
@@ -28,24 +28,6 @@ const balanceKey = {
   length: 65, // @note: uint256 => 32 bytes => 64 characters + 1 char sign (-) => 65
 }
 
-const mapValueFn = async (value: any) => {
-  // @note: Indexes sometimes are not synced with main storage
-  if (!value) return value
-
-  try {
-    // @note: Stored as hex strings (bn.js "toJSON" method), so we need to cast them to BN always
-    const b = getBNFormats(value.balance, value.blockchain)
-    value.balance = b.value
-    value.balanceBN = b.valueBN
-    value.balanceNum = b.valueNum
-  } catch (e) {
-    console.log(e)
-    console.log('ERR VAL', value)
-  }
-
-  return value
-}
-
 export function createERC20BalanceDAL(path: string): ERC20BalanceStorage {
   return new EntityStorage<ERC20Balance>({
     name: 'erc20_balance',
@@ -61,7 +43,7 @@ export function createERC20BalanceDAL(path: string): ERC20BalanceStorage {
         key: [blockchainKey, balanceKey],
       },
     ],
-    mapValueFn,
+    mapValueFn: createBNMapper(['balance']),
     updateCheckFn: async (oldEntity, newEntity) => {
       let entity = newEntity
 

@@ -1,12 +1,15 @@
-import { BlockchainId } from '@aleph-indexer/framework'
 import BN from 'bn.js'
+import {
+  CommonBalance,
+  CommonBalanceQueryArgs,
+  CommonEvent,
+  CommonEventQueryArgs,
+} from './common'
 
-export type CommonEvent = {
-  blockchain: BlockchainId
-  id: string
-  timestamp: number
-  height: number
-  transaction: string
+export enum EVMEventType {
+  Transfer = 'transfer',
+  FlowUpdated = 'flowUpdated',
+  FlowUpdatedExtension = 'flowUpdatedExtension',
 }
 
 /**
@@ -16,6 +19,7 @@ export type CommonEvent = {
  * uint256 value)
  */
 export type ERC20TransferEvent = CommonEvent & {
+  type: EVMEventType.Transfer
   from: string
   to: string
   value: string // uint256 hex
@@ -34,6 +38,7 @@ export type ERC20TransferEvent = CommonEvent & {
  * bytes userData)
  */
 export type StreamFlowUpdatedEvent = CommonEvent & {
+  type: EVMEventType.FlowUpdated
   // token: string
   from: string
   to: string
@@ -51,18 +56,19 @@ export type StreamFlowUpdatedEvent = CommonEvent & {
  * uint256 deposit)
  */
 export type StreamFlowUpdatedExtensionEvent = CommonEvent & {
+  type: EVMEventType.FlowUpdatedExtension
   flowOperator: string
   deposit: string // uint256 hex
   depositNum?: number
   depositBN?: BN
 }
 
-// ------------------------
+export type EVMEvent =
+  | ERC20TransferEvent
+  | StreamFlowUpdatedEvent
+  | StreamFlowUpdatedExtensionEvent
 
-export type CommonBalance = {
-  blockchain: BlockchainId
-  account: string
-}
+// ------------------------
 
 export type ERC20Balance = CommonBalance & {
   balance: string // uint256 hex
@@ -91,31 +97,13 @@ export type StreamBalance = CommonBalance & {
   updates: number
 }
 
-export type Balance = CommonBalance & {
-  balance: string // uint256 hex
-  balanceNum?: number
-  balanceBN?: BN
-}
-
-export enum EventType {
+export enum EventSignature {
   Transfer = 'Transfer(address,address,uint256)',
   FlowUpdated = 'FlowUpdated(address,address,address,int96,int256,int256,bytes)',
   FlowUpdatedExtension = 'FlowUpdatedExtension(address,uint256)',
 }
 
 // -------------------------
-
-export type CommonEventQueryArgs = {
-  blockchain: BlockchainId
-  account?: string
-  startDate?: number
-  endDate?: number
-  startHeight?: number
-  endHeight?: number
-  limit?: number
-  skip?: number
-  reverse?: boolean
-}
 
 export type ERC20TransferEventQueryArgs = CommonEventQueryArgs
 
@@ -124,14 +112,6 @@ export type StreamFlowUpdatedEventQueryArgs = CommonEventQueryArgs
 export type StreamFlowUpdatedExtensionEventQueryArgs = CommonEventQueryArgs
 
 // ------------------------
-
-export type CommonBalanceQueryArgs = {
-  blockchain: BlockchainId
-  account?: string
-  limit?: number
-  skip?: number
-  reverse?: boolean
-}
 
 export type ERC20BalanceQueryArgs = CommonBalanceQueryArgs
 

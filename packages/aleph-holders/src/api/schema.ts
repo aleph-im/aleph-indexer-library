@@ -5,13 +5,13 @@ import * as Args from './args.js'
 import { APIResolver } from './resolvers.js'
 import MainDomain from '../domain/main.js'
 import {
-  CommonBalanceQueryArgs,
   ERC20BalanceQueryArgs,
   ERC20TransferEventQueryArgs,
   StreamBalanceQueryArgs,
   StreamFlowUpdatedEventQueryArgs,
   StreamFlowUpdatedExtensionEventQueryArgs,
-} from '../types.js'
+} from '../types/evm.js'
+import { CommonBalanceQueryArgs } from '../types/common.js'
 
 export default class APISchema extends IndexerAPISchema {
   constructor(
