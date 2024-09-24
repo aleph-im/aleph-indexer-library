@@ -292,7 +292,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
 
         await this.indexAccount(blockchain, mint, account)
 
-        console.log('🍕2')
+        console.log('🍕2', account)
 
         await this.processTrackedAccounts.addWork({
           id: `${blockchain}:${mint}:${account}`,
@@ -300,7 +300,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           payload: undefined,
         })
 
-        console.log('🍕3')
+        console.log('🍕3', account)
       }
 
       await this.processTrackedAccounts.start()

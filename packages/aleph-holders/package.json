@@ -16,13 +16,13 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/avalanche": "^1.4.7",
-    "@aleph-indexer/base": "^1.4.7",
-    "@aleph-indexer/bsc": "^1.4.7",
-    "@aleph-indexer/core": "^1.2.0",
-    "@aleph-indexer/ethereum": "^1.4.7",
-    "@aleph-indexer/framework": "^1.4.7",
-    "@aleph-indexer/solana": "^1.4.7"
+    "@aleph-indexer/avalanche": "^1.4.8",
+    "@aleph-indexer/base": "^1.4.8",
+    "@aleph-indexer/bsc": "^1.4.8",
+    "@aleph-indexer/core": "^1.4.8",
+    "@aleph-indexer/ethereum": "^1.4.8",
+    "@aleph-indexer/framework": "^1.4.8",
+    "@aleph-indexer/solana": "^1.4.8"
   },
   "devDependencies": {
     "@types/node": "^22.5.2"

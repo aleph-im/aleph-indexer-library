@@ -189,9 +189,7 @@ async function getMintFromEventsDatabase(
   for (const account of accounts) {
     const dbEvent = await eventDAL
       .useIndex(SPLTokenEventDALIndex.BlockchainAccountHeightIndex)
-      .getFirstValueFromTo([blockchain, account], [blockchain, account], {
-        atomic: true,
-      })
+      .getFirstValueFromTo([blockchain, account], [blockchain, account])
 
     if (dbEvent) return dbEvent.mint
   }
