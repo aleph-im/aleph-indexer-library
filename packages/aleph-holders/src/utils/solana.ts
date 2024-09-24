@@ -5,8 +5,8 @@ import {
   SolanaRawInstruction,
   TOKEN_PROGRAM_ID,
   SolanaParsedInstructionContext,
-  solanaPrivateRPCRoundRobin,
   SolanaParsedTransaction,
+  SolanaRPC,
 } from '@aleph-indexer/solana'
 import {
   SLPTokenInstruction,
@@ -18,7 +18,24 @@ import {
   SPLTokenEventDALIndex,
   SPLTokenEventStorage,
 } from '../dal/solana/splTokenEvent.js'
-import { BlockchainId } from '@aleph-indexer/framework'
+import { BlockchainId, getBlockchainEnv } from '@aleph-indexer/framework'
+
+const solanaRPC: Record<BlockchainId, SolanaRPC> = {}
+
+function getSolanaRPC(blockchainId: BlockchainId): SolanaRPC {
+  let rpc = solanaRPC[blockchainId]
+  if (rpc) return rpc
+
+  const privateEnv = getBlockchainEnv(blockchainId, 'RPC', true)
+
+  const [privateUrls, privateRateLimitStr] = privateEnv.split('|')
+  const url = privateUrls.split(',')[0]
+  const rateLimit = privateRateLimitStr === 'true'
+
+  rpc = new SolanaRPC({ url, rateLimit })
+  solanaRPC[blockchainId] = rpc
+  return rpc
+}
 
 export function getAccountsFromEvent(event: SPLTokenIncompleteEvent): string[] {
   switch (event.type) {
@@ -128,7 +145,11 @@ export async function getMintFromInstructionAccounts(
   }
 
   // @note: Look for the mint doing an RPC call
-  mint = await getMintFromAccountInfoRPC(accounts, parentTransaction)
+  mint = await getMintFromAccountInfoRPC(
+    blockchain,
+    accounts,
+    parentTransaction,
+  )
   if (mint) {
     console.log('mint from accountInfo', mint)
     return mint
@@ -200,6 +221,7 @@ async function getMintFromSiblingInstructions(
 }
 
 async function getMintFromAccountInfoRPC(
+  blockchain: BlockchainId,
   accounts: string[],
   transaction: SolanaParsedTransaction,
 ): Promise<string | undefined> {
@@ -216,8 +238,7 @@ async function getMintFromAccountInfoRPC(
 
   for (const account of allAccounts) {
     try {
-      const connection = solanaPrivateRPCRoundRobin.getClient()
-      const res = await connection
+      const res = await getSolanaRPC(blockchain)
         .getConnection()
         .getParsedAccountInfo(new PublicKey(account))
 
