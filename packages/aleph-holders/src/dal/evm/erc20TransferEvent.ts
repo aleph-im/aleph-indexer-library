@@ -5,10 +5,10 @@ import { createBNMapper } from '../../utils/index.js'
 export type ERC20TransferEventStorage = EntityStorage<ERC20TransferEvent>
 
 export enum ERC20TransferEventDALIndex {
-  BlockchainTimestamp = 'blockchain_timestamp',
-  BlockchainHeight = 'blockchain_height',
-  BlockchainAccountTimestamp = 'blockchain_account_timestamp',
-  BlockchainAccountHeight = 'blockchain_account_height',
+  BlockchainTimestampIndex = 'blockchain_timestamp_index',
+  BlockchainHeightIndex = 'blockchain_height_index',
+  BlockchainAccountTimestampIndex = 'blockchain_account_timestamp_index',
+  BlockchainAccountHeightIndex = 'blockchain_account_height_index',
 }
 
 const idKey = {
@@ -37,6 +37,11 @@ const heightKey = {
   length: 9,
 }
 
+const indexKey = {
+  get: (e: ERC20TransferEvent) => e.index,
+  length: 4,
+}
+
 export function createERC20TransferEventDAL(
   path: string,
 ): ERC20TransferEventStorage {
@@ -46,20 +51,20 @@ export function createERC20TransferEventDAL(
     key: [idKey],
     indexes: [
       {
-        name: ERC20TransferEventDALIndex.BlockchainTimestamp,
-        key: [blockchainKey, timestampKey],
+        name: ERC20TransferEventDALIndex.BlockchainTimestampIndex,
+        key: [blockchainKey, timestampKey, indexKey],
       },
       {
-        name: ERC20TransferEventDALIndex.BlockchainHeight,
-        key: [blockchainKey, heightKey],
+        name: ERC20TransferEventDALIndex.BlockchainHeightIndex,
+        key: [blockchainKey, heightKey, indexKey],
       },
       {
-        name: ERC20TransferEventDALIndex.BlockchainAccountTimestamp,
-        key: [blockchainKey, accountKey, timestampKey],
+        name: ERC20TransferEventDALIndex.BlockchainAccountTimestampIndex,
+        key: [blockchainKey, accountKey, timestampKey, indexKey],
       },
       {
-        name: ERC20TransferEventDALIndex.BlockchainAccountHeight,
-        key: [blockchainKey, accountKey, heightKey],
+        name: ERC20TransferEventDALIndex.BlockchainAccountHeightIndex,
+        key: [blockchainKey, accountKey, heightKey, indexKey],
       },
     ],
     mapValueFn: createBNMapper(['value']),

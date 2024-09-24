@@ -6,10 +6,10 @@ export type StreamFlowUpdatedEventStorage =
   EntityStorage<StreamFlowUpdatedEvent>
 
 export enum StreamFlowUpdatedEventDALIndex {
-  BlockchainTimestamp = 'blockchain_timestamp',
-  BlockchainHeight = 'blockchain_height',
-  BlockchainAccountTimestamp = 'blockchain_account_timestamp',
-  BlockchainAccountHeight = 'blockchain_account_height',
+  BlockchainTimestampIndex = 'blockchain_timestamp_index',
+  BlockchainHeightIndex = 'blockchain_height_index',
+  BlockchainAccountTimestampIndex = 'blockchain_account_timestamp_index',
+  BlockchainAccountHeightIndex = 'blockchain_account_height_index',
 }
 
 const idKey = {
@@ -38,6 +38,11 @@ const heightKey = {
   length: 9,
 }
 
+const indexKey = {
+  get: (e: StreamFlowUpdatedEvent) => e.index,
+  length: 4,
+}
+
 export function createStreamFlowUpdatedEventDAL(
   path: string,
 ): StreamFlowUpdatedEventStorage {
@@ -47,20 +52,20 @@ export function createStreamFlowUpdatedEventDAL(
     key: [idKey],
     indexes: [
       {
-        name: StreamFlowUpdatedEventDALIndex.BlockchainTimestamp,
-        key: [blockchainKey, timestampKey],
+        name: StreamFlowUpdatedEventDALIndex.BlockchainTimestampIndex,
+        key: [blockchainKey, timestampKey, indexKey],
       },
       {
-        name: StreamFlowUpdatedEventDALIndex.BlockchainHeight,
-        key: [blockchainKey, heightKey],
+        name: StreamFlowUpdatedEventDALIndex.BlockchainHeightIndex,
+        key: [blockchainKey, heightKey, indexKey],
       },
       {
-        name: StreamFlowUpdatedEventDALIndex.BlockchainAccountTimestamp,
-        key: [blockchainKey, accountKey, timestampKey],
+        name: StreamFlowUpdatedEventDALIndex.BlockchainAccountTimestampIndex,
+        key: [blockchainKey, accountKey, timestampKey, indexKey],
       },
       {
-        name: StreamFlowUpdatedEventDALIndex.BlockchainAccountHeight,
-        key: [blockchainKey, accountKey, heightKey],
+        name: StreamFlowUpdatedEventDALIndex.BlockchainAccountHeightIndex,
+        key: [blockchainKey, accountKey, heightKey, indexKey],
       },
     ],
     mapValueFn: createBNMapper(['flowRate']),

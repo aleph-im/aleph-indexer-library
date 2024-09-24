@@ -1,17 +1,13 @@
 import { GraphQLObjectType } from 'graphql'
 import { IndexerAPISchema } from '@aleph-indexer/framework'
-import * as Types from './types.js'
-import * as Args from './args.js'
 import { APIResolver } from './resolvers.js'
 import MainDomain from '../domain/main.js'
 import {
-  ERC20BalanceQueryArgs,
-  ERC20TransferEventQueryArgs,
-  StreamBalanceQueryArgs,
-  StreamFlowUpdatedEventQueryArgs,
-  StreamFlowUpdatedExtensionEventQueryArgs,
-} from '../types/evm.js'
-import { CommonBalanceQueryArgs } from '../types/common.js'
+  CommonBalanceQueryArgs,
+  CommonEventQueryArgs,
+} from '../types/common.js'
+import * as Args from './args.js'
+import * as Types from './types/index.js'
 
 export default class APISchema extends IndexerAPISchema {
   constructor(
@@ -25,44 +21,46 @@ export default class APISchema extends IndexerAPISchema {
         name: 'Query',
         fields: {
           transferEvents: {
-            type: Types.ERC20TransferEventList,
-            args: Args.ERC20TransferEventQueryArgs,
+            type: Types.EVMERC20TransferEventList,
+            args: Args.TokenEventQueryArgs,
             resolve: (_, args) =>
-              this.resolver.getTransferEvents(
-                args as ERC20TransferEventQueryArgs,
-              ),
+              this.resolver.getTransferEvents(args as CommonEventQueryArgs),
           },
           flowUpdatedEvents: {
-            type: Types.StreamFlowUpdatedEventList,
-            args: Args.StreamFlowUpdatedEventQueryArgs,
+            type: Types.EVMStreamFlowUpdatedEventList,
+            args: Args.TokenEventQueryArgs,
             resolve: (_, args) =>
-              this.resolver.getFlowUpdatedEvents(
-                args as StreamFlowUpdatedEventQueryArgs,
-              ),
+              this.resolver.getFlowUpdatedEvents(args as CommonEventQueryArgs),
           },
           flowUpdatedExtensionEvents: {
-            type: Types.StreamFlowUpdatedExtensionEventList,
-            args: Args.StreamFlowUpdatedExtensionEventQueryArgs,
+            type: Types.EVMStreamFlowUpdatedExtensionEventList,
+            args: Args.TokenEventQueryArgs,
             resolve: (_, args) =>
               this.resolver.getFlowUpdatedExtensionEvents(
-                args as StreamFlowUpdatedExtensionEventQueryArgs,
+                args as CommonEventQueryArgs,
               ),
           },
-          erc20Balances: {
-            type: Types.ERC20BalanceList,
-            args: Args.ERC20BalanceQueryArgs,
+          events: {
+            type: Types.TokenEventList,
+            args: Args.TokenEventQueryArgs,
             resolve: (_, args) =>
-              this.resolver.getERC20Balances(args as ERC20BalanceQueryArgs),
+              this.resolver.getEvents(args as CommonEventQueryArgs),
+          },
+          erc20Balances: {
+            type: Types.EVMERC20BalanceList,
+            args: Args.TokenBalanceQueryArgs,
+            resolve: (_, args) =>
+              this.resolver.getERC20Balances(args as CommonBalanceQueryArgs),
           },
           streamBalances: {
-            type: Types.StreamBalanceList,
-            args: Args.StreamBalanceQueryArgs,
+            type: Types.EVMStreamBalanceList,
+            args: Args.TokenBalanceQueryArgs,
             resolve: (_, args) =>
-              this.resolver.getStreamBalances(args as StreamBalanceQueryArgs),
+              this.resolver.getStreamBalances(args as CommonBalanceQueryArgs),
           },
           balances: {
-            type: Types.ERC20BalanceList,
-            args: Args.ERC20BalanceQueryArgs,
+            type: Types.TokenBalanceList,
+            args: Args.TokenBalanceQueryArgs,
             resolve: (_, args) =>
               this.resolver.getBalances(args as CommonBalanceQueryArgs),
           },

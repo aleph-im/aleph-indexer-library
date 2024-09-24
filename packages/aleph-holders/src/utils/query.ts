@@ -2,8 +2,8 @@
 import { EntityStorage } from '@aleph-indexer/core'
 import {
   CommonBalance,
-  CommonBalanceQueryArgs,
   CommonEvent,
+  CommonBalanceQueryArgs,
   CommonEventQueryArgs,
 } from '../types/common'
 
@@ -40,6 +40,8 @@ export async function getCommonBalances<T extends CommonBalance>(
   }
 
   for await (const entry of entries) {
+    if (entry.balanceBN?.isZero()) continue
+
     // @note: Skip first N entries
     if (--skip >= 0) continue
 
@@ -56,10 +58,10 @@ export async function getCommonEvents<T extends CommonEvent>(
   args: CommonEventQueryArgs,
   eventDAL: EntityStorage<T>,
   eventIndexes: {
-    BlockchainAccountTimestamp: string
-    BlockchainAccountHeight: string
-    BlockchainTimestamp: string
-    BlockchainHeight: string
+    BlockchainAccountTimestampIndex: string
+    BlockchainAccountHeightIndex: string
+    BlockchainTimestampIndex: string
+    BlockchainHeightIndex: string
   },
 ): Promise<T[]> {
   let {
@@ -88,7 +90,7 @@ export async function getCommonEvents<T extends CommonEvent>(
       endDate = endDate !== undefined ? endDate : Date.now()
 
       entries = await eventDAL
-        .useIndex(eventIndexes.BlockchainAccountTimestamp)
+        .useIndex(eventIndexes.BlockchainAccountTimestampIndex)
         .getAllValuesFromTo(
           [blockchain, acc, startDate],
           [blockchain, acc, endDate],
@@ -99,7 +101,7 @@ export async function getCommonEvents<T extends CommonEvent>(
       endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
       entries = await eventDAL
-        .useIndex(eventIndexes.BlockchainAccountHeight)
+        .useIndex(eventIndexes.BlockchainAccountHeightIndex)
         .getAllValuesFromTo(
           [blockchain, acc, startHeight],
           [blockchain, acc, endHeight],
@@ -113,7 +115,7 @@ export async function getCommonEvents<T extends CommonEvent>(
     endDate = endDate !== undefined ? endDate : Date.now()
 
     entries = await eventDAL
-      .useIndex(eventIndexes.BlockchainTimestamp)
+      .useIndex(eventIndexes.BlockchainTimestampIndex)
       .getAllValuesFromTo([blockchain, startDate], [blockchain, endDate], opts)
   }
 
@@ -122,7 +124,7 @@ export async function getCommonEvents<T extends CommonEvent>(
     endHeight = endHeight !== undefined ? endHeight : Number.MIN_SAFE_INTEGER
 
     entries = await eventDAL
-      .useIndex(eventIndexes.BlockchainHeight)
+      .useIndex(eventIndexes.BlockchainHeightIndex)
       .getAllValuesFromTo(
         [blockchain, startHeight],
         [blockchain, endHeight],

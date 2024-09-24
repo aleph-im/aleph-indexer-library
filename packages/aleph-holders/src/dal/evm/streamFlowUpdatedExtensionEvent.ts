@@ -6,10 +6,10 @@ export type StreamFlowUpdatedExtensionEventStorage =
   EntityStorage<StreamFlowUpdatedExtensionEvent>
 
 export enum StreamFlowUpdatedExtensionEventDALIndex {
-  BlockchainTimestamp = 'blockchain_timestamp',
-  BlockchainHeight = 'blockchain_height',
-  BlockchainAccountTimestamp = 'blockchain_account_timestamp',
-  BlockchainAccountHeight = 'blockchain_account_height',
+  BlockchainTimestampIndex = 'blockchain_timestamp_index',
+  BlockchainHeightIndex = 'blockchain_height_index',
+  BlockchainAccountTimestampIndex = 'blockchain_account_timestamp_index',
+  BlockchainAccountHeightIndex = 'blockchain_account_height_index',
 }
 
 const idKey = {
@@ -38,6 +38,11 @@ const heightKey = {
   length: 9,
 }
 
+const indexKey = {
+  get: (e: StreamFlowUpdatedExtensionEvent) => e.index,
+  length: 4,
+}
+
 export function createStreamFlowUpdatedExtensionEventDAL(
   path: string,
 ): StreamFlowUpdatedExtensionEventStorage {
@@ -47,20 +52,20 @@ export function createStreamFlowUpdatedExtensionEventDAL(
     key: [idKey],
     indexes: [
       {
-        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainTimestamp,
-        key: [blockchainKey, timestampKey],
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainTimestampIndex,
+        key: [blockchainKey, timestampKey, indexKey],
       },
       {
-        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainHeight,
-        key: [blockchainKey, heightKey],
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainHeightIndex,
+        key: [blockchainKey, heightKey, indexKey],
       },
       {
-        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainAccountTimestamp,
-        key: [blockchainKey, accountKey, timestampKey],
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainAccountTimestampIndex,
+        key: [blockchainKey, accountKey, timestampKey, indexKey],
       },
       {
-        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainAccountHeight,
-        key: [blockchainKey, accountKey, heightKey],
+        name: StreamFlowUpdatedExtensionEventDALIndex.BlockchainAccountHeightIndex,
+        key: [blockchainKey, accountKey, heightKey, indexKey],
       },
     ],
     mapValueFn: createBNMapper(['deposit']),

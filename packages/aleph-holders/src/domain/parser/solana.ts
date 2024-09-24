@@ -16,6 +16,8 @@ import {
   getBalanceFromEvent,
   getMintFromInstructionContext,
 } from '../../utils/solana.js'
+import { bigNumberToUint256 } from '../../utils/numbers.js'
+import BN from 'bn.js'
 
 export class SolanaEventParser {
   constructor(protected eventDAL: SPLTokenEventStorage) {}
@@ -31,7 +33,7 @@ export class SolanaEventParser {
   }
 
   parseBalanceFromEvent(event: SPLTokenEvent): SPLTokenBalance[] {
-    const { blockchain, slot, mint, owner, timestamp } = event
+    const { blockchain, height, mint, owner, timestamp } = event
     const accounts = getAccountsFromEvent(event)
 
     return accounts.map((account) => {
@@ -39,7 +41,7 @@ export class SolanaEventParser {
 
       return {
         blockchain,
-        slot,
+        height,
         account,
         mint,
         owner,
@@ -59,7 +61,8 @@ export class SolanaEventParser {
 
     const id = this.parseId(ixCtx)
     const timestamp = this.parseTimestamp(ixCtx)
-    const slot = this.parseSlot(ixCtx)
+    const height = this.parseSlot(ixCtx)
+    const index = this.parseIndex(ixCtx)
     const transaction = parentTransaction.signature
     // @note: We filtered by mint previously so mint is always defined
     const mint = (await getMintFromInstructionContext(
@@ -73,8 +76,8 @@ export class SolanaEventParser {
       blockchain,
       timestamp,
       type: type || parsed.type,
-      height: slot,
-      slot,
+      height,
+      index,
       mint,
       transaction,
     }
@@ -97,7 +100,7 @@ export class SolanaEventParser {
       case SPLTokenEventType.InitializeAccount:
       case SPLTokenEventType.InitializeAccount2:
       case SPLTokenEventType.InitializeAccount3: {
-        const { account, owner, mint } = parsed.info
+        const { account, owner } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
 
         console.log('---> init account => ', account, baseEvent.id)
@@ -105,49 +108,53 @@ export class SolanaEventParser {
         return {
           ...baseEvent,
           type: SPLTokenEventType.InitializeAccount,
-          balance,
           account,
+          balance,
           owner,
-          mint,
         }
       }
 
       case SPLTokenEventType.InitializeMint:
       case SPLTokenEventType.InitializeMint2: {
         const { mint, mintAuthority } = parsed.info
+        const account = mint
+        const balance = this.getTokenBalance(parentTransaction, account)
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.InitializeMint,
+          account,
+          balance,
           owner: mintAuthority,
-          mint,
         }
       }
 
       case SPLTokenEventType.MintTo: {
-        const account = parsed.info.account
+        const { account, amount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
-        const amount = parsed.info.amount
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.MintTo,
           amount,
-          balance,
           account,
+          balance,
         }
       }
 
       case SPLTokenEventType.MintToChecked: {
-        const { account, tokenAmount } = parsed.info
+        const {
+          account,
+          tokenAmount: { amount },
+        } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.MintTo,
-          amount: tokenAmount.amount,
-          balance,
+          amount,
           account,
+          balance,
         }
       }
 
@@ -159,73 +166,80 @@ export class SolanaEventParser {
           ...baseEvent,
           type: SPLTokenEventType.Burn,
           amount,
-          balance,
           account,
+          balance,
         }
       }
 
       case SPLTokenEventType.BurnChecked: {
-        const { account, tokenAmount } = parsed.info
+        const {
+          account,
+          tokenAmount: { amount },
+        } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.Burn,
-          amount: tokenAmount.amount,
-          balance,
+          amount,
           account,
+          balance,
         }
       }
 
       case SPLTokenEventType.CloseAccount: {
-        const { account, destination } = parsed.info
+        const { account, destination: toAccount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const toBalance = this.getTokenBalance(parentTransaction, toAccount)
         const owner =
           'owner' in parsed.info ? parsed.info.owner : parsed.info.multisigOwner
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.CloseAccount,
-          balance,
           account,
-          toAccount: destination,
+          balance,
+          toAccount,
+          toBalance,
           owner,
+          // toOwner,
         }
       }
 
       case SPLTokenEventType.Transfer: {
-        const account = parsed.info.source
+        const { source: account, destination: toAccount, amount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
-
-        const toAccount = parsed.info.destination
         const toBalance = this.getTokenBalance(parentTransaction, toAccount)
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.Transfer,
-          amount: parsed.info.amount,
-          balance,
+          amount,
           account,
-          toBalance,
+          balance,
           toAccount,
+          toBalance,
           // owner,
           // toOwner,
         }
       }
 
       case SPLTokenEventType.TransferChecked: {
-        const account = parsed.info.source
-        const balance = this.getTokenBalance(parentTransaction, account)
+        const {
+          source: account,
+          destination: toAccount,
+          tokenAmount: { amount },
+        } = parsed.info
 
-        const toAccount = parsed.info.destination
+        const balance = this.getTokenBalance(parentTransaction, account)
         const toBalance = this.getTokenBalance(parentTransaction, toAccount)
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.Transfer,
-          amount: parsed.info.tokenAmount.amount,
-          balance,
+          amount,
           account,
+          balance,
           toBalance,
           toAccount,
           // owner,
@@ -234,17 +248,22 @@ export class SolanaEventParser {
       }
 
       case SPLTokenEventType.SetAuthority: {
-        const { account, authority, authorityType, newAuthority } = parsed.info
+        const {
+          account,
+          authority: owner,
+          authorityType,
+          newAuthority: newOwner,
+        } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.SetAuthority,
-          balance,
-          account,
           authorityType,
-          owner: authority,
-          newOwner: newAuthority,
+          owner,
+          newOwner,
+          account,
+          balance,
         }
       }
 
@@ -256,23 +275,28 @@ export class SolanaEventParser {
           ...baseEvent,
           type: SPLTokenEventType.Approve,
           amount,
-          balance,
           account,
+          balance,
           owner,
           delegate,
         }
       }
 
       case SPLTokenEventType.ApproveChecked: {
-        const { source: account, owner, delegate, tokenAmount } = parsed.info
+        const {
+          source: account,
+          owner,
+          delegate,
+          tokenAmount: { amount },
+        } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.Approve,
-          amount: tokenAmount.amount,
-          balance,
+          amount,
           account,
+          balance,
           owner,
           delegate,
         }
@@ -285,8 +309,8 @@ export class SolanaEventParser {
         return {
           ...baseEvent,
           type: SPLTokenEventType.Revoke,
-          balance,
           account,
+          balance,
           owner,
         }
       }
@@ -298,8 +322,8 @@ export class SolanaEventParser {
         return {
           ...baseEvent,
           type: SPLTokenEventType.SyncNative,
-          balance,
           account,
+          balance,
           // owner,
         }
       }
@@ -311,8 +335,8 @@ export class SolanaEventParser {
         return {
           ...baseEvent,
           type: SPLTokenEventType.InitializeImmutableOwner,
-          balance,
           account,
+          balance,
           // owner,
         }
       }
@@ -330,9 +354,14 @@ export class SolanaEventParser {
 
     return `${parentTransaction.signature}${
       parentInstruction
-        ? `:${parentInstruction.index.toString().padStart(2, '0')}`
+        ? `_${parentInstruction.index.toString().padStart(2, '0')}`
         : ''
-    }:${instruction.index.toString().padStart(2, '0')}`
+    }_${instruction.index.toString().padStart(2, '0')}`
+  }
+
+  protected parseIndex(ixCtx: SolanaParsedInstructionContext): number {
+    const { instruction, parentInstruction } = ixCtx
+    return (parentInstruction?.index || 0) * 100 + instruction.index
   }
 
   protected parseTimestamp(ixCtx: SolanaParsedInstructionContext): number {
@@ -351,7 +380,7 @@ export class SolanaEventParser {
   protected getTokenBalance(
     tx: SolanaParsedTransaction,
     address: string,
-  ): string | undefined {
+  ): string {
     const balanceIndex = tx.parsed.message.accountKeys.findIndex(
       ({ pubkey }) => pubkey === address,
     )
@@ -360,6 +389,8 @@ export class SolanaEventParser {
       ({ accountIndex }) => accountIndex === balanceIndex,
     )
 
-    return balanceInfo?.uiTokenAmount.amount
+    const balanceDec = balanceInfo?.uiTokenAmount.amount || '0'
+    const balanceDecBN = new BN(balanceDec)
+    return bigNumberToUint256(balanceDecBN)
   }
 }

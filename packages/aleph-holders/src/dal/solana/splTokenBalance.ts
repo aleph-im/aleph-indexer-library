@@ -55,12 +55,13 @@ export function createSPLTokenBalanceDAL(path: string): SPLTokenBalanceStorage {
     ): Promise<EntityUpdateCheckFnReturn<SPLTokenBalance>> {
       const entity = newEntity
 
-      if (oldEntity && oldEntity.slot > newEntity.slot) {
+      if (oldEntity && oldEntity.height > newEntity.height) {
         return { op: EntityUpdateOp.Keep }
       }
 
-      const balance = hexStringToBigNumber(entity.balance)
-      if (balance.isZero()) return { op: EntityUpdateOp.Delete }
+      // @note: We can not delete it, because if an older ix arrives we cant compare dates and the balance will be outdated
+      // const balance = hexStringToBigNumber(entity.balance)
+      // if (balance.isZero()) return { op: EntityUpdateOp.Delete }
 
       return { op: EntityUpdateOp.Update, entity }
     },

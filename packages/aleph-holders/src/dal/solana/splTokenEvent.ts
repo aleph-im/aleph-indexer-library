@@ -1,14 +1,15 @@
 import { EntityStorage } from '@aleph-indexer/core'
 import { SPLTokenEvent } from '../../types/solana.js'
 import { createBNMapper } from '../../utils/numbers.js'
+import { getAccountsFromEvent } from '../../utils/solana.js'
 
 export type SPLTokenEventStorage = EntityStorage<SPLTokenEvent>
 
 export enum SPLTokenEventDALIndex {
-  BlockchainTimestamp = 'blockchain_timestamp',
-  BlockchainHeight = 'blockchain_height',
-  BlockchainAccountTimestamp = 'blockchain_account_timestamp',
-  BlockchainAccountHeight = 'blockchain_account_height',
+  BlockchainTimestampIndex = 'blockchain_timestamp_index',
+  BlockchainHeightIndex = 'blockchain_height_index',
+  BlockchainAccountTimestampIndex = 'blockchain_account_timestamp_index',
+  BlockchainAccountHeightIndex = 'blockchain_account_height_index',
 }
 
 const idKey = {
@@ -17,7 +18,7 @@ const idKey = {
 }
 
 const accountKey = {
-  get: (e: SPLTokenEvent) => e.account,
+  get: (e: SPLTokenEvent) => getAccountsFromEvent(e),
   length: EntityStorage.AddressLength,
 }
 
@@ -31,10 +32,15 @@ const timestampKey = {
   length: EntityStorage.TimestampLength,
 }
 
-const slotKey = {
-  get: (e: SPLTokenEvent) => e.slot,
+const heightKey = {
+  get: (e: SPLTokenEvent) => e.height,
   // @note: up to 10**10 [10 digits] enough for +120 years in solana (400ms slot time)
   length: 10,
+}
+
+const indexKey = {
+  get: (e: SPLTokenEvent) => e.index,
+  length: 4,
 }
 
 export function createSPLTokenEventDAL(path: string): SPLTokenEventStorage {
@@ -44,22 +50,22 @@ export function createSPLTokenEventDAL(path: string): SPLTokenEventStorage {
     key: [idKey],
     indexes: [
       {
-        name: SPLTokenEventDALIndex.BlockchainTimestamp,
-        key: [blockchainKey, timestampKey],
+        name: SPLTokenEventDALIndex.BlockchainTimestampIndex,
+        key: [blockchainKey, timestampKey, indexKey],
       },
       {
-        name: SPLTokenEventDALIndex.BlockchainHeight,
-        key: [blockchainKey, slotKey],
+        name: SPLTokenEventDALIndex.BlockchainHeightIndex,
+        key: [blockchainKey, heightKey, indexKey],
       },
       {
-        name: SPLTokenEventDALIndex.BlockchainAccountTimestamp,
-        key: [blockchainKey, accountKey, timestampKey],
+        name: SPLTokenEventDALIndex.BlockchainAccountTimestampIndex,
+        key: [blockchainKey, accountKey, timestampKey, indexKey],
       },
       {
-        name: SPLTokenEventDALIndex.BlockchainAccountHeight,
-        key: [blockchainKey, accountKey, slotKey],
+        name: SPLTokenEventDALIndex.BlockchainAccountHeightIndex,
+        key: [blockchainKey, accountKey, heightKey, indexKey],
       },
     ],
-    mapValueFn: createBNMapper(['balance']),
+    mapValueFn: createBNMapper(['amount', 'balance', 'toBalance']),
   })
 }

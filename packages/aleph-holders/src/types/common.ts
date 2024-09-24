@@ -11,6 +11,7 @@ export type CommonEvent = {
   id: string
   timestamp: number
   height: number
+  index: number
   transaction: string
   type: string
 }
@@ -20,9 +21,6 @@ export type CommonEvent = {
 export type CommonBalance = {
   blockchain: BlockchainId
   account: string
-}
-
-export type Balance = CommonBalance & {
   balance: string // uint256 hex
   balanceNum?: number
   balanceBN?: BN
@@ -58,9 +56,8 @@ export type BlockchainWorkerI<E = unknown> = {
   onNewAccount(config: AccountIndexerRequestArgs): Promise<void>
   filterEntity(context: ParserContext, entity: E): Promise<boolean>
   indexEntities(context: ParserContext, entities: E[]): Promise<void>
-  getBalances(args: CommonBalanceQueryArgs): Promise<Balance[]>
-  // @todo
-  // getEvents(args: CommonBalanceQueryArgs): Promise<Balance[]>
+  getBalances(args: CommonBalanceQueryArgs): Promise<CommonBalance[]>
+  getEvents(args: CommonEventQueryArgs): Promise<CommonEvent[]>
 }
 
 export type BlockchainWorkerClassI<E = unknown> = {

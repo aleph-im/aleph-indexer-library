@@ -5,18 +5,15 @@ import {
   AccountIndexerRequestArgs,
   ParserContext,
 } from '@aleph-indexer/framework'
-import { EntityStorage, Utils } from '@aleph-indexer/core'
+import { PendingWork, PendingWorkStorage, Utils } from '@aleph-indexer/core'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
 import {
   EventSignature,
-  ERC20TransferEventQueryArgs,
   ERC20TransferEvent,
   ERC20Balance,
   StreamFlowUpdatedEvent,
-  StreamFlowUpdatedEventQueryArgs,
   StreamFlowUpdatedExtensionEvent,
   StreamBalance,
-  StreamFlowUpdatedExtensionEventQueryArgs,
   EVMEventType,
 } from '../../types/evm.js'
 import {
@@ -51,10 +48,10 @@ import {
   createStreamBalanceDAL,
 } from '../../dal/evm/streamBalance.js'
 import {
-  Balance,
+  CommonBalance,
+  CommonEvent,
   BlockchainWorkerI,
   CommonBalanceQueryArgs,
-  CommonEvent,
   CommonEventQueryArgs,
 } from '../../types/common.js'
 import { getCommonBalances, getCommonEvents } from '../../utils/query.js'
@@ -73,56 +70,28 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     ),
     protected erc20BalanceDAL = createERC20BalanceDAL(context.dataPath),
     protected streamBalanceDAL = createStreamBalanceDAL(context.dataPath),
-    protected processFlowsBuffer: Utils.BufferExec<string>,
     protected parser = new EVMEventParser(),
+    protected processUpdatedFlows: Utils.PendingWorkPool<void>,
   ) {
-    this.processFlowsBuffer = new Utils.BufferExec<string>(
-      this.handleProcessFlows.bind(this),
-      10,
-      1000 * 30,
-    )
+    this.processUpdatedFlows = new Utils.PendingWorkPool<void>({
+      id: `process-updated-flows`,
+      interval: 0,
+      chunkSize: 100,
+      concurrency: 1,
+      dal: new PendingWorkStorage({
+        name: 'process-flows',
+        path: context.dataPath,
+      }),
+      handleWork: this.handleProcessUpdatedFlows.bind(this),
+      checkComplete: () => true,
+    })
+
+    this.processUpdatedFlows.start()
   }
 
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
-    const { blockchainId: blockchain, account } = config
-
-    const tokenContractAccount = this.context.apiClient
-      .useBlockchain(blockchain)
-      .normalizeAccount(blockchainTokenContract[blockchain])
-
-    // @note: base and avalanche are tracking multiple accounts
-    // only update initial supply if the account is the token contract
-    if (tokenContractAccount !== account) return
-
-    const { instanceName } = this.context
-    const supplier = initialSupplyAccount[blockchain]
-
-    // @note: Check if there is at leasst one transfer before overriding the
-    // balance with the initial supply
-    const supplierLastTransfer = await this.erc20TransferEventDAL
-      .useIndex(ERC20TransferEventDALIndex.BlockchainAccountTimestamp)
-      .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
-
-    console.log(
-      'Account indexing',
-      instanceName,
-      blockchain,
-      account,
-      supplier,
-      supplierLastTransfer,
-    )
-
-    // @note: Init the initial supply if it is the first run (no transfers yet)
-    if (!supplierLastTransfer) {
-      const balance = blockchainTotalSupply[blockchain].toString('hex')
-      await this.erc20BalanceDAL.save({
-        blockchain,
-        account: supplier,
-        balance,
-      })
-
-      console.log('Init supply', blockchain, supplier, balance)
-    }
+    console.log(`Indexing`, JSON.stringify(config))
+    await this.initInitialSupply(config)
   }
 
   async filterEntity(
@@ -169,7 +138,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     const parsedFlowUpdatedExtensionEvents: StreamFlowUpdatedExtensionEvent[] =
       []
     const parsedBalances: ERC20Balance[] = []
-    const updatedAccountsToCalculateStreamBalance: string[] = []
+    const streamUpdatedAccountsSet: Set<string> = new Set()
 
     // @note: Parsing events
 
@@ -190,10 +159,8 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
           parsedFlowUpdatedEvents.push(parsedEvent)
 
           const { blockchain, from, to } = parsedEvent
-          updatedAccountsToCalculateStreamBalance.push(
-            `${blockchain}:${from}`,
-            `${blockchain}:${to}`,
-          )
+          streamUpdatedAccountsSet.add(`${blockchain}:${from}`)
+          streamUpdatedAccountsSet.add(`${blockchain}:${to}`)
 
           break
         }
@@ -201,9 +168,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
           parsedFlowUpdatedExtensionEvents.push(parsedEvent)
 
           const { blockchain, flowOperator } = parsedEvent
-          updatedAccountsToCalculateStreamBalance.push(
-            `${blockchain}:${flowOperator}`,
-          )
+          streamUpdatedAccountsSet.add(`${blockchain}:${flowOperator}`)
 
           break
         }
@@ -232,18 +197,23 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
       )
     }
 
-    if (updatedAccountsToCalculateStreamBalance.length) {
+    if (streamUpdatedAccountsSet.size) {
       // @note: don't block the indexing, just notify there should be a new calculation
-      this.processFlowsBuffer
-        .add(updatedAccountsToCalculateStreamBalance)
-        .catch(() => 'ignore')
+
+      const works = [...streamUpdatedAccountsSet].map((account) => ({
+        id: account,
+        time: Date.now(),
+        payload: undefined,
+      }))
+
+      await this.processUpdatedFlows.addWork(works)
     }
   }
 
   // -------------------------
 
   async getTransferEvents(
-    args: ERC20TransferEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<ERC20TransferEvent[]> {
     return getCommonEvents(
       args,
@@ -253,7 +223,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
   }
 
   async getFlowUpdatedEvents(
-    args: StreamFlowUpdatedEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<StreamFlowUpdatedEvent[]> {
     return getCommonEvents(
       args,
@@ -263,7 +233,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
   }
 
   async getFlowUpdatedExtensionEvents(
-    args: StreamFlowUpdatedExtensionEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<StreamFlowUpdatedExtensionEvent[]> {
     return getCommonEvents(
       args,
@@ -315,7 +285,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
   }
 
   // @note: Improve performance
-  async getBalances(args: CommonBalanceQueryArgs): Promise<Balance[]> {
+  async getBalances(args: CommonBalanceQueryArgs): Promise<CommonBalance[]> {
     const { blockchain } = args
     const reverse = args.reverse !== undefined ? args.reverse : true
 
@@ -382,7 +352,55 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
       )
   }
 
+  async getEvents(args: CommonEventQueryArgs): Promise<CommonEvent[]> {
+    throw new Error('Method not implemented')
+  }
+
   // --------------------------------
+
+  protected async initInitialSupply(
+    config: AccountIndexerRequestArgs,
+  ): Promise<void> {
+    const { blockchainId: blockchain, account } = config
+
+    const tokenContractAccount = this.context.apiClient
+      .useBlockchain(blockchain)
+      .normalizeAccount(blockchainTokenContract[blockchain])
+
+    // @note: base and avalanche are tracking multiple accounts
+    // only update initial supply if the account is the token contract
+    if (tokenContractAccount !== account) return
+
+    const { instanceName } = this.context
+    const supplier = initialSupplyAccount[blockchain]
+
+    // @note: Check if there is at leasst one transfer before overriding the
+    // balance with the initial supply
+    const supplierLastTransfer = await this.erc20TransferEventDAL
+      .useIndex(ERC20TransferEventDALIndex.BlockchainAccountHeightIndex)
+      .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
+
+    console.log(
+      'Account indexing',
+      instanceName,
+      blockchain,
+      account,
+      supplier,
+      supplierLastTransfer,
+    )
+
+    // @note: Init the initial supply if it is the first run (no transfers yet)
+    if (!supplierLastTransfer) {
+      const balance = blockchainTotalSupply[blockchain].toString('hex')
+      await this.erc20BalanceDAL.save({
+        blockchain,
+        account: supplier,
+        balance,
+      })
+
+      console.log('Init supply', blockchain, supplier, balance)
+    }
+  }
 
   protected getFlowUpdatedExtensionId(event: StreamFlowUpdatedEvent): string {
     // @note: FlowUpdated event looks like "base_19025563_0x19ba78b9cdb05a877718841c574325fdb53601bb_231"
@@ -392,15 +410,15 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     return `${blockchain}_${blockNumber}_${account}_${Number(logIndex) + 1}`
   }
 
-  protected async handleProcessFlows(bcAccounts: string[]): Promise<void> {
-    const uniqueAccounts = [...new Set(bcAccounts)]
+  protected async handleProcessUpdatedFlows(
+    works: PendingWork<void>[],
+  ): Promise<void> {
+    const uniqueAccounts = works.map((w) => w.id.split(':'))
 
     try {
-      for (const bcAccount of uniqueAccounts) {
-        const [blockchain, account] = bcAccount.split(':')
-
+      for (const [blockchain, account] of uniqueAccounts) {
         const entries = await this.streamFlowUpdatedEventDAL
-          .useIndex(StreamFlowUpdatedEventDALIndex.BlockchainAccountTimestamp)
+          .useIndex(StreamFlowUpdatedEventDALIndex.BlockchainAccountHeightIndex)
           .getAllValuesFromTo([blockchain, account], [blockchain, account], {
             reverse: false,
           })
@@ -464,7 +482,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
                 ? lastExtension?.depositBN
                 : undefined) || new BN(0)
 
-            const streamBalance: StreamBalance = {
+            const streamBalance = {
               id: state.id,
               blockchain,
               account,
@@ -473,7 +491,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
               deposit: bigNumberToUint256(depositBN),
               timestamp: state.timestamp,
               updates: state.updates,
-            }
+            } as StreamBalance
 
             return streamBalance
           }),

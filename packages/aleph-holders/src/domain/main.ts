@@ -1,17 +1,13 @@
 import { BlockchainChain } from '@aleph-indexer/framework'
 import { IndexerMainDomain } from '@aleph-indexer/framework'
 import {
-  ERC20Balance,
   ERC20TransferEvent,
-  ERC20TransferEventQueryArgs,
   StreamFlowUpdatedEvent,
-  StreamFlowUpdatedEventQueryArgs,
   StreamBalance,
-  StreamBalanceQueryArgs,
-  ERC20BalanceQueryArgs,
-  StreamFlowUpdatedExtensionEventQueryArgs,
   StreamFlowUpdatedExtensionEvent,
+  ERC20Balance,
 } from '../types/evm.js'
+import { CommonBalance, CommonEvent } from '../types/common.js'
 import {
   blockchainSuperfluidCFAContract,
   blockchainTokenContract,
@@ -21,7 +17,10 @@ import path from 'node:path'
 import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
 import { SPLTokenAccountMeta, SPLTokenAccountType } from '../types/solana.js'
-import { CommonBalanceQueryArgs } from '../types/common.js'
+import {
+  CommonBalanceQueryArgs,
+  CommonEventQueryArgs,
+} from '../types/common.js'
 
 export default class MainDomain extends IndexerMainDomain {
   async init(): Promise<void> {
@@ -96,7 +95,7 @@ export default class MainDomain extends IndexerMainDomain {
     ])
   }
 
-  async getBalances(args: CommonBalanceQueryArgs): Promise<ERC20Balance[]> {
+  async getBalances(args: CommonBalanceQueryArgs): Promise<CommonBalance[]> {
     const { blockchain } = args
     const [alephTokenSC] = this.accounts[blockchain].values()
 
@@ -108,13 +107,28 @@ export default class MainDomain extends IndexerMainDomain {
         args: [args],
       })
 
-    return response as ERC20Balance[]
+    return response as CommonBalance[]
+  }
+
+  async getEvents(args: CommonEventQueryArgs): Promise<CommonEvent[]> {
+    const { blockchain } = args
+    const [alephTokenSC] = this.accounts[blockchain].values()
+
+    const response = await this.context.apiClient
+      .useBlockchain(blockchain)
+      .invokeDomainMethod({
+        account: alephTokenSC,
+        method: 'getEvents',
+        args: [args],
+      })
+
+    return response as CommonEvent[]
   }
 
   // ------------------- DEBUG METHODS --------------
 
   async getTransferEvents(
-    args: ERC20TransferEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<ERC20TransferEvent[]> {
     const { blockchain } = args
     const alephTokenCotract = blockchainTokenContract[blockchain]
@@ -131,7 +145,7 @@ export default class MainDomain extends IndexerMainDomain {
   }
 
   async getFlowUpdatedEvents(
-    args: StreamFlowUpdatedEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<StreamFlowUpdatedEvent[]> {
     const { blockchain } = args
     const superfluidCFACotract = blockchainSuperfluidCFAContract[blockchain]
@@ -148,7 +162,7 @@ export default class MainDomain extends IndexerMainDomain {
   }
 
   async getFlowUpdatedExtensionEvents(
-    args: StreamFlowUpdatedExtensionEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<StreamFlowUpdatedExtensionEvent[]> {
     const { blockchain } = args
     const superfluidCFACotract = blockchainSuperfluidCFAContract[blockchain]
@@ -164,7 +178,9 @@ export default class MainDomain extends IndexerMainDomain {
     return response as StreamFlowUpdatedExtensionEvent[]
   }
 
-  async getERC20Balances(args: ERC20BalanceQueryArgs): Promise<ERC20Balance[]> {
+  async getERC20Balances(
+    args: CommonBalanceQueryArgs,
+  ): Promise<ERC20Balance[]> {
     const { blockchain } = args
     const [alephTokenSC] = this.accounts[blockchain].values()
 
@@ -180,7 +196,7 @@ export default class MainDomain extends IndexerMainDomain {
   }
 
   async getStreamBalances(
-    args: StreamBalanceQueryArgs,
+    args: CommonBalanceQueryArgs,
   ): Promise<StreamBalance[]> {
     const { blockchain } = args
     const superfluidCFACotract = blockchainSuperfluidCFAContract[blockchain]

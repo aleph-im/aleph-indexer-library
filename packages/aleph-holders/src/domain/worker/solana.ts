@@ -1,5 +1,6 @@
 import {
   AccountIndexerConfigWithMeta,
+  IndexableEntityType,
   IndexerDomainContext,
   ParserContext,
 } from '@aleph-indexer/framework'
@@ -17,22 +18,24 @@ import {
   SPLTokenAccountType,
   SPLTokenEvent,
   SPLTokenBalance,
-  SPLTokenBalanceQueryArgs,
-  SPLTokenEventQueryArgs,
+  SPLTokenEventInitializeAccount,
+  SPLTokenEventCloseAccount,
 } from '../../types/solana.js'
 import {
   createSPLTokenBalanceDAL,
   SPLTokenBalanceDALIndex,
 } from '../../dal/solana/splTokenBalance.js'
 import {
-  Balance,
+  CommonBalance,
   BlockchainWorkerI,
   CommonBalanceQueryArgs,
+  CommonEventQueryArgs,
+  CommonEvent,
 } from '../../types/common.js'
 import { SolanaEventParser } from '../parser/solana.js'
 import { getMintFromInstructionContext } from '../../utils/solana.js'
 import { blockchainTokenContract } from '../../utils/constants.js'
-import { Utils } from '@aleph-indexer/core'
+import { PendingWork, PendingWorkStorage, Utils } from '@aleph-indexer/core'
 import { createSPLTokenTrackAccountDAL } from '../../dal/solana/splTokenTrackAccount.js'
 import { getCommonBalances, getCommonEvents } from '../../utils/query.js'
 
@@ -44,60 +47,33 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     ),
     protected splTokenEventDAL = createSPLTokenEventDAL(context.dataPath),
     protected splTokenBalanceDAL = createSPLTokenBalanceDAL(context.dataPath),
-    protected processInitAccounts: Utils.BufferExec<string>,
-    protected processCloseAccounts: Utils.BufferExec<string>,
     protected parser = new SolanaEventParser(splTokenEventDAL),
     protected programId = TOKEN_PROGRAM_ID,
+    protected processTrackedAccounts: Utils.PendingWorkPool<void>,
   ) {
-    this.processInitAccounts = new Utils.BufferExec<string>(
-      this.handleInitAccounts.bind(this),
-      10,
-      1000 * 30,
-    )
+    this.processTrackedAccounts = new Utils.PendingWorkPool<void>({
+      id: `process-tracked-accounts`,
+      interval: 1000 * 30,
+      chunkSize: 1000,
+      concurrency: 1,
+      dal: new PendingWorkStorage({
+        name: 'process-tracked-accounts',
+        path: context.dataPath,
+      }),
+      handleWork: this.handleProcessTrackedAccounts.bind(this),
+      checkComplete: () => true,
+    })
 
-    this.processCloseAccounts = new Utils.BufferExec<string>(
-      this.handleCloseAccounts.bind(this),
-      10,
-      1000 * 30,
-    )
+    this.processTrackedAccounts.start()
   }
 
   async onNewAccount(
     config: AccountIndexerConfigWithMeta<SPLTokenAccountMeta>,
   ): Promise<void> {
-    const { blockchainId: blockchain, account, meta } = config
-
+    const { meta } = config
     console.log(`Indexing ${meta.type}`, JSON.stringify(config))
 
-    if (meta.type === SPLTokenAccountType.Mint) {
-      const mint = account
-
-      const trackedAccounts =
-        await this.splTokenTrackAccountDAL.getAllValuesFromTo(
-          [blockchain],
-          [blockchain],
-        )
-
-      for await (const entry of trackedAccounts) {
-        const { account } = entry
-        console.log('🟢', account)
-
-        // @note: don't block the indexing, just notify there should be a new calculation
-        this.processInitAccounts
-          .add(`${blockchain}:${mint}:${account}`)
-          .catch(() => 'ignore')
-      }
-
-      return
-    }
-
-    if (meta.type === SPLTokenAccountType.Account) {
-      const { mint } = meta
-
-      await this.splTokenTrackAccountDAL.save({ blockchain, mint, account })
-
-      return
-    }
+    await this.initTrackedAccounts(config)
   }
 
   async filterEntity(
@@ -116,6 +92,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     ;(entity.instruction as any)._mint = mint
 
     return mint === blockchainTokenContract[blockchainId]
+    // return mint === 'CsZ5LZkDS7h9TDKjrbL7VAwQZ9nsRu8vJLhRYfmGaN8K'
   }
 
   async indexEntities(
@@ -129,8 +106,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     // const mintAccount = blockchainTokenContract[blockchainId]
     // const isMintAccount = mintAccount === account
 
-    const initAccounts: string[] = []
-    const closeAccounts: string[] = []
+    const trackAccountsSet: Set<string> = new Set()
     const parsedEvents: SPLTokenEvent[] = []
     const parsedBalances: SPLTokenBalance[] = []
 
@@ -147,14 +123,9 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
 
       switch (parsedEvent.type) {
         case SPLTokenEventType.InitializeAccount:
-        case SPLTokenEventType.InitializeMint: {
-          const { blockchain, mint, account } = parsedEvent
-          initAccounts.push(`${blockchain}:${mint}:${account}`)
-          break
-        }
         case SPLTokenEventType.CloseAccount: {
           const { blockchain, mint, account } = parsedEvent
-          closeAccounts.push(`${blockchain}:${mint}:${account}`)
+          trackAccountsSet.add(`${blockchain}:${mint}:${account}`)
           break
         }
       }
@@ -168,18 +139,19 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       await this.splTokenBalanceDAL.save(parsedBalances)
     }
 
-    if (initAccounts.length) {
-      // @note: don't block the indexing, just notify there should be a new calculation
-      this.processInitAccounts.add(initAccounts).catch(() => 'ignore')
-    }
+    if (trackAccountsSet.size) {
+      const works = [...trackAccountsSet].map((account) => ({
+        id: account,
+        time: Date.now(),
+        payload: undefined,
+      }))
 
-    if (closeAccounts.length) {
       // @note: don't block the indexing, just notify there should be a new calculation
-      this.processCloseAccounts.add(closeAccounts).catch(() => 'ignore')
+      this.processTrackedAccounts.addWork(works).catch(() => 'ignore')
     }
   }
 
-  getBalances(args: SPLTokenBalanceQueryArgs): Promise<Balance[]> {
+  async getBalances(args: CommonBalanceQueryArgs): Promise<CommonBalance[]> {
     return getCommonBalances(
       args,
       this.splTokenBalanceDAL,
@@ -187,45 +159,168 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     )
   }
 
-  async getEvents(args: SPLTokenEventQueryArgs): Promise<SPLTokenEvent[]> {
+  async getEvents(args: CommonEventQueryArgs): Promise<CommonEvent[]> {
     return getCommonEvents(args, this.splTokenEventDAL, SPLTokenEventDALIndex)
   }
 
-  protected async handleInitAccounts(accounts: string[]): Promise<void> {
-    const uniqueAccounts = [...new Set(accounts)]
+  protected async handleProcessTrackedAccounts(
+    works: PendingWork<void>[],
+  ): Promise<void> {
+    const uniqueAccounts = works.map((w) => w.id.split(':'))
 
     try {
-      for (const bcAccount of uniqueAccounts) {
-        const [blockchain, mint, account] = bcAccount.split(':')
+      for (const [blockchain, mint, account] of uniqueAccounts) {
+        const trackedAccount =
+          await this.splTokenTrackAccountDAL.getFirstValueFromTo(
+            [blockchain, account],
+            [blockchain, account],
+          )
 
-        await this.context.apiClient.useBlockchain(blockchain).indexAccount({
+        if (!trackedAccount) {
+          await this.indexAccount(blockchain, mint, account)
+          continue
+        }
+
+        if (trackedAccount.completeHeight !== undefined) {
+          const newEvent = await this.splTokenEventDAL
+            .useIndex(SPLTokenEventDALIndex.BlockchainAccountHeightIndex)
+            .getFirstValueFromTo(
+              [blockchain, account, trackedAccount.completeHeight + 1],
+              [blockchain, account, undefined],
+            )
+
+          if (newEvent) {
+            await this.indexAccount(blockchain, mint, account)
+          }
+
+          continue
+        }
+
+        // @note: From here check if the tracked account can be mark as complete
+
+        const accountState = await this.context.apiClient
+          .useBlockchain(blockchain)
+          .getAccountState({ account, type: IndexableEntityType.Transaction })
+
+        console.log('🎾 1 Account state', account, accountState)
+
+        if (!accountState) continue
+
+        const { accurate, pending } = accountState
+        if (!accurate || pending.length) continue
+
+        const entries = await this.splTokenEventDAL
+          .useIndex(SPLTokenEventDALIndex.BlockchainAccountHeightIndex)
+          .getAllValuesFromTo([blockchain, account], [blockchain, account], {
+            reverse: false,
+          })
+
+        const lastState: {
+          event?: SPLTokenEventInitializeAccount | SPLTokenEventCloseAccount
+          valid: boolean
+        } = {
+          event: undefined,
+          valid: false,
+        }
+
+        for await (const event of entries) {
+          const { type } = event
+
+          if (
+            type !== SPLTokenEventType.InitializeAccount &&
+            type !== SPLTokenEventType.CloseAccount
+          )
+            continue
+
+          const lastEvent = lastState.event
+          lastState.event = event
+          if (!lastEvent) continue
+
+          lastState.valid =
+            lastEvent.height <= event.height &&
+            ((lastEvent.type === SPLTokenEventType.InitializeAccount &&
+              event.type === SPLTokenEventType.CloseAccount) ||
+              (lastEvent.type === SPLTokenEventType.CloseAccount &&
+                event.type === SPLTokenEventType.InitializeAccount))
+
+          console.log('🎾 2 Account state update', account, lastState)
+
+          if (!lastState.valid) break
+        }
+
+        if (!lastState.valid) continue
+        if (lastState.event?.type !== SPLTokenEventType.CloseAccount) continue
+
+        await this.context.apiClient.useBlockchain(blockchain).deleteAccount({
           account,
           partitionKey: mint,
           index: { transactions: true },
-          meta: {
-            type: SPLTokenAccountType.Account,
-            mint,
-          },
-        } as any)
+        })
+
+        console.log('🎾 Remove account track', account)
+
+        await this.splTokenTrackAccountDAL.save({
+          blockchain,
+          mint,
+          account,
+          completeHeight: lastState.event.height,
+        })
       }
     } catch (e) {
       console.log(e)
     }
   }
 
-  protected async handleCloseAccounts(accounts: string[]): Promise<void> {
-    // const uniqueAccounts = [...new Set(accounts)]
-    // try {
-    //   for (const bcAccount of uniqueAccounts) {
-    //     const [blockchain, mint, account] = bcAccount.split(':')
-    //     await this.context.apiClient.useBlockchain(blockchain).deleteAccount({
-    //       account,
-    //       partitionKey: mint,
-    //       index: { transactions: false },
-    //     })
-    //   }
-    // } catch (e) {
-    //   console.log(e)
-    // }
+  protected async initTrackedAccounts(
+    config: AccountIndexerConfigWithMeta<SPLTokenAccountMeta>,
+  ): Promise<void> {
+    const { blockchainId: blockchain, account, meta } = config
+    const { type } = meta
+
+    if (type === SPLTokenAccountType.Mint) {
+      const mint = account
+
+      const trackedAccounts =
+        await this.splTokenTrackAccountDAL.getAllValuesFromTo(
+          [blockchain],
+          [blockchain],
+        )
+
+      for await (const entry of trackedAccounts) {
+        const { account, completeHeight } = entry
+        if (completeHeight !== undefined) continue
+        await this.indexAccount(blockchain, mint, account)
+      }
+
+      return
+    }
+
+    if (type === SPLTokenAccountType.Account) {
+      const { mint } = meta
+
+      await this.splTokenTrackAccountDAL.save({
+        blockchain,
+        mint,
+        account,
+      })
+    }
+
+    return
+  }
+
+  protected async indexAccount(
+    blockchain: string,
+    mint: string,
+    account: string,
+  ): Promise<void> {
+    await this.context.apiClient.useBlockchain(blockchain).indexAccount({
+      account,
+      partitionKey: mint,
+      index: { transactions: true },
+      meta: {
+        type: SPLTokenAccountType.Account,
+        mint,
+      },
+    } as any)
   }
 }

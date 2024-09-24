@@ -167,7 +167,7 @@ async function getMintFromEventsDatabase(
 ): Promise<string | undefined> {
   for (const account of accounts) {
     const dbEvent = await eventDAL
-      .useIndex(SPLTokenEventDALIndex.BlockchainAccountHeight)
+      .useIndex(SPLTokenEventDALIndex.BlockchainAccountHeightIndex)
       .getFirstValueFromTo([blockchain, account], [blockchain, account], {
         atomic: true,
       })

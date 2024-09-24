@@ -1,10 +1,5 @@
 import BN from 'bn.js'
-import {
-  CommonBalance,
-  CommonBalanceQueryArgs,
-  CommonEvent,
-  CommonEventQueryArgs,
-} from './common'
+import { CommonBalance, CommonEvent } from './common'
 
 export enum EVMEventType {
   Transfer = 'transfer',
@@ -70,11 +65,7 @@ export type EVMEvent =
 
 // ------------------------
 
-export type ERC20Balance = CommonBalance & {
-  balance: string // uint256 hex
-  balanceNum?: number
-  balanceBN?: BN
-}
+export type ERC20Balance = CommonBalance
 
 export type StreamBalance = CommonBalance & {
   id: string
@@ -88,9 +79,6 @@ export type StreamBalance = CommonBalance & {
   realTimeBalance?: string // uint256 hex
   realTimeBalanceNum?: number
   realTimeBalanceBN?: BN
-  balance?: string // uint256 hex
-  balanceNum?: number
-  balanceBN?: BN
   deposit: string // uint256 hex
   depositNum?: number
   depositBN?: BN
@@ -104,15 +92,3 @@ export enum EventSignature {
 }
 
 // -------------------------
-
-export type ERC20TransferEventQueryArgs = CommonEventQueryArgs
-
-export type StreamFlowUpdatedEventQueryArgs = CommonEventQueryArgs
-
-export type StreamFlowUpdatedExtensionEventQueryArgs = CommonEventQueryArgs
-
-// ------------------------
-
-export type ERC20BalanceQueryArgs = CommonBalanceQueryArgs
-
-export type StreamBalanceQueryArgs = CommonBalanceQueryArgs

@@ -1,10 +1,6 @@
 import { BlockchainId } from '@aleph-indexer/framework'
 import { TokenInfo } from '@solana/spl-token-registry'
-import {
-  CommonBalanceQueryArgs,
-  CommonEvent,
-  CommonEventQueryArgs,
-} from './common'
+import { CommonEvent } from './common'
 
 /**
  * RAW INSTRUCTIONS
@@ -367,77 +363,88 @@ export type SPLTokenEventBase = CommonEvent & {
   id: string
   blockchain: BlockchainId
   timestamp: number
-  slot: number
   type: SPLTokenEventType
+  height: number
   mint: string
-  account?: string
-  owner?: string
-  balance?: string
+  transaction: string
 }
 
-export type SPLTokenEventMint = SPLTokenEventBase & {
+export type SPLTokenEventBaseWithAccountAndBalance = SPLTokenEventBase & {
+  account: string
+  balance: string
+  owner?: string
+}
+
+export type SPLTokenEventInitializeAccount =
+  SPLTokenEventBaseWithAccountAndBalance & {
+    type: SPLTokenEventType.InitializeAccount
+  }
+
+export type SPLTokenEventMint = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.MintTo
   amount: string
 }
 
-export type SPLTokenEventBurn = SPLTokenEventBase & {
+export type SPLTokenEventBurn = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Burn
   amount: string
 }
 
-export type SPLTokenEventInitializeAccount = SPLTokenEventBase & {
-  type: SPLTokenEventType.InitializeAccount
-  account: string
-}
+export type SPLTokenEventCloseAccount =
+  SPLTokenEventBaseWithAccountAndBalance & {
+    type: SPLTokenEventType.CloseAccount
+    toAccount: string
+    toBalance: string
+    owner: string
+    toOwner?: string
+  }
 
-export type SPLTokenEventCloseAccount = SPLTokenEventBase & {
-  type: SPLTokenEventType.CloseAccount
-  toAccount?: string
-}
-
-export type SPLTokenEventTransfer = SPLTokenEventBase & {
+export type SPLTokenEventTransfer = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Transfer
   amount: string
-  account: string
   toAccount: string
-  balance?: string
-  toBalance?: string
-  owner?: string
+  toBalance: string
   toOwner?: string
 }
 
-export type SPLTokenEventSetAuthority = SPLTokenEventBase & {
-  type: SPLTokenEventType.SetAuthority
-  newOwner: string
-  authorityType: AuthorityType
-}
+export type SPLTokenEventSetAuthority =
+  SPLTokenEventBaseWithAccountAndBalance & {
+    type: SPLTokenEventType.SetAuthority
+    newOwner: string
+    authorityType: AuthorityType
+    owner: string
+  }
 
-export type SPLTokenEventApprove = SPLTokenEventBase & {
+export type SPLTokenEventApprove = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Approve
   amount: string
   delegate: string
+  owner: string
 }
 
-export type SPLTokenEventRevoke = SPLTokenEventBase & {
+export type SPLTokenEventRevoke = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Revoke
+  owner: string
 }
 
-export type SPLTokenEventSyncNative = SPLTokenEventBase & {
+export type SPLTokenEventSyncNative = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.SyncNative
 }
 
-export type SPLTokenEventInitializeMint = SPLTokenEventBase & {
-  type: SPLTokenEventType.InitializeMint
-}
+export type SPLTokenEventInitializeMint =
+  SPLTokenEventBaseWithAccountAndBalance & {
+    type: SPLTokenEventType.InitializeMint
+  }
 
-export type SPLTokenEventInitializeImmutableOwner = SPLTokenEventBase & {
-  type: SPLTokenEventType.InitializeImmutableOwner
-}
+export type SPLTokenEventInitializeImmutableOwner =
+  SPLTokenEventBaseWithAccountAndBalance & {
+    type: SPLTokenEventType.InitializeImmutableOwner
+  }
 
 export type SPLTokenEvent =
+  | SPLTokenEventInitializeAccount
   | SPLTokenEventMint
   | SPLTokenEventBurn
-  | SPLTokenEventInitializeAccount
   | SPLTokenEventCloseAccount
   | SPLTokenEventTransfer
   | SPLTokenEventSetAuthority
@@ -448,9 +455,9 @@ export type SPLTokenEvent =
   | SPLTokenEventInitializeImmutableOwner
 
 export type SPLTokenIncompleteEvent =
+  | IncompleteEvent<SPLTokenEventInitializeAccount>
   | IncompleteEvent<SPLTokenEventMint>
   | IncompleteEvent<SPLTokenEventBurn>
-  | IncompleteEvent<SPLTokenEventInitializeAccount>
   | IncompleteEvent<SPLTokenEventCloseAccount>
   | IncompleteEvent<SPLTokenEventTransfer>
   | IncompleteEvent<SPLTokenEventSetAuthority>
@@ -474,12 +481,12 @@ export type SPLTokenEventPublic = SPLTokenEvent & { tokenInfo: TokenInfo }
 
 export type SPLTokenBalance = {
   blockchain: BlockchainId
-  slot: number
+  height: number
   timestamp: number
-  account: string
   mint: string
-  owner?: string
+  account: string
   balance: string
+  owner?: string
 }
 
 // ------------------------
@@ -515,12 +522,7 @@ export type SPLTokenTrackAccount = {
   blockchain: BlockchainId
   account: string
   mint: string
+  completeHeight?: number
 }
 
 // -------------------------
-
-export type SPLTokenEventQueryArgs = CommonEventQueryArgs
-
-// ------------------------
-
-export type SPLTokenBalanceQueryArgs = CommonBalanceQueryArgs

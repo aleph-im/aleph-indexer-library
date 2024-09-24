@@ -160,13 +160,14 @@ export class EVMEventParser {
   ): CommonEvent {
     const timestamp = entity.timestamp
     const id = `${blockchain}_${entity.id}`
-    const { height, transactionHash: transaction } = entity
+    const { height, transactionHash: transaction, logIndex: index } = entity
 
     return {
       blockchain,
       id,
       timestamp,
       height,
+      index,
       transaction,
       type,
     }

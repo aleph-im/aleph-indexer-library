@@ -22,20 +22,19 @@ import {
   SolanaParsedInstructionContext,
 } from '@aleph-indexer/solana'
 import {
-  ERC20TransferEventQueryArgs,
   ERC20TransferEvent,
   ERC20Balance,
   StreamFlowUpdatedEvent,
-  StreamFlowUpdatedEventQueryArgs,
   StreamFlowUpdatedExtensionEvent,
   StreamBalance,
-  StreamFlowUpdatedExtensionEventQueryArgs,
 } from '../types/evm.js'
 import blockchainWorkerClass from './worker/index.js'
 import {
-  Balance,
   BlockchainWorkerI,
   CommonBalanceQueryArgs,
+  CommonEventQueryArgs,
+  CommonBalance,
+  CommonEvent,
 } from '../types/common.js'
 
 export default class WorkerDomain
@@ -157,9 +156,17 @@ export default class WorkerDomain
   async getBalances(
     account: string,
     args: CommonBalanceQueryArgs,
-  ): Promise<Balance[]> {
+  ): Promise<CommonBalance[]> {
     const worker = this.blockchainWorker[args.blockchain]
     return worker.getBalances(args)
+  }
+
+  async getEvents(
+    account: string,
+    args: CommonEventQueryArgs,
+  ): Promise<CommonEvent[]> {
+    const worker = this.blockchainWorker[args.blockchain]
+    return worker.getEvents(args)
   }
 
   // ------------------- DEBUG METHODS -------------------------
@@ -174,7 +181,7 @@ export default class WorkerDomain
 
   async getTransferEvents(
     account: string,
-    args: ERC20TransferEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<ERC20TransferEvent[]> {
     const worker: any = this.blockchainWorker[args.blockchain]
     return worker.getTransferEvents(args)
@@ -182,7 +189,7 @@ export default class WorkerDomain
 
   async getFlowUpdatedEvents(
     account: string,
-    args: StreamFlowUpdatedEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<StreamFlowUpdatedEvent[]> {
     const worker: any = this.blockchainWorker[args.blockchain]
     return worker.getFlowUpdatedEvents(args)
@@ -190,7 +197,7 @@ export default class WorkerDomain
 
   async getFlowUpdatedExtensionEvents(
     account: string,
-    args: StreamFlowUpdatedExtensionEventQueryArgs,
+    args: CommonEventQueryArgs,
   ): Promise<StreamFlowUpdatedExtensionEvent[]> {
     const worker: any = this.blockchainWorker[args.blockchain]
     return worker.getFlowUpdatedExtensionEvents(args)
