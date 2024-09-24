@@ -85,13 +85,12 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
       handleWork: this.handleProcessUpdatedFlows.bind(this),
       checkComplete: () => true,
     })
-
-    this.processUpdatedFlows.start()
   }
 
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
     console.log(`Indexing`, JSON.stringify(config))
     await this.initInitialSupply(config)
+    await this.processUpdatedFlows.start()
   }
 
   async filterEntity(

@@ -63,8 +63,6 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       handleWork: this.handleProcessTrackedAccounts.bind(this),
       checkComplete: () => true,
     })
-
-    this.processTrackedAccounts.start()
   }
 
   async onNewAccount(
@@ -146,8 +144,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
         payload: undefined,
       }))
 
-      // @note: don't block the indexing, just notify there should be a new calculation
-      this.processTrackedAccounts.addWork(works).catch(() => 'ignore')
+      await this.processTrackedAccounts.addWork(works)
     }
   }
 
@@ -286,11 +283,27 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           [blockchain],
         )
 
+      console.log('🍕0')
       for await (const entry of trackedAccounts) {
         const { account, completeHeight } = entry
+        console.log('🍕1', account)
+
         if (completeHeight !== undefined) continue
+
         await this.indexAccount(blockchain, mint, account)
+
+        console.log('🍕2')
+
+        await this.processTrackedAccounts.addWork({
+          id: `${blockchain}:${mint}:${account}`,
+          time: Date.now(),
+          payload: undefined,
+        })
+
+        console.log('🍕3')
       }
+
+      await this.processTrackedAccounts.start()
 
       return
     }
@@ -303,6 +316,8 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
         mint,
         account,
       })
+
+      console.log('🍕🍕', account)
     }
 
     return
