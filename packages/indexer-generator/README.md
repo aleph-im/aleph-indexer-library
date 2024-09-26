@@ -107,7 +107,7 @@ Get the current indexing state of a specified account entity or all indexed acco
 {
   accountState(account:"ELMTgR1fLdJeENJKWGWz3eCH8URpaSuPfCyAaphELTVJ", blockchain: "solana", type: transaction) {
     account
-    accurate
+    completeHistory
     progress
     pending
     processed
@@ -115,7 +115,7 @@ Get the current indexing state of a specified account entity or all indexed acco
 }
 ```
 Query response properties:
-- accurate: If covers the complete transaction history.
+- completeHistory: If covers the complete transaction history.
 - progress: Percentage of transactions indexed out of the total identified.
 - pending: An array of ISO-formatted date ranges indicating the transaction ranges yet to be indexed.
 - processed: An array of ISO-formatted date ranges indicating the transaction ranges that have been successfully indexed.

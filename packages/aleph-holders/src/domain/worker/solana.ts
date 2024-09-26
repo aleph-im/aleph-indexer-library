@@ -217,8 +217,8 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
 
         if (!accountState) continue
 
-        const { accurate, pending } = accountState
-        if (!accurate || pending.length) continue
+        const { completeHistory, pending } = accountState
+        if (!completeHistory || pending.length) continue
 
         const entries = await this.splTokenEventDAL
           .useIndex(SPLTokenEventDALIndex.BlockchainAccountHeightIndex)
