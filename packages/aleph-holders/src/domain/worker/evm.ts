@@ -380,7 +380,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
       .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
 
     const supplierLastBalance = await this.erc20BalanceDAL
-      .useIndex(ERC20TransferEventDALIndex.BlockchainAccountHeightIndex)
+      .useIndex(ERC20BalanceDALIndex.BlockchainAccount)
       .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
 
     // @note: We need to check that there is no previous balance, and that there isn't any event
