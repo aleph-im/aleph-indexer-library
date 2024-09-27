@@ -123,7 +123,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
         case SPLTokenEventType.InitializeAccount:
         case SPLTokenEventType.CloseAccount: {
           const { blockchain, mint, account } = parsedEvent
-          trackAccountsSet.add(`${blockchain}:${mint}:${account}`)
+          trackAccountsSet.add(`${blockchain}_${mint}_${account}`)
           break
         }
       }
@@ -138,8 +138,8 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     }
 
     if (trackAccountsSet.size) {
-      const works = [...trackAccountsSet].map((account) => ({
-        id: account,
+      const works = [...trackAccountsSet].map((id) => ({
+        id,
         time: Date.now(),
         payload: undefined,
       }))
@@ -163,10 +163,12 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
   protected async handleProcessTrackedAccounts(
     works: PendingWork<void>[],
   ): Promise<void> {
-    const uniqueAccounts = works.map((w) => w.id.split(':'))
+    const uniqueAccounts = works.map((w) => w.id.split('_'))
 
     try {
       for (const [blockchain, mint, account] of uniqueAccounts) {
+        console.log('🎾 Solana Process tracked account', blockchain, account)
+
         const trackedAccount =
           await this.splTokenTrackAccountDAL.getFirstValueFromTo(
             [blockchain, account],
@@ -188,7 +190,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
 
           if (newEvent) {
             console.log(
-              '🎾0 re-index ',
+              '🎾 Solana 0 re-index ',
               account,
               newEvent.height,
               trackedAccount.completeHeight,
@@ -199,7 +201,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
             continue
           }
           console.log(
-            '🎾1 account complete',
+            '🎾 Solana 1 account complete',
             account,
             trackedAccount.completeHeight,
           )
@@ -213,7 +215,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           .useBlockchain(blockchain)
           .getAccountState({ account, type: IndexableEntityType.Transaction })
 
-        console.log('🎾2 Account state', account, accountState)
+        console.log('🎾 Solana 2 Account state', account, accountState)
 
         if (!accountState) continue
 
@@ -254,7 +256,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
               (lastEvent.type === SPLTokenEventType.CloseAccount &&
                 event.type === SPLTokenEventType.InitializeAccount))
 
-          console.log('🎾3 Account state update', account, lastState)
+          console.log('🎾 Solana 3 Account state update', account, lastState)
 
           if (!lastState.valid) break
         }
@@ -268,7 +270,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           index: { transactions: true },
         })
 
-        console.log('🎾4 Remove account track', account)
+        console.log('🎾 Solana 4 Remove account track', account)
 
         await this.splTokenTrackAccountDAL.save({
           blockchain,
@@ -297,31 +299,29 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           [blockchain],
         )
 
-      console.log('🍕0')
+      console.log('🍕 Solana 0')
 
       const works = []
 
       for await (const entry of trackedAccounts) {
         const { account, completeHeight } = entry
-        console.log('🍕1', account)
+        console.log('🍕 Solana 1', account)
 
         if (completeHeight !== undefined) continue
 
         await this.indexAccount(blockchain, mint, account)
 
-        console.log('🍕2', account)
+        console.log('🍕 Solana 2', account)
 
         works.push({
-          id: `${blockchain}:${mint}:${account}`,
+          id: `${blockchain}_${mint}_${account}`,
           time: Date.now(),
           payload: undefined,
         })
-
-        console.log('🍕3', account)
       }
 
       await this.processTrackedAccounts.addWork(works)
-      console.log('🍕4', account)
+      console.log('🍕 Solana 3', account)
 
       await this.processTrackedAccounts.start()
 
@@ -337,7 +337,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
         account,
       })
 
-      console.log('🍕🍕', account)
+      console.log('🍕🍕 Solana', account)
     }
 
     return

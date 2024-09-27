@@ -5,7 +5,7 @@ import {
   AccountIndexerRequestArgs,
   ParserContext,
 } from '@aleph-indexer/framework'
-import { PendingWork, PendingWorkStorage, Utils } from '@aleph-indexer/core'
+import { PendingWork, Utils } from '@aleph-indexer/core'
 import { EthereumParsedLog } from '@aleph-indexer/ethereum'
 import {
   EventSignature,
@@ -34,6 +34,7 @@ import {
   getBNFormats,
   getStreamRealTimeBalance,
   getStreamTotalBalance,
+  blockchainSuperfluidCFAContract,
 } from '../../utils/index.js'
 import {
   StreamFlowUpdatedEventDALIndex,
@@ -55,10 +56,12 @@ import {
   CommonEventQueryArgs,
 } from '../../types/common.js'
 import { getCommonBalances, getCommonEvents } from '../../utils/query.js'
+import { createProcessUpdatedFlowDAL } from '../../dal/evm/processUpdatedFlow.js'
 
 export default class EVMWorkerDomain implements BlockchainWorkerI {
   constructor(
     protected context: IndexerDomainContext,
+    protected processUpdatedFlows: Utils.PendingWorkPool<void>,
     protected erc20TransferEventDAL = createERC20TransferEventDAL(
       context.dataPath,
     ),
@@ -70,18 +73,18 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     ),
     protected erc20BalanceDAL = createERC20BalanceDAL(context.dataPath),
     protected streamBalanceDAL = createStreamBalanceDAL(context.dataPath),
+    protected processUpdatedFlowDAL = createProcessUpdatedFlowDAL(
+      context.dataPath,
+    ),
+
     protected parser = new EVMEventParser(),
-    protected processUpdatedFlows: Utils.PendingWorkPool<void>,
   ) {
     this.processUpdatedFlows = new Utils.PendingWorkPool<void>({
       id: `process-updated-flows`,
       interval: 0,
       chunkSize: 100,
       concurrency: 1,
-      dal: new PendingWorkStorage({
-        name: 'process-flows',
-        path: context.dataPath,
-      }),
+      dal: this.processUpdatedFlowDAL,
       handleWork: this.handleProcessUpdatedFlows.bind(this),
       checkComplete: () => true,
     })
@@ -90,7 +93,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
     console.log(`Indexing`, JSON.stringify(config))
     await this.initInitialSupply(config)
-    await this.processUpdatedFlows.start()
+    await this.initUpdatedFlows(config)
   }
 
   async filterEntity(
@@ -199,11 +202,15 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     if (streamUpdatedAccountsSet.size) {
       // @note: don't block the indexing, just notify there should be a new calculation
 
-      const works = [...streamUpdatedAccountsSet].map((account) => ({
-        id: account,
-        time: Date.now(),
-        payload: undefined,
-      }))
+      const time = Date.now()
+
+      const works = [...streamUpdatedAccountsSet].map((id) => {
+        return {
+          id: `${id}_${time}`,
+          time,
+          payload: undefined,
+        }
+      })
 
       await this.processUpdatedFlows.addWork(works)
     }
@@ -362,13 +369,13 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
   ): Promise<void> {
     const { blockchainId: blockchain, account } = config
 
-    const tokenContractAccount = this.context.apiClient
+    const contractAccount = this.context.apiClient
       .useBlockchain(blockchain)
       .normalizeAccount(blockchainTokenContract[blockchain])
 
     // @note: base and avalanche are tracking multiple accounts (streams account)
     // only update initial supply if the account is the token contract
-    if (tokenContractAccount !== account) return
+    if (contractAccount !== account) return
 
     const { instanceName } = this.context
     const supplier = initialSupplyAccount[blockchain]
@@ -398,6 +405,59 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     }
   }
 
+  protected async initUpdatedFlows(
+    config: AccountIndexerRequestArgs,
+  ): Promise<void> {
+    const { blockchainId: blockchain, account } = config
+
+    const contractAccount = this.context.apiClient
+      .useBlockchain(blockchain)
+      .normalizeAccount(blockchainSuperfluidCFAContract[blockchain])
+
+    // @note: base and avalanche are tracking multiple accounts (streams account)
+    // only update initial supply if the account is the token contract
+    if (contractAccount !== account) return
+
+    const updateEvents = await this.streamFlowUpdatedEventDAL
+      .useIndex(StreamFlowUpdatedEventDALIndex.BlockchainTimestampIndex)
+      .getAllValuesFromTo([blockchain], [blockchain])
+
+    console.log('🍕 EVM 0')
+
+    const dedupWorks: Record<string, PendingWork<void>> = {}
+
+    for await (const entry of updateEvents) {
+      const { from, to } = entry
+
+      console.log('🍕 EVM 1', from)
+      console.log('🍕 EVM 1', to)
+
+      const time = Date.now()
+      const payload = undefined
+
+      dedupWorks[from] = {
+        id: `${from}_${time}`,
+        time,
+        payload,
+      }
+
+      dedupWorks[to] = {
+        id: `${to}_${time}`,
+        time,
+        payload,
+      }
+    }
+
+    const works = Object.values(dedupWorks)
+    await this.processUpdatedFlows.addWork(works)
+
+    console.log('🍕 EVM 2', account)
+
+    await this.processUpdatedFlows.start()
+
+    return
+  }
+
   protected getFlowUpdatedExtensionId(event: StreamFlowUpdatedEvent): string {
     // @note: FlowUpdated event looks like "base_19025563_0x19ba78b9cdb05a877718841c574325fdb53601bb_231"
     // @note: FlowUpdatedExtension is always the next log index in the same transaction, so it would be: "base_19025563_0x19ba78b9cdb05a877718841c574325fdb53601bb_232"
@@ -409,10 +469,12 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
   protected async handleProcessUpdatedFlows(
     works: PendingWork<void>[],
   ): Promise<void> {
-    const uniqueAccounts = works.map((w) => w.id.split(':'))
+    const uniqueAccounts = works.map((w) => w.id.split('_'))
 
     try {
       for (const [blockchain, account] of uniqueAccounts) {
+        console.log('🎾 EVM Process updated stream', blockchain, account)
+
         const entries = await this.streamFlowUpdatedEventDAL
           .useIndex(StreamFlowUpdatedEventDALIndex.BlockchainAccountHeightIndex)
           .getAllValuesFromTo([blockchain, account], [blockchain, account], {
