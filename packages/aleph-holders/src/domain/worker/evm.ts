@@ -366,30 +366,27 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
       .useBlockchain(blockchain)
       .normalizeAccount(blockchainTokenContract[blockchain])
 
-    // @note: base and avalanche are tracking multiple accounts
+    // @note: base and avalanche are tracking multiple accounts (streams account)
     // only update initial supply if the account is the token contract
     if (tokenContractAccount !== account) return
 
     const { instanceName } = this.context
     const supplier = initialSupplyAccount[blockchain]
 
-    // @note: Check if there is at leasst one transfer before overriding the
-    // balance with the initial supply
+    console.log('Account indexing', instanceName, blockchain, account, supplier)
+
     const supplierLastTransfer = await this.erc20TransferEventDAL
       .useIndex(ERC20TransferEventDALIndex.BlockchainAccountHeightIndex)
       .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
 
-    console.log(
-      'Account indexing',
-      instanceName,
-      blockchain,
-      account,
-      supplier,
-      supplierLastTransfer,
-    )
+    const supplierLastBalance = await this.erc20BalanceDAL
+      .useIndex(ERC20TransferEventDALIndex.BlockchainAccountHeightIndex)
+      .getLastValueFromTo([blockchain, supplier], [blockchain, supplier])
 
-    // @note: Init the initial supply if it is the first run (no transfers yet)
-    if (!supplierLastTransfer) {
+    // @note: We need to check that there is no previous balance, and that there isn't any event
+    // of the supplier account yet, to make sure it is the first time and the account balance is pristine
+    // (otherwise outgoing transfers could have set the balance to 0 and deleted it from the dal)
+    if (!supplierLastTransfer && !supplierLastBalance) {
       const balance = blockchainTotalSupply[blockchain].toString('hex')
       await this.erc20BalanceDAL.save({
         blockchain,
