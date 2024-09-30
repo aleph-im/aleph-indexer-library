@@ -12,9 +12,11 @@ import {
   SPLTokenEventType,
 } from '../../types/solana.js'
 import {
-  getAccountsFromEvent,
+  getAllIndexableAccountsFromEvent,
   getBalanceFromEvent,
   getMintFromInstructionContext,
+  getOwnerFromEvent,
+  getOwnerFromInstructionContext,
 } from '../../utils/solana.js'
 import { bigNumberToUint256 } from '../../utils/numbers.js'
 import BN from 'bn.js'
@@ -22,22 +24,13 @@ import BN from 'bn.js'
 export class SolanaEventParser {
   constructor(protected eventDAL: SPLTokenEventStorage) {}
 
-  async parseBalance(
-    blockchain: BlockchainId,
-    ixCtx: SolanaParsedInstructionContext,
-  ): Promise<SPLTokenBalance[]> {
-    const event = await this.parseEvent(blockchain, ixCtx)
-    if (!event) return []
-
-    return this.parseBalanceFromEvent(event)
-  }
-
   parseBalanceFromEvent(event: SPLTokenEvent): SPLTokenBalance[] {
-    const { blockchain, height, mint, owner, timestamp } = event
-    const accounts = getAccountsFromEvent(event)
+    const { blockchain, height, mint, timestamp } = event
+    const accounts = getAllIndexableAccountsFromEvent(event)
 
     return accounts.map((account) => {
       const balance = getBalanceFromEvent(event, account) || '0'
+      const owner = getOwnerFromEvent(event, account) || '0'
 
       return {
         blockchain,
@@ -64,6 +57,7 @@ export class SolanaEventParser {
     const height = this.parseSlot(ixCtx)
     const index = this.parseIndex(ixCtx)
     const transaction = parentTransaction.signature
+
     // @note: We filtered by mint previously so mint is always defined
     const mint = (await getMintFromInstructionContext(
       blockchain,
@@ -100,8 +94,14 @@ export class SolanaEventParser {
       case SPLTokenEventType.InitializeAccount:
       case SPLTokenEventType.InitializeAccount2:
       case SPLTokenEventType.InitializeAccount3: {
-        const { account, owner } = parsed.info
+        const { account } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
 
         console.log('---> init account => ', account, baseEvent.id)
 
@@ -116,22 +116,33 @@ export class SolanaEventParser {
 
       case SPLTokenEventType.InitializeMint:
       case SPLTokenEventType.InitializeMint2: {
-        const { mint, mintAuthority } = parsed.info
-        const account = mint
+        const { mint: account } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.InitializeMint,
           account,
           balance,
-          owner: mintAuthority,
+          owner,
         }
       }
 
       case SPLTokenEventType.MintTo: {
         const { account, amount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
@@ -139,6 +150,7 @@ export class SolanaEventParser {
           amount,
           account,
           balance,
+          owner,
         }
       }
 
@@ -148,6 +160,12 @@ export class SolanaEventParser {
           tokenAmount: { amount },
         } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
@@ -155,12 +173,19 @@ export class SolanaEventParser {
           amount,
           account,
           balance,
+          owner,
         }
       }
 
       case SPLTokenEventType.Burn: {
         const { account, amount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
 
         return {
           ...baseEvent,
@@ -168,6 +193,7 @@ export class SolanaEventParser {
           amount,
           account,
           balance,
+          owner,
         }
       }
 
@@ -177,6 +203,12 @@ export class SolanaEventParser {
           tokenAmount: { amount },
         } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
 
         return {
           ...baseEvent,
@@ -184,6 +216,7 @@ export class SolanaEventParser {
           amount,
           account,
           balance,
+          owner,
         }
       }
 
@@ -191,8 +224,12 @@ export class SolanaEventParser {
         const { account, destination: toAccount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
         const toBalance = this.getTokenBalance(parentTransaction, toAccount)
-        const owner =
-          'owner' in parsed.info ? parsed.info.owner : parsed.info.multisigOwner
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
 
         return {
           ...baseEvent,
@@ -202,7 +239,6 @@ export class SolanaEventParser {
           toAccount,
           toBalance,
           owner,
-          // toOwner,
         }
       }
 
@@ -210,6 +246,18 @@ export class SolanaEventParser {
         const { source: account, destination: toAccount, amount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
         const toBalance = this.getTokenBalance(parentTransaction, toAccount)
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
+        const toOwner = await getOwnerFromInstructionContext(
+          blockchain,
+          toAccount,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
@@ -219,8 +267,8 @@ export class SolanaEventParser {
           balance,
           toAccount,
           toBalance,
-          // owner,
-          // toOwner,
+          owner,
+          toOwner,
         }
       }
 
@@ -230,9 +278,20 @@ export class SolanaEventParser {
           destination: toAccount,
           tokenAmount: { amount },
         } = parsed.info
-
         const balance = this.getTokenBalance(parentTransaction, account)
         const toBalance = this.getTokenBalance(parentTransaction, toAccount)
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
+        const toOwner = await getOwnerFromInstructionContext(
+          blockchain,
+          toAccount,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
@@ -242,19 +301,20 @@ export class SolanaEventParser {
           balance,
           toBalance,
           toAccount,
-          // owner,
-          // toOwner,
+          owner,
+          toOwner,
         }
       }
 
       case SPLTokenEventType.SetAuthority: {
-        const {
-          account,
-          authority: owner,
-          authorityType,
-          newAuthority: newOwner,
-        } = parsed.info
+        const { account, authorityType, newAuthority: newOwner } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
 
         return {
           ...baseEvent,
@@ -268,8 +328,24 @@ export class SolanaEventParser {
       }
 
       case SPLTokenEventType.Approve: {
-        const { source: account, owner, delegate, amount } = parsed.info
+        const { source: account, delegate, amount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const delegateBalance = this.getTokenBalance(
+          parentTransaction,
+          delegate,
+        )
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
+        const delegateOwner = await getOwnerFromInstructionContext(
+          blockchain,
+          delegate,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
@@ -279,17 +355,34 @@ export class SolanaEventParser {
           balance,
           owner,
           delegate,
+          delegateBalance,
+          delegateOwner,
         }
       }
 
       case SPLTokenEventType.ApproveChecked: {
         const {
           source: account,
-          owner,
           delegate,
           tokenAmount: { amount },
         } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const delegateBalance = this.getTokenBalance(
+          parentTransaction,
+          delegate,
+        )
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
+        const delegateOwner = await getOwnerFromInstructionContext(
+          blockchain,
+          delegate,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
@@ -299,12 +392,20 @@ export class SolanaEventParser {
           balance,
           owner,
           delegate,
+          delegateBalance,
+          delegateOwner,
         }
       }
 
       case SPLTokenEventType.Revoke: {
-        const { source: account, owner } = parsed.info
+        const { source: account } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = (await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )) as string
 
         return {
           ...baseEvent,
@@ -318,26 +419,38 @@ export class SolanaEventParser {
       case SPLTokenEventType.SyncNative: {
         const { account } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.SyncNative,
           account,
           balance,
-          // owner,
+          owner,
         }
       }
 
       case SPLTokenEventType.InitializeImmutableOwner: {
         const { account } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
+        const owner = await getOwnerFromInstructionContext(
+          blockchain,
+          account,
+          ixCtx,
+          this.eventDAL,
+        )
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.InitializeImmutableOwner,
           account,
           balance,
-          // owner,
+          owner,
         }
       }
 

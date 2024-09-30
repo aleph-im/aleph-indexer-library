@@ -82,7 +82,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     this.processUpdatedFlows = new Utils.PendingWorkPool<void>({
       id: `process-updated-flows`,
       interval: 0,
-      chunkSize: 100,
+      chunkSize: 1000,
       concurrency: 1,
       dal: this.processUpdatedFlowDAL,
       handleWork: this.handleProcessUpdatedFlows.bind(this),
@@ -92,6 +92,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
 
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
     console.log(`Indexing`, JSON.stringify(config))
+
     await this.initInitialSupply(config)
     await this.initUpdatedFlows(config)
   }
@@ -161,8 +162,8 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
           parsedFlowUpdatedEvents.push(parsedEvent)
 
           const { blockchain, from, to } = parsedEvent
-          streamUpdatedAccountsSet.add(`${blockchain}:${from}`)
-          streamUpdatedAccountsSet.add(`${blockchain}:${to}`)
+          streamUpdatedAccountsSet.add(`${blockchain}_${from}`)
+          streamUpdatedAccountsSet.add(`${blockchain}_${to}`)
 
           break
         }
@@ -170,7 +171,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
           parsedFlowUpdatedExtensionEvents.push(parsedEvent)
 
           const { blockchain, flowOperator } = parsedEvent
-          streamUpdatedAccountsSet.add(`${blockchain}:${flowOperator}`)
+          streamUpdatedAccountsSet.add(`${blockchain}_${flowOperator}`)
 
           break
         }
@@ -203,12 +204,13 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
       // @note: don't block the indexing, just notify there should be a new calculation
 
       const time = Date.now()
+      const payload = undefined
 
       const works = [...streamUpdatedAccountsSet].map((id) => {
         return {
-          id: `${id}_${time}`,
+          id: `${id}&${time}`,
           time,
-          payload: undefined,
+          payload,
         }
       })
 
@@ -418,11 +420,11 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     // only update initial supply if the account is the token contract
     if (contractAccount !== account) return
 
+    console.log('🍕 initUpdatedFlows START')
+
     const updateEvents = await this.streamFlowUpdatedEventDAL
       .useIndex(StreamFlowUpdatedEventDALIndex.BlockchainTimestampIndex)
       .getAllValuesFromTo([blockchain], [blockchain])
-
-    console.log('🍕 EVM 0')
 
     const dedupWorks: Record<string, PendingWork<void>> = {}
 
@@ -436,24 +438,24 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
       const payload = undefined
 
       dedupWorks[from] = {
-        id: `${from}_${time}`,
+        id: `${from}&${time}`,
         time,
         payload,
       }
 
       dedupWorks[to] = {
-        id: `${to}_${time}`,
+        id: `${to}&${time}`,
         time,
         payload,
       }
     }
 
     const works = Object.values(dedupWorks)
+
     await this.processUpdatedFlows.addWork(works)
-
-    console.log('🍕 EVM 2', account)
-
     await this.processUpdatedFlows.start()
+
+    console.log('🍕 initUpdatedFlows END', account)
 
     return
   }
@@ -469,10 +471,12 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
   protected async handleProcessUpdatedFlows(
     works: PendingWork<void>[],
   ): Promise<void> {
-    const uniqueAccounts = works.map((w) => w.id.split('_'))
+    const dedupWorks = [...new Set(works.map((w) => w.id.split('&')[0]))].map(
+      (id) => id.split('_'),
+    )
 
     try {
-      for (const [blockchain, account] of uniqueAccounts) {
+      for (const [blockchain, account] of dedupWorks) {
         console.log('🎾 EVM Process updated stream', blockchain, account)
 
         const entries = await this.streamFlowUpdatedEventDAL

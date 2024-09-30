@@ -18,16 +18,6 @@ import {
 import { CommonEvent } from '../../types/common.js'
 
 export class EVMEventParser {
-  parseBalance(
-    blockchain: BlockchainId,
-    entity: EthereumParsedLog,
-  ): ERC20Balance[] {
-    const event = this.parseEvent(blockchain, entity)
-    if (!event) return []
-
-    return this.parseBalanceFromEvent(event)
-  }
-
   parseBalanceFromEvent(event: EVMEvent): ERC20Balance[] {
     if (event.type !== EVMEventType.Transfer) return []
 

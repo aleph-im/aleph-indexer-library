@@ -9,9 +9,10 @@ import {
   SolanaRPC,
 } from '@aleph-indexer/solana'
 import {
+  AuthorityType,
   SLPTokenInstruction,
   SPLTokenEventType,
-  SPLTokenIncompleteEvent,
+  SPLTokenEvent,
 } from '../types/solana.js'
 import { ParsedAccountData, PublicKey } from '@solana/web3.js'
 import {
@@ -37,14 +38,15 @@ function getSolanaRPC(blockchainId: BlockchainId): SolanaRPC {
   return rpc
 }
 
-export function getAccountsFromEvent(event: SPLTokenIncompleteEvent): string[] {
+// -----------------------------
+
+export function getAccountsFromEvent(event: SPLTokenEvent): string[] {
   switch (event.type) {
     case SPLTokenEventType.Transfer: {
-      if (event.toAccount) {
-        return [event.account, event.toAccount]
-      } else {
-        return [event.account]
-      }
+      return [event.account, event.toAccount]
+    }
+    case SPLTokenEventType.Approve: {
+      return [event.account, event.delegate]
     }
     default: {
       return event.account ? [event.account] : []
@@ -52,8 +54,30 @@ export function getAccountsFromEvent(event: SPLTokenIncompleteEvent): string[] {
   }
 }
 
+export function getOwnerAccountsFromEvent(event: SPLTokenEvent): string[] {
+  switch (event.type) {
+    case SPLTokenEventType.Transfer: {
+      return event.toOwner ? [event.owner, event.toOwner] : [event.owner]
+    }
+    case SPLTokenEventType.Approve: {
+      return event.delegateOwner
+        ? [event.owner, event.delegateOwner]
+        : [event.owner]
+    }
+    default: {
+      return event.owner ? [event.owner] : []
+    }
+  }
+}
+
+export function getAllIndexableAccountsFromEvent(
+  event: SPLTokenEvent,
+): string[] {
+  return [...getAccountsFromEvent(event), ...getOwnerAccountsFromEvent(event)]
+}
+
 export function getBalanceFromEvent(
-  event: SPLTokenIncompleteEvent,
+  event: SPLTokenEvent,
   account: string,
 ): string | undefined {
   switch (event.type) {
@@ -64,11 +88,45 @@ export function getBalanceFromEvent(
         return event.balance
       }
     }
+    case SPLTokenEventType.Approve: {
+      if (event.delegate === account) {
+        return event.delegateBalance
+      } else {
+        return event.balance
+      }
+    }
     default: {
       return event.balance
     }
   }
 }
+
+export function getOwnerFromEvent(
+  event: SPLTokenEvent,
+  account: string,
+): string | undefined {
+  switch (event.type) {
+    case SPLTokenEventType.Transfer: {
+      if (event.toAccount === account) {
+        return event.toOwner
+      } else {
+        return event.owner
+      }
+    }
+    case SPLTokenEventType.Approve: {
+      if (event.delegate === account) {
+        return event.delegateOwner
+      } else {
+        return event.owner
+      }
+    }
+    default: {
+      return event.owner
+    }
+  }
+}
+
+// -----------------------------
 
 export async function getMintFromInstructionContext(
   blockchain: BlockchainId,
@@ -76,87 +134,75 @@ export async function getMintFromInstructionContext(
   eventDAL: SPLTokenEventStorage,
   isSiblingnCheck?: boolean,
 ): Promise<string | undefined> {
-  const { instruction } = entity
-  let mint: string | undefined
+  const { instruction: ix } = entity
 
-  if (!isSPLTokenParsedInstruction(instruction)) return
+  if (!isSPLTokenParsedInstruction(ix)) return
+  const info = ix.parsed.info
 
   // @note: Precalculated mint
-  mint = instruction.parsed.info._mint
-  if (mint) {
-    console.log('mint from _mint', mint)
-    return mint
-  }
+  if (info._mint) return info._mint
 
   // @note: Instruction mint (only in some kind of instructions)
-  mint = instruction.parsed.info.mint
-  if (mint) {
-    console.log('mint from mint', mint)
-    return mint
-  }
+  info._mint = getMintFromInstruction(ix)
+  if (info._mint) return info._mint
 
-  const accounts = getAccountsFromInstruction(instruction)
-
-  return getMintFromInstructionAccounts(
+  // @note: Look for the mint in other instructions related with the accounts of the current instruction
+  info._mint = await getMintFromInstructionAccounts(
     blockchain,
-    accounts,
     entity,
     eventDAL,
     isSiblingnCheck,
   )
+
+  return info._mint
 }
 
-export async function getMintFromInstructionAccounts(
+async function getMintFromInstructionAccounts(
   blockchain: BlockchainId,
-  accounts: string[],
   entity: SolanaParsedInstructionContext,
   eventDAL: SPLTokenEventStorage,
   isSiblingnCheck = false,
 ): Promise<string | undefined> {
-  const { parentTransaction } = entity
+  const { instruction: ix, parentTransaction } = entity
   let mint: string | undefined
+
+  if (!isSPLTokenParsedInstruction(ix)) return
+  const accounts = getAccountsFromInstruction(ix)
 
   // @note: Look for the mint in preTokenBalances and postTokenBalances
   mint = getMintFromTransactionBalances(accounts, parentTransaction)
-  if (mint) {
-    console.log('mint from balance', mint)
-    return mint
-  }
+  if (mint) return mint
 
   // @note: Look for the mint in a previously saved event
   mint = await getMintFromEventsDatabase(blockchain, accounts, eventDAL)
-  if (mint) {
-    console.log('mint from database', mint)
-    return mint
-  }
+  if (mint) return mint
 
+  // @note: If we are in a recursive call, stop here
   if (isSiblingnCheck) return
+  const siblingTokenInstructions = getSiblingTokenInstructions(
+    accounts,
+    ix.parsed.type,
+    parentTransaction,
+    true,
+  )
 
   // @note: Look for the mint in other instructions where the current accounts are participating
   mint = await getMintFromSiblingInstructions(
     blockchain,
-    accounts,
+    siblingTokenInstructions,
     parentTransaction,
     eventDAL,
   )
-  if (mint) {
-    console.log('mint from sibling', mint)
-    return mint
-  }
+  if (mint) return mint
 
   // @note: Look for the mint doing an RPC call
   mint = await getMintFromAccountInfoRPC(
     blockchain,
+    siblingTokenInstructions,
     accounts,
-    parentTransaction,
   )
-  if (mint) {
-    console.log('mint from accountInfo', mint)
-    return mint
-  }
+  if (mint) return mint
 }
-
-// -----------------------------
 
 function getMintFromTransactionBalances(
   accounts: string[],
@@ -197,15 +243,10 @@ async function getMintFromEventsDatabase(
 
 async function getMintFromSiblingInstructions(
   blockchain: BlockchainId,
-  accounts: string[],
+  siblingTokenInstructions: SLPTokenInstruction[],
   transaction: SolanaParsedTransaction,
   eventDAL: SPLTokenEventStorage,
 ): Promise<string | undefined> {
-  const siblingTokenInstructions = getSiblingTokenInstructions(
-    accounts,
-    transaction,
-  )
-
   for (const instruction of siblingTokenInstructions) {
     const mint = await getMintFromInstructionContext(
       blockchain,
@@ -220,14 +261,9 @@ async function getMintFromSiblingInstructions(
 
 async function getMintFromAccountInfoRPC(
   blockchain: BlockchainId,
+  siblingTokenInstructions: SLPTokenInstruction[],
   accounts: string[],
-  transaction: SolanaParsedTransaction,
 ): Promise<string | undefined> {
-  const siblingTokenInstructions = getSiblingTokenInstructions(
-    accounts,
-    transaction,
-  )
-
   const siblingTokenAccounts = siblingTokenInstructions.flatMap((instruction) =>
     getAccountsFromInstruction(instruction),
   )
@@ -249,15 +285,178 @@ async function getMintFromAccountInfoRPC(
   }
 }
 
+// -----------------------------
+
+export async function getOwnerFromInstructionContext(
+  blockchain: BlockchainId,
+  account: string,
+  entity: SolanaParsedInstructionContext,
+  eventDAL: SPLTokenEventStorage,
+  isSiblingnCheck?: boolean,
+): Promise<string | undefined> {
+  const { instruction: ix } = entity
+  let owner: string | undefined
+
+  if (!isSPLTokenParsedInstruction(ix)) return
+
+  // @note: Instruction owner (only in some kind of instructions)
+  owner = getOwnerFromInstruction(ix, account)
+  if (owner) return owner
+
+  // @note: Look for the owner in other instructions related with the accounts of the current instruction
+  owner = await getOwnerFromInstructionAccount(
+    blockchain,
+    account,
+    entity,
+    eventDAL,
+    isSiblingnCheck,
+  )
+
+  return owner
+}
+
+async function getOwnerFromInstructionAccount(
+  blockchain: BlockchainId,
+  account: string,
+  entity: SolanaParsedInstructionContext,
+  eventDAL: SPLTokenEventStorage,
+  isSiblingnCheck = false,
+): Promise<string | undefined> {
+  const { instruction: ix, parentTransaction } = entity
+  let owner: string | undefined
+
+  if (!isSPLTokenParsedInstruction(ix)) return
+
+  // @note: Look for the owner in preTokenBalances and postTokenBalances
+  owner = getOwnerFromTransactionBalances(account, parentTransaction)
+  if (owner) return owner
+
+  // @note: Look for the owner in a previously saved event
+  owner = await getOwnerFromEventsDatabase(blockchain, account, eventDAL)
+  if (owner) return owner
+
+  // @note: If we are in a recursive call, stop here
+  if (isSiblingnCheck) return
+  const siblingTokenInstructions = getSiblingTokenInstructions(
+    [account],
+    ix.parsed.type,
+    parentTransaction,
+    false,
+  )
+
+  // @note: Look for the owner in other instructions where the current accounts are participating
+  owner = await getOwnerFromSiblingInstructions(
+    blockchain,
+    account,
+    siblingTokenInstructions,
+    parentTransaction,
+    eventDAL,
+  )
+  if (owner) return owner
+
+  // @note: Look for the owner doing an RPC call
+  owner = await getOwnerFromAccountInfoRPC(blockchain, account)
+  if (owner) return owner
+}
+
+function getOwnerFromTransactionBalances(
+  account: string,
+  transaction: SolanaParsedTransaction,
+): string | undefined {
+  const balanceIndex = transaction.parsed.message.accountKeys.findIndex(
+    ({ pubkey }) => pubkey === account,
+  )
+
+  const preBalanceInfo = transaction?.meta?.preTokenBalances?.find(
+    ({ accountIndex }) => accountIndex === balanceIndex,
+  )
+
+  if (preBalanceInfo?.owner) return preBalanceInfo.owner
+
+  const postBalanceInfo = transaction?.meta?.postTokenBalances?.find(
+    ({ accountIndex }) => accountIndex === balanceIndex,
+  )
+
+  if (postBalanceInfo?.owner) return postBalanceInfo.owner
+}
+
+async function getOwnerFromEventsDatabase(
+  blockchain: BlockchainId,
+  account: string,
+  eventDAL: SPLTokenEventStorage,
+): Promise<string | undefined> {
+  const dbEvents = await eventDAL
+    .useIndex(SPLTokenEventDALIndex.BlockchainAccountHeightIndex)
+    .getAllValuesFromTo([blockchain, account], [blockchain, account])
+
+  for await (const event of dbEvents) {
+    const owner = getOwnerFromEvent(event, account)
+    if (owner) return owner
+  }
+}
+
+async function getOwnerFromSiblingInstructions(
+  blockchain: BlockchainId,
+  account: string,
+  siblingTokenInstructions: SLPTokenInstruction[],
+  transaction: SolanaParsedTransaction,
+  eventDAL: SPLTokenEventStorage,
+): Promise<string | undefined> {
+  for (const instruction of siblingTokenInstructions) {
+    const owner = await getOwnerFromInstructionContext(
+      blockchain,
+      account,
+      { instruction, parentTransaction: transaction },
+      eventDAL,
+      true,
+    )
+
+    if (owner) return owner
+  }
+}
+
+async function getOwnerFromAccountInfoRPC(
+  blockchain: BlockchainId,
+  account: string,
+): Promise<string | undefined> {
+  try {
+    const res = await getSolanaRPC(blockchain)
+      .getConnection()
+      .getParsedAccountInfo(new PublicKey(account))
+
+    const data = (res?.value?.data as ParsedAccountData)?.parsed?.info
+
+    return data.owner
+  } catch (e) {
+    console.log('Error checking info for account ' + account)
+  }
+}
+
+export async function getOwnerFromEventAccount(
+  blockchain: BlockchainId,
+  account: string,
+  eventDAL: SPLTokenEventStorage,
+): Promise<string | undefined> {
+  let owner: string | undefined
+
+  // @note: Look for the owner in a previously saved event
+  owner = await getOwnerFromEventsDatabase(blockchain, account, eventDAL)
+  if (owner) return owner
+
+  // @note: Look for the owner doing an RPC call
+  owner = await getOwnerFromAccountInfoRPC(blockchain, account)
+  if (owner) return owner
+}
+// -----------------------------
+
 /**
  * Returns a list of instructions of kind spl-token from the transaction in which some of the passed accounts are participating and are not the only one
- * @param accounts
- * @param transaction
- * @returns
  */
 function getSiblingTokenInstructions(
   accounts: string[],
+  type: SPLTokenEventType,
   transaction: SolanaParsedTransaction,
+  searchingMint: boolean,
 ): (SolanaParsedInstructionContext['instruction'] & SLPTokenInstruction)[] {
   const accountsSet = new Set(accounts)
 
@@ -280,11 +479,19 @@ function getSiblingTokenInstructions(
           (account) => accountsSet.has(account),
         )
 
-        const hasAtLeastOneDifferentAccount = siblingInstructionAccounts.some(
-          (account) => !accountsSet.has(account),
-        )
+        const isOfDifferentType = instruction.parsed.type !== type
 
-        return hasSomeOfTheAccounts && hasAtLeastOneDifferentAccount
+        const hasAtLeastOneDifferentAccount =
+          searchingMint &&
+          !isOfDifferentType &&
+          siblingInstructionAccounts.some(
+            (account) => !accountsSet.has(account),
+          )
+
+        return (
+          hasSomeOfTheAccounts &&
+          (isOfDifferentType || hasAtLeastOneDifferentAccount)
+        )
       },
     )
 }
@@ -314,7 +521,9 @@ function getAccountsFromInstruction(
       ]
     }
     case SPLTokenEventType.Approve:
-    case SPLTokenEventType.ApproveChecked:
+    case SPLTokenEventType.ApproveChecked: {
+      return [instruction.parsed.info.source, instruction.parsed.info.delegate]
+    }
     case SPLTokenEventType.Revoke: {
       return [instruction.parsed.info.source]
     }
@@ -326,6 +535,79 @@ function getAccountsFromInstruction(
     default: {
       console.log('missing ix type 👍', instruction)
       return []
+    }
+  }
+}
+
+function getMintFromInstruction(
+  instruction: SLPTokenInstruction,
+): string | undefined {
+  switch (instruction.parsed.type) {
+    case SPLTokenEventType.MintTo:
+    case SPLTokenEventType.MintToChecked:
+    case SPLTokenEventType.Burn:
+    case SPLTokenEventType.BurnChecked:
+    case SPLTokenEventType.InitializeAccount:
+    case SPLTokenEventType.InitializeAccount2:
+    case SPLTokenEventType.InitializeAccount3:
+    case SPLTokenEventType.TransferChecked:
+    case SPLTokenEventType.ApproveChecked:
+    case SPLTokenEventType.InitializeMint:
+    case SPLTokenEventType.InitializeMint2:
+    case SPLTokenEventType.GetAccountDataSize: {
+      return instruction.parsed.info.mint
+    }
+    default: {
+      // @todo: Try to read "mint" on unknown events
+      return (instruction.parsed.info as any)?.mint
+    }
+  }
+}
+
+function getOwnerFromInstruction(
+  instruction: SLPTokenInstruction,
+  account: string,
+): string | undefined {
+  switch (instruction.parsed.type) {
+    case SPLTokenEventType.InitializeAccount:
+    case SPLTokenEventType.InitializeAccount2:
+    case SPLTokenEventType.InitializeAccount3: {
+      if (account !== instruction.parsed.info.account) return
+      return instruction.parsed.info.owner
+    }
+    case SPLTokenEventType.Burn:
+    case SPLTokenEventType.BurnChecked: {
+      if (account !== instruction.parsed.info.account) return
+      return instruction.parsed.info.authority
+    }
+    case SPLTokenEventType.Approve:
+    case SPLTokenEventType.ApproveChecked: {
+      if (account !== instruction.parsed.info.source) return
+      return instruction.parsed.info.owner
+    }
+    case SPLTokenEventType.Revoke: {
+      if (account !== instruction.parsed.info.source) return
+      return instruction.parsed.info.owner
+    }
+    case SPLTokenEventType.CloseAccount: {
+      if (account !== instruction.parsed.info.account) return
+      return 'owner' in instruction.parsed.info
+        ? instruction.parsed.info.owner
+        : instruction.parsed.info.multisigOwner
+    }
+    case SPLTokenEventType.Transfer:
+    case SPLTokenEventType.TransferChecked: {
+      if (account !== instruction.parsed.info.source) return
+      return 'authority' in instruction.parsed.info
+        ? instruction.parsed.info.authority
+        : instruction.parsed.info.multisigAuthority
+    }
+    case SPLTokenEventType.SetAuthority: {
+      if (account !== instruction.parsed.info.account) return
+      return instruction.parsed.info.authorityType ===
+        AuthorityType.AccountOwner
+        ? instruction.parsed.info.newAuthority
+        : instruction.parsed.info.authority
     }
   }
 }

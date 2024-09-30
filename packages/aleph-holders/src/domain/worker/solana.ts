@@ -33,7 +33,10 @@ import {
   CommonEvent,
 } from '../../types/common.js'
 import { SolanaEventParser } from '../parser/solana.js'
-import { getMintFromInstructionContext } from '../../utils/solana.js'
+import {
+  getMintFromInstructionContext,
+  getOwnerFromEventAccount,
+} from '../../utils/solana.js'
 import { blockchainTokenContract } from '../../utils/constants.js'
 import { PendingWork, PendingWorkStorage, Utils } from '@aleph-indexer/core'
 import { createSPLTokenTrackAccountDAL } from '../../dal/solana/splTokenTrackAccount.js'
@@ -50,10 +53,11 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     protected parser = new SolanaEventParser(splTokenEventDAL),
     protected programId = TOKEN_PROGRAM_ID,
     protected processTrackedAccounts: Utils.PendingWorkPool<void>,
+    protected processMissingOwners: Utils.PendingWorkPool<void>,
   ) {
     this.processTrackedAccounts = new Utils.PendingWorkPool<void>({
       id: `process-tracked-accounts`,
-      interval: 1000 * 30,
+      interval: 0,
       chunkSize: 1000,
       concurrency: 1,
       dal: new PendingWorkStorage({
@@ -63,6 +67,19 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       handleWork: this.handleProcessTrackedAccounts.bind(this),
       checkComplete: () => true,
     })
+
+    this.processMissingOwners = new Utils.PendingWorkPool<void>({
+      id: `process-missing-owners`,
+      interval: 1000 * 60 * 5,
+      chunkSize: 1000,
+      concurrency: 1,
+      dal: new PendingWorkStorage({
+        name: 'process-missing-owners',
+        path: context.dataPath,
+      }),
+      handleWork: this.handleMissingOwnerAccounts.bind(this),
+      checkComplete: this.checkCompleteMissingOwnerAccounts.bind(this),
+    })
   }
 
   async onNewAccount(
@@ -71,7 +88,10 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     const { meta } = config
     console.log(`Indexing ${meta.type}`, JSON.stringify(config))
 
-    await this.initTrackedAccounts(config)
+    await Promise.all([
+      this.initMissingOwners(config),
+      this.initTrackedAccounts(config),
+    ])
   }
 
   async filterEntity(
@@ -85,9 +105,6 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       entity,
       this.splTokenEventDAL,
     )
-
-    // @note: hack fro fast parsing mint in the next step
-    ;(entity.instruction as any)._mint = mint
 
     return mint === blockchainTokenContract[blockchainId]
     // return mint === 'CsZ5LZkDS7h9TDKjrbL7VAwQZ9nsRu8vJLhRYfmGaN8K'
@@ -105,6 +122,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     // const isMintAccount = mintAccount === account
 
     const trackAccountsSet: Set<string> = new Set()
+    const missingOwnerSet: Set<string> = new Set()
     const parsedEvents: SPLTokenEvent[] = []
     const parsedBalances: SPLTokenBalance[] = []
 
@@ -113,11 +131,15 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     for (const entity of entities) {
       const parsedEvent = await this.parser.parseEvent(blockchainId, entity)
       if (!parsedEvent) continue
-
       parsedEvents.push(parsedEvent)
 
       const parsedBalance = this.parser.parseBalanceFromEvent(parsedEvent)
       parsedBalances.push(...parsedBalance)
+
+      const missingOwner = this.eventHasMissingOwner(parsedEvent)
+      if (missingOwner) {
+        missingOwnerSet.add(parsedEvent.id)
+      }
 
       switch (parsedEvent.type) {
         case SPLTokenEventType.InitializeAccount:
@@ -137,11 +159,27 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       await this.splTokenBalanceDAL.save(parsedBalances)
     }
 
+    if (missingOwnerSet.size) {
+      const time = Date.now()
+      const payload = undefined
+
+      const works = [...missingOwnerSet].map((id) => ({
+        id: `${id}&${time}`,
+        time,
+        payload,
+      }))
+
+      await this.processMissingOwners.addWork(works)
+    }
+
     if (trackAccountsSet.size) {
+      const time = Date.now()
+      const payload = undefined
+
       const works = [...trackAccountsSet].map((id) => ({
-        id,
-        time: Date.now(),
-        payload: undefined,
+        id: `${id}&${time}`,
+        time,
+        payload,
       }))
 
       await this.processTrackedAccounts.addWork(works)
@@ -160,13 +198,85 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     return getCommonEvents(args, this.splTokenEventDAL, SPLTokenEventDALIndex)
   }
 
+  protected async handleMissingOwnerAccounts(
+    works: PendingWork<void>[],
+  ): Promise<void> {
+    const dedupWorks = [...new Set(works.map((w) => w.id.split('&')[0]))]
+
+    try {
+      const updateEntities = []
+
+      for (const id of dedupWorks) {
+        console.log('🎾 Solana missing owner event', id)
+
+        const event = await this.splTokenEventDAL.get(id)
+        if (!event) continue
+
+        const newEvent = { ...event }
+        let update = false
+
+        if (!event.owner) {
+          newEvent.owner = await getOwnerFromEventAccount(
+            newEvent.blockchain,
+            newEvent.account,
+            this.splTokenEventDAL,
+          )
+          update = update || !!newEvent.owner
+        }
+
+        if (newEvent.type === SPLTokenEventType.Transfer && !newEvent.toOwner) {
+          newEvent.toOwner = await getOwnerFromEventAccount(
+            newEvent.blockchain,
+            newEvent.toAccount,
+            this.splTokenEventDAL,
+          )
+          update = update || !!newEvent.toOwner
+        }
+
+        if (
+          newEvent.type === SPLTokenEventType.Approve &&
+          !newEvent.delegateOwner
+        ) {
+          newEvent.delegateOwner = await getOwnerFromEventAccount(
+            newEvent.blockchain,
+            newEvent.delegate,
+            this.splTokenEventDAL,
+          )
+          update = update || !!newEvent.delegateOwner
+        }
+
+        if (!update) continue
+
+        console.log('🎾 Solana missing owner UPDATE', id)
+        updateEntities.push(newEvent)
+      }
+
+      await this.splTokenEventDAL.save(updateEntities)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  protected async checkCompleteMissingOwnerAccounts(
+    work: PendingWork<void>,
+  ): Promise<boolean> {
+    const id = work.id.split('&')[0]
+
+    const event = await this.splTokenEventDAL.get(id)
+    if (!event) return true
+
+    return !this.eventHasMissingOwner(event)
+  }
+
   protected async handleProcessTrackedAccounts(
     works: PendingWork<void>[],
   ): Promise<void> {
-    const uniqueAccounts = works.map((w) => w.id.split('_'))
+    const dedupWorks = [...new Set(works.map((w) => w.id.split('&')[0]))].map(
+      (id) => id.split('_'),
+    )
 
     try {
-      for (const [blockchain, mint, account] of uniqueAccounts) {
+      for (const [blockchain, mint, account] of dedupWorks) {
         console.log('🎾 Solana Process tracked account', blockchain, account)
 
         const trackedAccount =
@@ -284,6 +394,45 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     }
   }
 
+  protected async initMissingOwners(
+    config: AccountIndexerConfigWithMeta<SPLTokenAccountMeta>,
+  ): Promise<void> {
+    const { blockchainId: blockchain, meta } = config
+    const { type } = meta
+
+    if (type !== SPLTokenAccountType.Mint) return
+
+    const allEvents = await this.splTokenEventDAL
+      .useIndex(SPLTokenEventDALIndex.BlockchainTimestampIndex)
+      .getAllValuesFromTo([blockchain], [blockchain])
+
+    console.log('🏀 initMissingOwners START')
+
+    const works = []
+
+    for await (const entry of allEvents) {
+      const missingOwner = this.eventHasMissingOwner(entry)
+      if (!missingOwner) continue
+
+      const id = entry.id
+      const time = Date.now()
+      const payload = undefined
+
+      works.push({
+        id: `${id}&${time}`,
+        time,
+        payload,
+      })
+    }
+
+    await this.processMissingOwners.addWork(works)
+    await this.processMissingOwners.start()
+
+    console.log('🏀 initMissingOwners END')
+
+    return
+  }
+
   protected async initTrackedAccounts(
     config: AccountIndexerConfigWithMeta<SPLTokenAccountMeta>,
   ): Promise<void> {
@@ -299,31 +448,31 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           [blockchain],
         )
 
-      console.log('🍕 Solana 0')
+      console.log('🍕 initTrackedAccounts START')
 
       const works = []
 
       for await (const entry of trackedAccounts) {
         const { account, completeHeight } = entry
-        console.log('🍕 Solana 1', account)
-
         if (completeHeight !== undefined) continue
 
         await this.indexAccount(blockchain, mint, account)
 
-        console.log('🍕 Solana 2', account)
+        const id = `${blockchain}_${mint}_${account}`
+        const time = Date.now()
+        const payload = undefined
 
         works.push({
-          id: `${blockchain}_${mint}_${account}`,
-          time: Date.now(),
-          payload: undefined,
+          id: `${id}&${time}`,
+          time,
+          payload,
         })
       }
 
       await this.processTrackedAccounts.addWork(works)
-      console.log('🍕 Solana 3', account)
-
       await this.processTrackedAccounts.start()
+
+      console.log('🍕 initTrackedAccounts END')
 
       return
     }
@@ -341,6 +490,23 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     }
 
     return
+  }
+
+  protected eventHasMissingOwner(event: SPLTokenEvent): boolean {
+    if (!event.owner) return true
+
+    switch (event.type) {
+      case SPLTokenEventType.Transfer: {
+        if (!event.toOwner) return true
+        break
+      }
+      case SPLTokenEventType.Approve: {
+        if (!event.delegateOwner) return true
+        break
+      }
+    }
+
+    return false
   }
 
   protected async indexAccount(

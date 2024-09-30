@@ -85,9 +85,14 @@ export type SPLTokenAccountMeta =
     }
 
 export type SPLTokenInstructionBase = {
-  parsed: unknown
+  parsed: {
+    info: {
+      _mint?: string
+    }
+  }
   program: string
   programId: string
+  index: number
 }
 
 export type SPLTokenInstructionMintTo = SPLTokenInstructionBase & {
@@ -378,6 +383,7 @@ export type SPLTokenEventBaseWithAccountAndBalance = SPLTokenEventBase & {
 export type SPLTokenEventInitializeAccount =
   SPLTokenEventBaseWithAccountAndBalance & {
     type: SPLTokenEventType.InitializeAccount
+    owner: string
   }
 
 export type SPLTokenEventMint = SPLTokenEventBaseWithAccountAndBalance & {
@@ -388,6 +394,7 @@ export type SPLTokenEventMint = SPLTokenEventBaseWithAccountAndBalance & {
 export type SPLTokenEventBurn = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Burn
   amount: string
+  owner: string
 }
 
 export type SPLTokenEventCloseAccount =
@@ -402,6 +409,7 @@ export type SPLTokenEventCloseAccount =
 export type SPLTokenEventTransfer = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Transfer
   amount: string
+  owner: string
   toAccount: string
   toBalance: string
   toOwner?: string
@@ -418,8 +426,10 @@ export type SPLTokenEventSetAuthority =
 export type SPLTokenEventApprove = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Approve
   amount: string
-  delegate: string
   owner: string
+  delegateBalance: string
+  delegate: string
+  delegateOwner?: string
 }
 
 export type SPLTokenEventRevoke = SPLTokenEventBaseWithAccountAndBalance & {
@@ -453,25 +463,6 @@ export type SPLTokenEvent =
   | SPLTokenEventSyncNative
   | SPLTokenEventInitializeMint
   | SPLTokenEventInitializeImmutableOwner
-
-export type SPLTokenIncompleteEvent =
-  | IncompleteEvent<SPLTokenEventInitializeAccount>
-  | IncompleteEvent<SPLTokenEventMint>
-  | IncompleteEvent<SPLTokenEventBurn>
-  | IncompleteEvent<SPLTokenEventCloseAccount>
-  | IncompleteEvent<SPLTokenEventTransfer>
-  | IncompleteEvent<SPLTokenEventSetAuthority>
-  | IncompleteEvent<SPLTokenEventApprove>
-  | IncompleteEvent<SPLTokenEventRevoke>
-  | IncompleteEvent<SPLTokenEventSyncNative>
-  | IncompleteEvent<SPLTokenEventInitializeMint>
-  | IncompleteEvent<SPLTokenEventInitializeImmutableOwner>
-
-export type IncompleteEvent<T> = Omit<T, 'mint' | 'toOwner' | 'owner'> & {
-  mint?: string
-  toOwner?: string
-  owner?: string
-}
 
 // @TODO: Approve | Revoke | InitializeMultisig | FreezeAccount | SetAuthority
 

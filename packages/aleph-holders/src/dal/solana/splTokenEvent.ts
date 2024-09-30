@@ -1,7 +1,7 @@
 import { EntityStorage } from '@aleph-indexer/core'
 import { SPLTokenEvent } from '../../types/solana.js'
 import { createBNMapper } from '../../utils/numbers.js'
-import { getAccountsFromEvent } from '../../utils/solana.js'
+import { getAllIndexableAccountsFromEvent } from '../../utils/solana.js'
 
 export type SPLTokenEventStorage = EntityStorage<SPLTokenEvent>
 
@@ -18,7 +18,7 @@ const idKey = {
 }
 
 const accountKey = {
-  get: (e: SPLTokenEvent) => getAccountsFromEvent(e),
+  get: (e: SPLTokenEvent) => getAllIndexableAccountsFromEvent(e),
   length: EntityStorage.AddressLength,
 }
 
@@ -66,6 +66,11 @@ export function createSPLTokenEventDAL(path: string): SPLTokenEventStorage {
         key: [blockchainKey, accountKey, heightKey, indexKey],
       },
     ],
-    mapValueFn: createBNMapper(['amount', 'balance', 'toBalance']),
+    mapValueFn: createBNMapper([
+      'amount',
+      'balance',
+      'toBalance',
+      'delegateBalance',
+    ]),
   })
 }
