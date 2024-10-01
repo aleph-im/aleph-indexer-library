@@ -79,7 +79,7 @@ export function getAllIndexableAccountsFromEvent(
 export function getBalanceFromEvent(
   event: SPLTokenEvent,
   account: string,
-): string | undefined {
+): string {
   switch (event.type) {
     case SPLTokenEventType.Transfer: {
       if (event.toAccount === account) {
@@ -124,6 +124,23 @@ export function getOwnerFromEvent(
       return event.owner
     }
   }
+}
+
+export function eventHasMissingOwner(event: SPLTokenEvent): boolean {
+  if (!event.owner) return true
+
+  switch (event.type) {
+    case SPLTokenEventType.Transfer: {
+      if (!event.toOwner) return true
+      break
+    }
+    case SPLTokenEventType.Approve: {
+      if (!event.delegateOwner) return true
+      break
+    }
+  }
+
+  return false
 }
 
 // -----------------------------
@@ -431,6 +448,8 @@ async function getOwnerFromAccountInfoRPC(
     console.log('Error checking info for account ' + account)
   }
 }
+
+// -----------------------------
 
 export async function getOwnerFromEventAccount(
   blockchain: BlockchainId,

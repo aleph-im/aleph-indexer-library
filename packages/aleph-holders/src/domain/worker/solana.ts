@@ -34,6 +34,7 @@ import {
 } from '../../types/common.js'
 import { SolanaEventParser } from '../parser/solana.js'
 import {
+  eventHasMissingOwner,
   getMintFromInstructionContext,
   getOwnerFromEventAccount,
 } from '../../utils/solana.js'
@@ -136,7 +137,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       const parsedBalance = this.parser.parseBalanceFromEvent(parsedEvent)
       parsedBalances.push(...parsedBalance)
 
-      const missingOwner = this.eventHasMissingOwner(parsedEvent)
+      const missingOwner = eventHasMissingOwner(parsedEvent)
       if (missingOwner) {
         missingOwnerSet.add(parsedEvent.id)
       }
@@ -204,7 +205,8 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     const dedupWorks = [...new Set(works.map((w) => w.id.split('&')[0]))]
 
     try {
-      const updateEntities = []
+      const updateEvents = []
+      const updateBalances = []
 
       for (const id of dedupWorks) {
         console.log('🎾 Solana missing owner event', id)
@@ -248,10 +250,14 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
         if (!update) continue
 
         console.log('🎾 Solana missing owner UPDATE', id)
-        updateEntities.push(newEvent)
+        updateEvents.push(newEvent)
+
+        const parsedBalance = this.parser.parseBalanceFromEvent(newEvent)
+        updateBalances.push(...parsedBalance)
       }
 
-      await this.splTokenEventDAL.save(updateEntities)
+      await this.splTokenEventDAL.save(updateEvents)
+      await this.splTokenBalanceDAL.save(updateBalances)
     } catch (e) {
       console.log(e)
     }
@@ -265,7 +271,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     const event = await this.splTokenEventDAL.get(id)
     if (!event) return true
 
-    return !this.eventHasMissingOwner(event)
+    return !eventHasMissingOwner(event)
   }
 
   protected async handleProcessTrackedAccounts(
@@ -397,7 +403,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
   protected async initMissingOwners(
     config: AccountIndexerConfigWithMeta<SPLTokenAccountMeta>,
   ): Promise<void> {
-    const { blockchainId: blockchain, meta } = config
+    const { blockchainId: blockchain, account, meta } = config
     const { type } = meta
 
     if (type !== SPLTokenAccountType.Mint) return
@@ -406,12 +412,12 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       .useIndex(SPLTokenEventDALIndex.BlockchainTimestampIndex)
       .getAllValuesFromTo([blockchain], [blockchain])
 
-    console.log('🏀 initMissingOwners START')
+    console.log('🏀 initMissingOwners START', account)
 
     const works = []
 
     for await (const entry of allEvents) {
-      const missingOwner = this.eventHasMissingOwner(entry)
+      const missingOwner = eventHasMissingOwner(entry)
       if (!missingOwner) continue
 
       const id = entry.id
@@ -428,7 +434,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     await this.processMissingOwners.addWork(works)
     await this.processMissingOwners.start()
 
-    console.log('🏀 initMissingOwners END')
+    console.log('🏀 initMissingOwners END', account)
 
     return
   }
@@ -448,7 +454,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           [blockchain],
         )
 
-      console.log('🍕 initTrackedAccounts START')
+      console.log('🍕 initTrackedAccounts START', account)
 
       const works = []
 
@@ -472,7 +478,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
       await this.processTrackedAccounts.addWork(works)
       await this.processTrackedAccounts.start()
 
-      console.log('🍕 initTrackedAccounts END')
+      console.log('🍕 initTrackedAccounts END', account)
 
       return
     }
@@ -490,23 +496,6 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     }
 
     return
-  }
-
-  protected eventHasMissingOwner(event: SPLTokenEvent): boolean {
-    if (!event.owner) return true
-
-    switch (event.type) {
-      case SPLTokenEventType.Transfer: {
-        if (!event.toOwner) return true
-        break
-      }
-      case SPLTokenEventType.Approve: {
-        if (!event.delegateOwner) return true
-        break
-      }
-    }
-
-    return false
   }
 
   protected async indexAccount(

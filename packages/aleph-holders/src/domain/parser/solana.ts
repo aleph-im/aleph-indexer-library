@@ -12,7 +12,7 @@ import {
   SPLTokenEventType,
 } from '../../types/solana.js'
 import {
-  getAllIndexableAccountsFromEvent,
+  getAccountsFromEvent,
   getBalanceFromEvent,
   getMintFromInstructionContext,
   getOwnerFromEvent,
@@ -26,55 +26,35 @@ export class SolanaEventParser {
 
   parseBalanceFromEvent(event: SPLTokenEvent): SPLTokenBalance[] {
     const { blockchain, height, mint, timestamp } = event
-    const accounts = getAllIndexableAccountsFromEvent(event)
+    const accounts = getAccountsFromEvent(event)
 
-    return accounts.map((account) => {
-      const balance = getBalanceFromEvent(event, account) || '0'
-      const owner = getOwnerFromEvent(event, account) || '0'
+    return accounts.flatMap((account) => {
+      const owner = getOwnerFromEvent(event, account)
+      const balance = getBalanceFromEvent(event, account)
 
-      return {
+      const accountBalance = {
         blockchain,
         height,
         account,
         mint,
-        owner,
         balance,
         timestamp,
       }
+
+      if (!owner) return [accountBalance]
+
+      const ownerBalance = {
+        blockchain,
+        height,
+        account: owner,
+        mint,
+        balance,
+        timestamp,
+        ownerAccounts: { [account]: accountBalance },
+      }
+
+      return [accountBalance, ownerBalance]
     })
-  }
-
-  protected async parseCommonScheme(
-    blockchain: BlockchainId,
-    ixCtx: SolanaParsedInstructionContext,
-    type: SPLTokenEventType,
-  ): Promise<SPLTokenEventBase> {
-    const { instruction, parentTransaction } = ixCtx
-    const parsed = (instruction as SLPTokenInstruction).parsed
-
-    const id = this.parseId(ixCtx)
-    const timestamp = this.parseTimestamp(ixCtx)
-    const height = this.parseSlot(ixCtx)
-    const index = this.parseIndex(ixCtx)
-    const transaction = parentTransaction.signature
-
-    // @note: We filtered by mint previously so mint is always defined
-    const mint = (await getMintFromInstructionContext(
-      blockchain,
-      ixCtx,
-      this.eventDAL,
-    )) as string
-
-    return {
-      id,
-      blockchain,
-      timestamp,
-      type: type || parsed.type,
-      height,
-      index,
-      mint,
-      transaction,
-    }
   }
 
   async parseEvent(
@@ -462,10 +442,46 @@ export class SolanaEventParser {
     }
   }
 
-  protected parseId(ixCtx: SolanaParsedInstructionContext): string {
+  protected async parseCommonScheme(
+    blockchain: BlockchainId,
+    ixCtx: SolanaParsedInstructionContext,
+    type: SPLTokenEventType,
+  ): Promise<SPLTokenEventBase> {
+    const { instruction, parentTransaction } = ixCtx
+    const parsed = (instruction as SLPTokenInstruction).parsed
+
+    const id = this.parseId(blockchain, ixCtx)
+    const timestamp = this.parseTimestamp(ixCtx)
+    const height = this.parseSlot(ixCtx)
+    const index = this.parseIndex(ixCtx)
+    const transaction = parentTransaction.signature
+
+    // @note: We filtered by mint previously so mint is always defined
+    const mint = (await getMintFromInstructionContext(
+      blockchain,
+      ixCtx,
+      this.eventDAL,
+    )) as string
+
+    return {
+      id,
+      blockchain,
+      timestamp,
+      type: type || parsed.type,
+      height,
+      index,
+      mint,
+      transaction,
+    }
+  }
+
+  protected parseId(
+    blockchain: BlockchainId,
+    ixCtx: SolanaParsedInstructionContext,
+  ): string {
     const { instruction, parentInstruction, parentTransaction } = ixCtx
 
-    return `${parentTransaction.signature}${
+    return `${blockchain}_${parentTransaction.signature}${
       parentInstruction
         ? `_${parentInstruction.index.toString().padStart(2, '0')}`
         : ''

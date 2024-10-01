@@ -420,7 +420,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     // only update initial supply if the account is the token contract
     if (contractAccount !== account) return
 
-    console.log('🍕 initUpdatedFlows START')
+    console.log('🍕 initUpdatedFlows START', account)
 
     const updateEvents = await this.streamFlowUpdatedEventDAL
       .useIndex(StreamFlowUpdatedEventDALIndex.BlockchainTimestampIndex)
@@ -431,8 +431,8 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     for await (const entry of updateEvents) {
       const { from, to } = entry
 
-      console.log('🍕 EVM 1', from)
-      console.log('🍕 EVM 1', to)
+      console.log('🍕 initUpdatedFlows 1', from)
+      console.log('🍕 initUpdatedFlows 1', to)
 
       const time = Date.now()
       const payload = undefined

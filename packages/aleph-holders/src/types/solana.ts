@@ -477,7 +477,7 @@ export type SPLTokenBalance = {
   mint: string
   account: string
   balance: string
-  owner?: string
+  ownerAccounts?: Record<string, SPLTokenBalance>
 }
 
 // ------------------------
