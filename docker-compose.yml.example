@@ -1,6 +1,6 @@
 services:
   # Deploy aleph-holder indexer example file
-  aleph-holder:
+  aleph-holders-example:
     extends:
       file: aleph-indexer-library/packages/aleph-holders/docker-compose.yaml
       service: aleph-holders
