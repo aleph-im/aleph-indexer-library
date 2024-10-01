@@ -495,10 +495,12 @@ export class SolanaEventParser {
 
   protected parseTimestamp(ixCtx: SolanaParsedInstructionContext): number {
     const { parentTransaction } = ixCtx
-
-    return parentTransaction.blockTime
-      ? parentTransaction.blockTime * 1000
-      : parentTransaction.slot
+    console.log(
+      'parentTransaction.timestamp',
+      parentTransaction.timestamp,
+      parentTransaction.blockTime,
+    )
+    return parentTransaction.timestamp
   }
 
   protected parseSlot(ixCtx: SolanaParsedInstructionContext): number {
