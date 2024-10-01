@@ -73,7 +73,7 @@ export function createSPLTokenBalanceDAL(path: string): SPLTokenBalanceStorage {
             const oldAccount = oldEntity.ownerAccounts[account]
             const newAccount = newEntity.ownerAccounts[account]
 
-            if ((newAccount.height || 0) > (oldAccount.height || 0)) {
+            if ((newAccount?.height || 0) > (oldAccount?.height || 0)) {
               ownerAccounts[account] = newAccount
               isUpdate = true
             }
