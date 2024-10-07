@@ -22,7 +22,7 @@
     "@aleph-indexer/core": "^1.5.0",
     "@aleph-indexer/ethereum": "^1.5.2",
     "@aleph-indexer/framework": "^1.5.1",
-    "@aleph-indexer/solana": "^1.5.2"
+    "@aleph-indexer/solana": "^1.5.3"
   },
   "devDependencies": {
     "@types/node": "^22.5.2"
