@@ -19,21 +19,8 @@
     "deps:fix": "madge --exclude 'dist/(.+)' --circular packages",
     "docs": "typedoc --tsconfig ./tsconfig.json"
   },
-  "dependencies": {
-    "@coral-xyz/borsh": "^0.28.0",
-    "@solana/spl-token-registry": "^0.2.7",
-    "@solana/web3.js": "^1.42.0",
-    "bn.js": "^5.2.0",
-    "data-uri-to-buffer": "^6.0.2",
-    "graphql": "^15.8.0",
-    "graphql-tools": "^8.2.9",
-    "graphql-type-json": "^0.3.2",
-    "lodash-es": "^4.17.21",
-    "luxon": "^2.4.0",
-    "web3": "^4.11.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@types/bn.js": "^5.1.0",
     "@types/bs58": "^4.0.1",
     "@types/cors": "^2.8.12",
     "@types/dotenv-defaults": "^2.0.1",
@@ -66,7 +53,9 @@
     "ts-jest": "^28.0.2",
     "ts-jest-resolver": "^2.0.0",
     "typedoc": "^0.25.1",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "graphql": "^16.9.0",
+    "graphql-request": "^7.1.0"
   },
   "overrides": {
     "uuid": "8.3.2"

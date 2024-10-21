@@ -16,15 +16,20 @@
   "author": "ALEPH.im",
   "license": "ISC",
   "dependencies": {
-    "@aleph-indexer/avalanche": "^1.5.2",
-    "@aleph-indexer/base": "^1.5.2",
-    "@aleph-indexer/bsc": "^1.5.2",
-    "@aleph-indexer/core": "^1.5.0",
-    "@aleph-indexer/ethereum": "^1.5.2",
-    "@aleph-indexer/framework": "^1.5.1",
-    "@aleph-indexer/solana": "^1.5.3"
+    "@aleph-indexer/avalanche": "^1.6.0",
+    "@aleph-indexer/base": "^1.6.0",
+    "@aleph-indexer/bsc": "^1.6.0",
+    "@aleph-indexer/core": "^1.6.0",
+    "@aleph-indexer/ethereum": "^1.6.0",
+    "@aleph-indexer/framework": "^1.6.0",
+    "@aleph-indexer/solana": "^1.6.0",
+    "bn.js": "^5.2.0"
   },
   "devDependencies": {
-    "@types/node": "^22.5.2"
+    "@types/bn.js": "^5.1.0",
+    "@types/node": "^22.5.2",
+    "graphql": "^16.9.0",
+    "graphql-request": "^7.1.0",
+    "web3": "^4.13.0"
   }
 }
