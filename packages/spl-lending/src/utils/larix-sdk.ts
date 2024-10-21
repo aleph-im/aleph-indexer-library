@@ -14,8 +14,10 @@ import {
   ReserveParams,
   ReserveTokenInfo,
 } from '@port.finance/port-sdk'
-import { solanaPrivateRPC, TOKEN_PROGRAM_ID_PK } from '@aleph-indexer/solana'
+import { TOKEN_PROGRAM_ID_PK } from '@aleph-indexer/solana'
 import { ACCOUNT_MAP } from '../constants.js'
+import { getSolanaRPC } from './solana.js'
+import { BlockchainChain } from '@aleph-indexer/framework'
 
 // ------------------------------------
 
@@ -136,7 +138,7 @@ const larixProfile = new Environment(
 
 const SDK: PortInstance & { reserveSymbolMap: ReserveSymbolMap } =
   new PortInstance(
-    solanaPrivateRPC.getConnection(),
+    getSolanaRPC(BlockchainChain.Solana).getConnection(),
     larixProfile,
     LARIX_MAIN_MARKET_PROGRAM_ID_PK,
   ) as LarixSDK

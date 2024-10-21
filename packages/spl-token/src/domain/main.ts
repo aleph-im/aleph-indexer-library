@@ -5,11 +5,7 @@ import {
   IndexerMainDomainContext,
   IndexerMainDomainWithDiscovery,
 } from '@aleph-indexer/framework'
-import {
-  getTokenByAddress,
-  getTokenMintByAccount,
-  solanaPrivateRPCRoundRobin,
-} from '@aleph-indexer/solana'
+import { getTokenByAddress, getTokenMintByAccount } from '@aleph-indexer/solana'
 import {
   SPLAccountBalance,
   SPLAccountHoldings,
@@ -24,6 +20,7 @@ import {
 } from './types.js'
 import { discoveryFn } from '../utils/discovery.js'
 import { TOKEN_PROGRAM_ID } from '../constants.js'
+import { getSolanaRPC } from '../utils/solana.js'
 
 export default class MainDomain
   extends IndexerMainDomain
@@ -58,7 +55,7 @@ export default class MainDomain
     const { accounts, mints } = await discoveryFn()
     await Promise.all(
       accounts.map(async (account: string) => {
-        const connection = solanaPrivateRPCRoundRobin.getClient()
+        const connection = getSolanaRPC(BlockchainChain.Solana)
         const mint = await getTokenMintByAccount(
           account,
           connection.getConnection(),
@@ -148,7 +145,7 @@ export default class MainDomain
   }
 
   protected async addToken(mint: string): Promise<void> {
-    const connection = solanaPrivateRPCRoundRobin.getClient()
+    const connection = getSolanaRPC(BlockchainChain.Solana)
     const tokenInfo = await getTokenByAddress(mint, connection.getConnection())
     if (!tokenInfo) return
 

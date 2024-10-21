@@ -1,6 +1,9 @@
 import { Port } from '@port.finance/port-sdk'
-import { solanaPrivateRPC } from '@aleph-indexer/solana'
+import { getSolanaRPC } from './solana'
+import { BlockchainChain } from '@aleph-indexer/framework'
+
+const connection = getSolanaRPC(BlockchainChain.Solana).getConnection()
 
 export const PORT_SDK = Port.forMainNet({
-  connection: solanaPrivateRPC.getConnection(),
+  connection,
 })

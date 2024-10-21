@@ -368,7 +368,7 @@ export const EventFlashLoan = new GraphQLObjectType({
     transferAuthority: { type: new GraphQLNonNull(GraphQLString) },
     flashLoanReceiverProgram: { type: new GraphQLNonNull(GraphQLString) },
     flashLoanReceiverAddresses: {
-      type: new GraphQLNonNull(GraphQLList(GraphQLString)),
+      type: new GraphQLNonNull(new GraphQLList(GraphQLString)),
     },
     liquidityFeeAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },
     reserveLiquidityAmount: { type: new GraphQLNonNull(GraphQLBigNumber) },

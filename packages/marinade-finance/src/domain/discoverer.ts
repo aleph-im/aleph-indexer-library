@@ -1,3 +1,4 @@
+import { BlockchainChain } from '@aleph-indexer/framework'
 import {
   MARINADE_FINANCE_PROGRAM_ID,
   MARINADE_FINANCE_PROGRAM_ID_PK,
@@ -8,9 +9,9 @@ import {
   ACCOUNT_DISCRIMINATOR,
   ACCOUNTS_DATA_LAYOUT,
 } from '../utils/layouts/accounts.js'
-import { solanaPrivateRPC } from '@aleph-indexer/solana'
 import bs58 from 'bs58'
 import { AccountInfo, PublicKey } from '@solana/web3.js'
+import { getSolanaRPC } from '../utils/solana.js'
 
 export default class AccountDiscoverer {
   constructor(
@@ -40,7 +41,8 @@ export default class AccountDiscoverer {
    * Fetches all accounts from the program. Useful to filter which accounts should be indexed.
    */
   async getAllAccounts(): Promise<MarinadeFinanceAccountInfo[]> {
-    const connection = solanaPrivateRPC.getConnection()
+    const connection = getSolanaRPC(BlockchainChain.Solana) as any
+
     const accountsInfo: MarinadeFinanceAccountInfo[] = []
     // todo: If you want to only index a subset of account types, you can filter them here
     const accountTypesToFilter: AccountType[] = [

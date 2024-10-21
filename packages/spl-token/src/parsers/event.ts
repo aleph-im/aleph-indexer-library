@@ -1,13 +1,14 @@
 import {
   getTokenBalance,
   SolanaParsedInstructionContext,
-  solanaPrivateRPCRoundRobin,
 } from '@aleph-indexer/solana'
 import { ParsedAccountData, PublicKey } from '@solana/web3.js'
 import { SLPTokenRawEvent, SPLTokenEvent, SPLTokenEventType } from '../types.js'
 import { getMintAndOwnerFromEvent } from '../utils/utils.js'
 import { FetchMintStorage } from '../dal/fetchMint.js'
 import { EventDALIndex, EventStorage } from '../dal/event.js'
+import { BlockchainChain } from '@aleph-indexer/framework'
+import { getSolanaRPC } from '../utils/solana.js'
 
 export type MintOwner = {
   mint: string
@@ -324,7 +325,7 @@ export class EventParser {
   ): Promise<MintOwner> {
     // TODO: Improve this way to get the mint and owner of an account
     try {
-      const connection = solanaPrivateRPCRoundRobin.getClient()
+      const connection = getSolanaRPC(BlockchainChain.Solana)
       const res = await connection
         .getConnection()
         .getParsedAccountInfo(new PublicKey(account))

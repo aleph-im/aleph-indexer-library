@@ -1,9 +1,11 @@
 import { TokenInfo } from '@solana/spl-token-registry'
 import { Port, ReserveId, ReserveInfo } from '@port.finance/port-sdk'
-import { getTokenByAddress, solanaPrivateRPC } from '@aleph-indexer/solana'
+import { getTokenByAddress } from '@aleph-indexer/solana'
 import { LendingReserveInfo } from '../../../types.js'
 import { LendingDiscoverer } from '../types.js'
 import { PORT_SDK } from '../../../utils/port-sdk.js'
+import { getSolanaRPC } from '../../../utils/solana.js'
+import { BlockchainChain } from '@aleph-indexer/framework'
 
 export default class PortDiscoverer implements LendingDiscoverer {
   constructor(
@@ -19,7 +21,7 @@ export default class PortDiscoverer implements LendingDiscoverer {
   }
 
   async loadReserves(): Promise<LendingReserveInfo[]> {
-    const conn = solanaPrivateRPC.getConnection()
+    const conn = getSolanaRPC(BlockchainChain.Solana).getConnection()
     const newReserves: LendingReserveInfo[] = []
 
     const context = await this.sdk.getReserveContext()

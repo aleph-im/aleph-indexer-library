@@ -1,10 +1,12 @@
 import BN from 'bn.js'
 import { SolendReserve } from '@solendprotocol/solend-sdk'
-import { getTokenByAddress, solanaPrivateRPC } from '@aleph-indexer/solana'
+import { getTokenByAddress } from '@aleph-indexer/solana'
 import { WAD } from '../../../constants.js'
 import { LendingReserveInfo } from '../../../types.js'
 import { LendingDiscoverer } from '../types.js'
 import { SOLEND_SDK } from '../../../utils/solend-sdk.js'
+import { getSolanaRPC } from '../../../utils/solana.js'
+import { BlockchainChain } from '@aleph-indexer/framework'
 
 export default class SolendDiscoverer implements LendingDiscoverer {
   constructor(
@@ -13,7 +15,7 @@ export default class SolendDiscoverer implements LendingDiscoverer {
   ) {}
 
   async loadReserves(): Promise<LendingReserveInfo[]> {
-    const conn = solanaPrivateRPC.getConnection()
+    const conn = getSolanaRPC(BlockchainChain.Solana).getConnection()
     const newReserves: LendingReserveInfo[] = []
 
     await this.sdk.loadAll()
