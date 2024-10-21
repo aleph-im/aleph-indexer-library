@@ -94,7 +94,9 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     console.log(`Indexing`, JSON.stringify(config))
 
     await this.initInitialSupply(config)
-    await this.initUpdatedFlows(config)
+
+    // @note: Run in background to let the API to initialize
+    this.initUpdatedFlows(config).catch(console.log)
   }
 
   async filterEntity(

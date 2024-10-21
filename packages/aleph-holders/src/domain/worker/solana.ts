@@ -89,10 +89,11 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     const { meta } = config
     console.log(`Indexing ${meta.type}`, JSON.stringify(config))
 
-    await Promise.all([
+    // @note: Run in background to let the API to initialize
+    Promise.all([
       this.initMissingOwners(config),
       this.initTrackedAccounts(config),
-    ])
+    ]).catch(console.log)
   }
 
   async filterEntity(
