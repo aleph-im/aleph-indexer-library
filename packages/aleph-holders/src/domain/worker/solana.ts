@@ -236,18 +236,6 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
           update = update || !!newEvent.toOwner
         }
 
-        if (
-          newEvent.type === SPLTokenEventType.Approve &&
-          !newEvent.delegateOwner
-        ) {
-          newEvent.delegateOwner = await getOwnerFromEventAccount(
-            newEvent.blockchain,
-            newEvent.delegate,
-            this.splTokenEventDAL,
-          )
-          update = update || !!newEvent.delegateOwner
-        }
-
         if (!update) continue
 
         console.log('🎾 Solana missing owner UPDATE', id)

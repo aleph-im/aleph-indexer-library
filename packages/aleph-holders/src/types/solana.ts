@@ -393,8 +393,8 @@ export type SPLTokenEventMint = SPLTokenEventBaseWithAccountAndBalance & {
 
 export type SPLTokenEventBurn = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Burn
+  authority: string
   amount: string
-  owner: string
 }
 
 export type SPLTokenEventCloseAccount =
@@ -408,8 +408,8 @@ export type SPLTokenEventCloseAccount =
 
 export type SPLTokenEventTransfer = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Transfer
+  authority: string
   amount: string
-  owner: string
   toAccount: string
   toBalance: string
   toOwner?: string
@@ -427,9 +427,7 @@ export type SPLTokenEventApprove = SPLTokenEventBaseWithAccountAndBalance & {
   type: SPLTokenEventType.Approve
   amount: string
   owner: string
-  delegateBalance: string
   delegate: string
-  delegateOwner?: string
 }
 
 export type SPLTokenEventRevoke = SPLTokenEventBaseWithAccountAndBalance & {

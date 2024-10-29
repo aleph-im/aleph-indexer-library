@@ -67,6 +67,7 @@ export const SPLTokenEventBurn = new GraphQLObjectType({
   isTypeOf: (item) => item.type === SPLTokenEventType.Burn,
   fields: {
     ...splTokenEventCommonFields,
+    authority: { type: new GraphQLNonNull(GraphQLString) },
     amount: { type: new GraphQLNonNull(GraphQLBigNumber) },
     amountNum: { type: new GraphQLNonNull(GraphQLFloat) },
   },
@@ -102,6 +103,7 @@ export const SPLTokenEventTransfer = new GraphQLObjectType({
     item.type === SPLTokenEventType.Transfer && item.amount !== undefined,
   fields: {
     ...splTokenEventCommonFields,
+    authority: { type: new GraphQLNonNull(GraphQLString) },
     amount: { type: new GraphQLNonNull(GraphQLBigNumber) },
     amountNum: { type: new GraphQLNonNull(GraphQLFloat) },
     toAccount: { type: new GraphQLNonNull(GraphQLString) },

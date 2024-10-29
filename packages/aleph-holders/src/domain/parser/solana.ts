@@ -5,6 +5,7 @@ import {
 import { BlockchainId } from '@aleph-indexer/framework'
 import { SPLTokenEventStorage } from '../../dal/solana/splTokenEvent.js'
 import {
+  AuthorityType,
   SLPTokenInstruction,
   SPLTokenBalance,
   SPLTokenEvent,
@@ -44,13 +45,28 @@ export class SolanaEventParser {
       if (!owner) return [accountBalance]
 
       const ownerBalance = {
-        blockchain,
-        height,
+        ...accountBalance,
         account: owner,
-        mint,
-        balance,
-        timestamp,
         ownerAccounts: { [account]: accountBalance },
+      }
+
+      // @note: If there is an owner swap, reset the old owner balance
+      if (
+        event.type === SPLTokenEventType.SetAuthority &&
+        event.authorityType === AuthorityType.AccountOwner
+      ) {
+        const oldOwnerBalance = {
+          ...accountBalance,
+          account: event.owner,
+          ownerAccounts: {
+            [account]: {
+              ...accountBalance,
+              balance: '0',
+            },
+          },
+        }
+
+        return [accountBalance, ownerBalance, oldOwnerBalance]
       }
 
       return [accountBalance, ownerBalance]
@@ -158,7 +174,7 @@ export class SolanaEventParser {
       }
 
       case SPLTokenEventType.Burn: {
-        const { account, amount } = parsed.info
+        const { account, amount, authority } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
         const owner = (await getOwnerFromInstructionContext(
           blockchain,
@@ -170,6 +186,7 @@ export class SolanaEventParser {
         return {
           ...baseEvent,
           type: SPLTokenEventType.Burn,
+          authority,
           amount,
           account,
           balance,
@@ -181,6 +198,7 @@ export class SolanaEventParser {
         const {
           account,
           tokenAmount: { amount },
+          authority,
         } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
         const owner = (await getOwnerFromInstructionContext(
@@ -193,6 +211,7 @@ export class SolanaEventParser {
         return {
           ...baseEvent,
           type: SPLTokenEventType.Burn,
+          authority,
           amount,
           account,
           balance,
@@ -238,10 +257,15 @@ export class SolanaEventParser {
           ixCtx,
           this.eventDAL,
         )
+        const authority =
+          'authority' in parsed.info
+            ? parsed.info.authority
+            : parsed.info.multisigAuthority
 
         return {
           ...baseEvent,
           type: SPLTokenEventType.Transfer,
+          authority,
           amount,
           account,
           balance,
@@ -257,6 +281,7 @@ export class SolanaEventParser {
           source: account,
           destination: toAccount,
           tokenAmount: { amount },
+          authority,
         } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
         const toBalance = this.getTokenBalance(parentTransaction, toAccount)
@@ -276,6 +301,7 @@ export class SolanaEventParser {
         return {
           ...baseEvent,
           type: SPLTokenEventType.Transfer,
+          authority,
           amount,
           account,
           balance,
@@ -310,22 +336,12 @@ export class SolanaEventParser {
       case SPLTokenEventType.Approve: {
         const { source: account, delegate, amount } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
-        const delegateBalance = this.getTokenBalance(
-          parentTransaction,
-          delegate,
-        )
         const owner = (await getOwnerFromInstructionContext(
           blockchain,
           account,
           ixCtx,
           this.eventDAL,
         )) as string
-        const delegateOwner = await getOwnerFromInstructionContext(
-          blockchain,
-          delegate,
-          ixCtx,
-          this.eventDAL,
-        )
 
         return {
           ...baseEvent,
@@ -335,8 +351,6 @@ export class SolanaEventParser {
           balance,
           owner,
           delegate,
-          delegateBalance,
-          delegateOwner,
         }
       }
 
@@ -347,22 +361,12 @@ export class SolanaEventParser {
           tokenAmount: { amount },
         } = parsed.info
         const balance = this.getTokenBalance(parentTransaction, account)
-        const delegateBalance = this.getTokenBalance(
-          parentTransaction,
-          delegate,
-        )
         const owner = (await getOwnerFromInstructionContext(
           blockchain,
           account,
           ixCtx,
           this.eventDAL,
         )) as string
-        const delegateOwner = await getOwnerFromInstructionContext(
-          blockchain,
-          delegate,
-          ixCtx,
-          this.eventDAL,
-        )
 
         return {
           ...baseEvent,
@@ -372,8 +376,6 @@ export class SolanaEventParser {
           balance,
           owner,
           delegate,
-          delegateBalance,
-          delegateOwner,
         }
       }
 
