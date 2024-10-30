@@ -45,9 +45,6 @@ export function getAccountsFromEvent(event: SPLTokenEvent): string[] {
     case SPLTokenEventType.Transfer: {
       return [event.account, event.toAccount]
     }
-    case SPLTokenEventType.Approve: {
-      return [event.account, event.delegate]
-    }
     default: {
       return event.account ? [event.account] : []
     }
@@ -59,9 +56,6 @@ export function getOwnerAccountsFromEvent(event: SPLTokenEvent): string[] {
     case SPLTokenEventType.Transfer: {
       const out = event.owner ? [event.owner] : []
       return event.toOwner ? [...out, event.toOwner] : out
-    }
-    case SPLTokenEventType.Approve: {
-      return event.delegate ? [event.owner, event.delegate] : [event.owner]
     }
     default: {
       return event.owner ? [event.owner] : []
@@ -529,7 +523,7 @@ function getAccountsFromInstruction(
     }
     case SPLTokenEventType.Approve:
     case SPLTokenEventType.ApproveChecked: {
-      return [instruction.parsed.info.source, instruction.parsed.info.delegate]
+      return [instruction.parsed.info.source]
     }
     case SPLTokenEventType.Revoke: {
       return [instruction.parsed.info.source]
@@ -582,11 +576,6 @@ function getOwnerFromInstruction(
       if (account !== instruction.parsed.info.account) return
       return instruction.parsed.info.owner
     }
-    case SPLTokenEventType.Burn:
-    case SPLTokenEventType.BurnChecked: {
-      if (account !== instruction.parsed.info.account) return
-      return instruction.parsed.info.authority
-    }
     case SPLTokenEventType.Approve:
     case SPLTokenEventType.ApproveChecked: {
       if (account !== instruction.parsed.info.source) return
@@ -602,6 +591,13 @@ function getOwnerFromInstruction(
         ? instruction.parsed.info.owner
         : instruction.parsed.info.multisigOwner
     }
+    case SPLTokenEventType.SetAuthority: {
+      if (account !== instruction.parsed.info.account) return
+      return instruction.parsed.info.authorityType ===
+        AuthorityType.AccountOwner
+        ? instruction.parsed.info.newAuthority
+        : instruction.parsed.info.authority
+    }
     // @note: "authority" can be the "delegate" account if a previous "Approve" ix has been sent
     // case SPLTokenEventType.Transfer:
     // case SPLTokenEventType.TransferChecked: {
@@ -610,13 +606,12 @@ function getOwnerFromInstruction(
     //     ? instruction.parsed.info.authority
     //     : instruction.parsed.info.multisigAuthority
     // }
-    case SPLTokenEventType.SetAuthority: {
-      if (account !== instruction.parsed.info.account) return
-      return instruction.parsed.info.authorityType ===
-        AuthorityType.AccountOwner
-        ? instruction.parsed.info.newAuthority
-        : instruction.parsed.info.authority
-    }
+    // @note: "authority" can be the "delegate" account if a previous "Approve" ix has been sent
+    // case SPLTokenEventType.Burn:
+    // case SPLTokenEventType.BurnChecked: {
+    //   if (account !== instruction.parsed.info.account) return
+    //   return instruction.parsed.info.authority
+    // }
   }
 }
 
