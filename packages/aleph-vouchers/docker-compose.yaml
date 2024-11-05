@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+  aleph-vouchers:
+    build: ../..
+    volumes:
+      - ~/indexer.data:/app/data:rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    env_file:
+      - ../../.env
+      - ./.env
+    ports:
+      - 8081:8081
+    environment:
+      - INDEXER=aleph-vouchers
+      - LETSENCRYPT_HOST=vouchers.api.aleph.cloud
+      - VIRTUAL_HOST=vouchers.api.aleph.cloud
+      - VIRTUAL_PORT=8081
+    network_mode: bridge
