@@ -18,3 +18,7 @@ services:
       - VIRTUAL_HOST=messages.api.aleph.cloud
       - VIRTUAL_PORT=8081
     network_mode: bridge
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10g" # max logs size
