@@ -15,22 +15,22 @@ export async function getCommonBalances<T extends CommonBalance>(
     BlockchainBalance: string
   },
 ): Promise<T[]> {
-  const { blockchain, account: acc, ...opts } = args
+  const { blockchain, account, skip = 0, limit = 1000, ...opts } = args
 
-  console.log('QUERY BALANCE ', acc, args)
+  console.log('QUERY BALANCE ', account, args)
 
   opts.reverse = opts.reverse !== undefined ? opts.reverse : true
 
-  let skip = opts.skip || 0
-  const limit = opts.limit || 1000
+  let s = skip
+  let l = limit
   const result: T[] = []
 
   let entries
 
-  if (!entries && acc) {
+  if (!entries && account) {
     entries = await balanceDAL
       .useIndex(balanceIndexes.BlockchainAccount)
-      .getAllValuesFromTo([blockchain, acc], [blockchain, acc], opts)
+      .getAllValuesFromTo([blockchain, account], [blockchain, account], opts)
   }
 
   if (!entries) {
@@ -43,12 +43,12 @@ export async function getCommonBalances<T extends CommonBalance>(
     if (entry.balanceBN?.isZero()) continue
 
     // @note: Skip first N entries
-    if (--skip >= 0) continue
+    if (--s >= 0) continue
 
     result.push(entry)
 
     // @note: Stop when after reaching the limit
-    if (limit > 0 && result.length >= limit) return result
+    if (l > 0 && result.length >= l) return result
   }
 
   return result
@@ -70,21 +70,23 @@ export async function getCommonEvents<T extends CommonEvent>(
     startHeight,
     endHeight,
     blockchain,
-    account: acc,
+    account,
+    skip = 0,
+    limit = 1000,
     ...opts
   } = args
 
-  console.log('QUERY EVENTS ', acc, args)
+  console.log('QUERY EVENTS ', account, args)
 
   opts.reverse = opts.reverse !== undefined ? opts.reverse : true
 
-  let skip = opts.skip || 0
-  const limit = opts.limit || 1000
+  let s = skip
+  let l = limit
   const result: T[] = []
 
   let entries
 
-  if (!entries && acc) {
+  if (!entries && account) {
     if (startDate !== undefined || endDate !== undefined) {
       startDate = startDate !== undefined ? startDate : 0
       endDate = endDate !== undefined ? endDate : Date.now()
@@ -92,8 +94,8 @@ export async function getCommonEvents<T extends CommonEvent>(
       entries = await eventDAL
         .useIndex(eventIndexes.BlockchainAccountTimestampIndex)
         .getAllValuesFromTo(
-          [blockchain, acc, startDate],
-          [blockchain, acc, endDate],
+          [blockchain, account, startDate],
+          [blockchain, account, endDate],
           opts,
         )
     } else {
@@ -103,8 +105,8 @@ export async function getCommonEvents<T extends CommonEvent>(
       entries = await eventDAL
         .useIndex(eventIndexes.BlockchainAccountHeightIndex)
         .getAllValuesFromTo(
-          [blockchain, acc, startHeight],
-          [blockchain, acc, endHeight],
+          [blockchain, account, startHeight],
+          [blockchain, account, endHeight],
           opts,
         )
     }
@@ -134,12 +136,12 @@ export async function getCommonEvents<T extends CommonEvent>(
 
   for await (const entry of entries) {
     // @note: Skip first N entries
-    if (--skip >= 0) continue
+    if (--s >= 0) continue
 
     result.push(entry)
 
     // @note: Stop when after reaching the limit
-    if (limit > 0 && result.length >= limit) return result
+    if (l > 0 && result.length >= l) return result
   }
 
   return result

@@ -109,7 +109,7 @@ export default class SolanaWorkerDomain implements BlockchainWorkerI {
     )
 
     return mint === blockchainTokenContract[blockchainId]
-    // return mint === 'CsZ5LZkDS7h9TDKjrbL7VAwQZ9nsRu8vJLhRYfmGaN8K'
+    // return mint === '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x'
   }
 
   async indexEntities(

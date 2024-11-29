@@ -6,7 +6,7 @@ export const blockchainDecimals: Record<BlockchainId, number> = {
   [BlockchainChain.Bsc]: 18,
   [BlockchainChain.Base]: 18,
   [BlockchainChain.Avalanche]: 18,
-  [BlockchainChain.Solana]: 6,
+  [BlockchainChain.Solana]: 8,
 }
 
 export const blockchainTotalSupply: Record<BlockchainId, BN> = {
@@ -22,7 +22,7 @@ export const blockchainTokenContract: Record<BlockchainId, string> = {
   [BlockchainChain.Bsc]: '0x82D2f8E02Afb160Dd5A480a617692e62de9038C4',
   [BlockchainChain.Base]: '0xc0Fbc4967259786C743361a5885ef49380473dCF',
   [BlockchainChain.Avalanche]: '0xc0Fbc4967259786C743361a5885ef49380473dCF',
-  [BlockchainChain.Solana]: 'CsZ5LZkDS7h9TDKjrbL7VAwQZ9nsRu8vJLhRYfmGaN8K',
+  [BlockchainChain.Solana]: '3UCMiSnkcnkPE1pgQ5ggPCBv6dXgVUy16TmMUe1WpG9x',
 }
 
 // @note: https://console.superfluid.finance/base-mainnet/protocol
