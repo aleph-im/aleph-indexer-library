@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  aleph-credit:
+    build: ../..
+    volumes:
+      - ~/indexer.data:/app/data:rw
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    env_file:
+      - ../../.env
+      - ./.env
+    ports:
+      - 8081:8081
+    environment:
+      - INDEXER=aleph-credit
+      - LETSENCRYPT_HOST=holders.api.aleph.cloud
+      - VIRTUAL_HOST=holders.api.aleph.cloud
+      - VIRTUAL_PORT=8081
+    network_mode: bridge
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10g" # max logs size
