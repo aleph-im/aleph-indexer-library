@@ -9,14 +9,16 @@ export enum BlockchainId {
 
 export enum TokenId {
   USDC = 'USDC',
+  ALEPH = 'ALEPH',
 }
 
 export const blockchainTokenContractMap: Record<
   BlockchainId,
-  Record<TokenId, string>
+  Partial<Record<TokenId, string>>
 > = {
   [BlockchainChain.Ethereum]: {
     [TokenId.USDC]: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+    [TokenId.ALEPH]: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
   },
   [BlockchainId.EthereumTestnet]: {
     [TokenId.USDC]: '0x0c86A754A29714C4Fe9C6F1359fa7099eD174c0b', // staging TRANSAK // it should be production USDC
@@ -29,8 +31,9 @@ export const blockchainAlephCreditContractMap: Record<BlockchainId, string> = {
 }
 
 export const tokenDecimalsMap: Record<string, number> = {
-  [blockchainTokenContractMap[BlockchainChain.Ethereum][TokenId.USDC]]: 18,
-  [blockchainTokenContractMap[BlockchainId.EthereumTestnet][TokenId.USDC]]: 18,
+  '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48': 18,
+  '0x27702a26126e0B3702af63Ee09aC4d1A084EF628': 18,
+  '0x0c86A754A29714C4Fe9C6F1359fa7099eD174c0b': 18,
 }
 
 export const providerAddressMap: Record<string, ProviderId> = {

@@ -8,7 +8,11 @@ import {
   CommonTransfer,
   CommonTransferQueryArgs,
 } from '../types/common.js'
-import { blockchainTokenContractMap, TokenId } from '../utils/index.js'
+import {
+  BlockchainId,
+  blockchainTokenContractMap,
+  TokenId,
+} from '../utils/index.js'
 import { CommonTransfersQueryArgs } from '../types/common.js'
 
 export default class MainDomain extends IndexerMainDomain {
@@ -21,19 +25,32 @@ export default class MainDomain extends IndexerMainDomain {
 
     // -----------------------------
 
-    await this.indexAccounts([
-      // {
-      //   blockchainId: BlockchainChain.Ethereum,
-      //   account:
-      //     blockchainTokenContract[BlockchainChain.Ethereum][TokenId.USDC],
-      //   index: { logs: true },
-      // },
-      {
-        blockchainId: 'ethereum-sepolia',
-        account: blockchainTokenContractMap['ethereum-sepolia'][TokenId.USDC],
-        index: { logs: true },
-      },
-    ])
+    const { supportedBlockchains } = this.context
+    const accounts = []
+
+    for (const blockchainId of Object.values(BlockchainId)) {
+      if (!supportedBlockchains.includes(blockchainId)) continue
+
+      const tokens = Object.keys(
+        blockchainTokenContractMap[blockchainId],
+      ) as TokenId[]
+
+      for (const tokenId of tokens) {
+        const account = blockchainTokenContractMap[blockchainId][tokenId]
+        if (!account)
+          throw new Error(
+            `${tokenId} token not supported in ${blockchainId} chain`,
+          )
+
+        accounts.push({
+          blockchainId,
+          account,
+          index: { logs: true },
+        })
+      }
+    }
+
+    await this.indexAccounts(accounts)
   }
 
   async getTransfers(
