@@ -9,8 +9,6 @@ const apiServer = alephConfig.host
 const channel = alephConfig.paymentChannel
 const postType = `aleph_credit_payment`
 
-if (!address) throw new Error("payment address not set");
-
 const client = new AlephHttpClient(apiServer)
 
 export async function getPaymentDetail(
@@ -25,6 +23,8 @@ export async function getPaymentDetail(
 export async function getPaymentDetailMessage(
   idOrHash: string,
 ): Promise<PostResponse<{ payment: Payment }> | undefined> {
+  if (!address) throw new Error("payment address not set");
+
   const tags = [
     `payment_id_${idOrHash}`,
     `provider_payment_id_${idOrHash}`,
