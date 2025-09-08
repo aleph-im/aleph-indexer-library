@@ -21,19 +21,21 @@ export const blockchainTokenContractMap: Record<
     [TokenId.ALEPH]: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
   },
   [BlockchainId.EthereumTestnet]: {
-    [TokenId.USDC]: '0x0c86A754A29714C4Fe9C6F1359fa7099eD174c0b', // staging TRANSAK // it should be production USDC
+    [TokenId.USDC]: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+    [TokenId.ALEPH]: '0x4b3f52fFF693D898578f132f0222877848E09A8C',
   },
 }
 
 export const blockchainAlephCreditContractMap: Record<BlockchainId, string> = {
-  [BlockchainChain.Ethereum]: '0xB6B5358493AF8159B17506C5cC85df69193444BC',
-  [BlockchainId.EthereumTestnet]: '0xB6B5358493AF8159B17506C5cC85df69193444BC', // staging test address // it should be deployed aleph contract
+  [BlockchainId.Ethereum]: '0x3358637Ae744bDf30796fA5147459Bc98E455EeA',
+  [BlockchainId.EthereumTestnet]: '0x3358637Ae744bDf30796fA5147459Bc98E455EeA',
 }
 
 export const tokenDecimalsMap: Record<string, number> = {
   '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48': 18,
   '0x27702a26126e0B3702af63Ee09aC4d1A084EF628': 18,
-  '0x0c86A754A29714C4Fe9C6F1359fa7099eD174c0b': 18,
+  '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238': 18,
+  '0x4b3f52fFF693D898578f132f0222877848E09A8C': 18,
 }
 
 export const providerAddressMap: Record<string, ProviderId> = {
@@ -42,14 +44,12 @@ export const providerAddressMap: Record<string, ProviderId> = {
 }
 
 export const blackHoleAddressMap: Record<BlockchainId, string> = {
-  [BlockchainChain.Ethereum]: '0x0000000000000000000000000000000000000000',
+  [BlockchainId.Ethereum]: '0x0000000000000000000000000000000000000000',
   [BlockchainId.EthereumTestnet]: '0x0000000000000000000000000000000000000000',
 }
 
 export const alephConfig = {
   host: config.ALEPH_HOST || 'https://api2.aleph.im',
-  paymentChannel: config.ALEPH_PAYMENT_CHANNEL || 'TEST_ALEPH_PAYMENT',
-  paymentAddress:
-    config.ALEPH_PAYMENT_ADDRESS ||
-    '0xE73B86DefD3aDAf31643F549fA99caBe39a391dC',
+  paymentChannel: config.ALEPH_PAYMENT_CHANNEL || 'ALEPH_CREDIT_STAGING',
+  paymentAddress: config.ALEPH_PAYMENT_ADDRESS,
 }
