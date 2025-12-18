@@ -2,7 +2,10 @@ import fs, { CopyOptions } from 'node:fs'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
-import { IndexerMainDomain } from '@aleph-indexer/framework'
+import {
+  getBlockchainConfig,
+  IndexerMainDomain,
+} from '@aleph-indexer/framework'
 import {
   CommonQueryArgs,
   CommonTransfer,
@@ -25,7 +28,10 @@ export default class MainDomain extends IndexerMainDomain {
 
     // -----------------------------
 
-    const { supportedBlockchains } = this.context
+    const supportedBlockchains = this.context.supportedBlockchains.map(
+      (blockchain) => getBlockchainConfig(blockchain).id,
+    )
+
     const accounts = []
 
     for (const blockchainId of Object.values(BlockchainId)) {
