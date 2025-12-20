@@ -27,7 +27,8 @@ export const blockchainTokenContractMap: Record<
 }
 
 export const blockchainAlephCreditContractMap: Record<BlockchainId, string> = {
-  [BlockchainId.Ethereum]: '0x3358637Ae744bDf30796fA5147459Bc98E455EeA',
+  // [BlockchainId.Ethereum]: '0x0',
+  [BlockchainId.Ethereum]: '0x4AFe3778bEC7ebC0499d4C755dE732b507B029A4',
   [BlockchainId.EthereumTestnet]: '0x3358637Ae744bDf30796fA5147459Bc98E455EeA',
 }
 
