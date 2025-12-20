@@ -51,7 +51,13 @@ export default class MainDomain extends IndexerMainDomain {
         accounts.push({
           blockchainId,
           account,
-          index: { logs: true },
+          index: {
+            logs: {
+              params: {
+                pageLimit: 1000,
+              },
+            },
+          },
         })
       }
     }
