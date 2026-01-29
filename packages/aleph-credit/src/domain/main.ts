@@ -55,6 +55,7 @@ export default class MainDomain extends IndexerMainDomain {
             logs: {
               params: {
                 pageLimit: 1000,
+                minBlockHeight: 24136053, // First block of 2026
               },
             },
           },
