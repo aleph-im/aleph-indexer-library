@@ -10,6 +10,7 @@ export enum BlockchainId {
 export enum TokenId {
   USDC = 'USDC',
   ALEPH = 'ALEPH',
+  ETH = 'ETH',
 }
 
 export const blockchainTokenContractMap: Record<
@@ -19,10 +20,12 @@ export const blockchainTokenContractMap: Record<
   [BlockchainChain.Ethereum]: {
     [TokenId.USDC]: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
     [TokenId.ALEPH]: '0x27702a26126e0B3702af63Ee09aC4d1A084EF628',
+    [TokenId.ETH]: '0x6b55F32Ea969910838defd03746Ced5E2AE8cB8B',
   },
   [BlockchainId.EthereumTestnet]: {
     [TokenId.USDC]: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
     [TokenId.ALEPH]: '0x4b3f52fFF693D898578f132f0222877848E09A8C',
+    [TokenId.ETH]: '0x4AFe3778bEC7ebC0499d4C755dE732b507B029A4',
   },
 }
 
@@ -37,6 +40,8 @@ export const tokenDecimalsMap: Record<string, number> = {
   '0x27702a26126e0B3702af63Ee09aC4d1A084EF628': 18,
   '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238': 18,
   '0x4b3f52fFF693D898578f132f0222877848E09A8C': 18,
+  '0x6b55F32Ea969910838defd03746Ced5E2AE8cB8B': 18,
+  '0x4AFe3778bEC7ebC0499d4C755dE732b507B029A4': 18,
 }
 
 export const providerAddressMap: Record<string, ProviderId> = {
