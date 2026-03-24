@@ -3,11 +3,10 @@ import {
   IndexerDomainContext,
   ParserContext,
 } from '@aleph-indexer/framework'
-import { BlockchainId, TokenId } from '../utils/constants'
 import BN from 'bn.js'
 
 export type CommonEvent = {
-  blockchain: BlockchainId
+  blockchain: string
   token: string
   id: string
   timestamp: number
@@ -29,8 +28,8 @@ export type CommonTransfer = CommonEvent & {
 // -------------------------
 
 export type CommonQueryArgs = {
-  blockchain: BlockchainId
-  token: TokenId | string
+  blockchain: string
+  token: string
   limit?: number
   skip?: number
   reverse?: boolean
@@ -47,8 +46,8 @@ export type CommonEventsQueryArgs = CommonQueryArgs & {
 }
 
 export type CommonEventQueryArgs = {
-  blockchain: BlockchainId
-  token: TokenId | string
+  blockchain: string
+  token: string
   transaction: string
 }
 

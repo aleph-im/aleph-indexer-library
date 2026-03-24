@@ -5,7 +5,6 @@ import {
   AccountIndexerRequestArgs,
   ParserContext,
   getBlockchainConfig,
-  BlockchainId,
 } from '@aleph-indexer/framework'
 import {
   EthereumLogIndexerWorkerDomainI,
@@ -26,7 +25,7 @@ export default class WorkerDomain
 {
   constructor(
     protected context: IndexerDomainContext,
-    protected blockchainWorker: Record<BlockchainId, BlockchainWorkerI> = {},
+    protected blockchainWorker: Record<string, BlockchainWorkerI> = {},
   ) {
     super(context)
     const { supportedBlockchains } = this.context
