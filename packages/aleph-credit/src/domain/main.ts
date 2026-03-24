@@ -2,6 +2,7 @@ import fs, { CopyOptions } from 'node:fs'
 import path from 'node:path'
 import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
+import { config } from '@aleph-indexer/core'
 import {
   getBlockchainConfig,
   IndexerMainDomain,
@@ -55,7 +56,7 @@ export default class MainDomain extends IndexerMainDomain {
             logs: {
               params: {
                 pageLimit: 1000,
-                minBlockHeight: 24136053, // First block of 2026
+                minBlockHeight: Number(config.INDEXER_MIN_BLOCK_HEIGHT || 24136053), // First block of 2026
               },
             },
           },
