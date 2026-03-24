@@ -1,8 +1,8 @@
 import BN from 'bn.js'
+import { StorageMapValueFn } from '@aleph-indexer/core'
 import { getDecimalsMap } from '../config/index.js'
 
 const tokenDecimalsMap = getDecimalsMap()
-import { StorageMapValueFn } from '@aleph-indexer/core'
 
 function hexStringToBigNumber(hex: string): BN {
   hex = hex.replace('0x', '')

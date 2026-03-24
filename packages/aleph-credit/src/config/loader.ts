@@ -37,6 +37,19 @@ function loadFromFile(): Partial<ChainsConfig> {
   return parseYaml(raw) || {}
 }
 
+function validateChainConfig(chain: string, config: ChainConfig): void {
+  if (!config.tokenContracts || typeof config.tokenContracts !== 'object') {
+    throw new Error(`Chain '${chain}': tokenContracts is required`)
+  }
+  for (const [token, tc] of Object.entries(config.tokenContracts)) {
+    if (!tc.address) throw new Error(`Chain '${chain}', token '${token}': address is required`)
+    if (tc.decimals === undefined) throw new Error(`Chain '${chain}', token '${token}': decimals is required`)
+  }
+  if (!config.creditContract?.address) {
+    throw new Error(`Chain '${chain}': creditContract.address is required`)
+  }
+}
+
 function loadConfig(): ChainsConfig {
   const fileConfig = loadFromFile()
   const merged: ChainsConfig = { ...defaultChainsConfig }
@@ -49,6 +62,10 @@ function loadConfig(): ChainsConfig {
     } else {
       merged[chain] = chainConfig as ChainConfig
     }
+  }
+
+  for (const [chain, config] of Object.entries(merged)) {
+    validateChainConfig(chain, config)
   }
 
   return merged
