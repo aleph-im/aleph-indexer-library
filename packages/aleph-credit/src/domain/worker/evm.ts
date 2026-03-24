@@ -11,11 +11,7 @@ import {
   EVMEventType,
 } from '../../types/evm.js'
 import { EVMEventParser } from '../parser/evm.js'
-import {
-  blockchainAlephCreditContractMap,
-  BlockchainId,
-  providerAddressMap,
-} from '../../utils/index.js'
+import { getChainConfig, getProviderAddressMap } from '../../config/index.js'
 import {
   BlockchainWorkerI,
   CommonTransfer,
@@ -82,10 +78,10 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
 
     const toAddress = entity.parsed?.args[1]
 
+    const chainConfig = getChainConfig(blockchainId)
     return (
       eventSignature === EventSignature.Transfer &&
-      toAddress ===
-        blockchainAlephCreditContractMap[blockchainId as BlockchainId]
+      toAddress === chainConfig.creditContract.address
     )
   }
 
@@ -100,7 +96,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
 
     for (const entity of entities) {
       const parsedEvent = this.parser.parseEvent(
-        blockchainId as BlockchainId,
+        blockchainId,
         entity,
       )
       console.log('parsedEvent', parsedEvent)
@@ -185,7 +181,8 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
         continue
       }
 
-      const providerId = providerAddressMap[transfer.from]
+      const providerMap = getProviderAddressMap(transfer.blockchain)
+      const providerId = providerMap[transfer.from]
 
       // @note: If the transfer comes from a non-provider address and there is no payment post,
       // it could have been a direct transfer using the blockchain
