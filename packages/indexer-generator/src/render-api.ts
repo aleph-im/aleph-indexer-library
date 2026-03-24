@@ -412,39 +412,42 @@ export const AccountsArgs = {
 
 function sortTypes(types: ViewTypes): ViewTypes {
   const graph = new Map<string, { name: string; edges: Set<string> }>()
-  
-  types.types.forEach(type => {
+
+  types.types.forEach((type) => {
     const edges = new Set<string>()
-    type.fields.forEach(field => {
-      if (types.types.some(type => type.name === field.type)) {
+    type.fields.forEach((field) => {
+      if (types.types.some((type) => type.name === field.type)) {
         edges.add(field.type)
-      }      
+      }
     })
     graph.set(type.name, { name: type.name, edges })
   })
 
   const namesSorted = topologicalSort(graph)
   const typesSorted: ViewStruct[] = namesSorted
-    .map(name => types.types.find(type => type.name === name))
+    .map((name) => types.types.find((type) => type.name === name))
     .filter((type): type is ViewStruct => type !== undefined)
-  
+
   return { types: typesSorted, enums: types.enums }
 }
 
-function topologicalSort(graph: Map<string, { name: string; edges: Set<string> }>): string[] {
-  let sorted: string[] = []
-  let visited = new Set<string>()
-  let tempMark = new Set<string>()
+function topologicalSort(
+  graph: Map<string, { name: string; edges: Set<string> }>,
+): string[] {
+  const sorted: string[] = []
+  const visited = new Set<string>()
+  const tempMark = new Set<string>()
 
   function visit(nodeName: string) {
     if (visited.has(nodeName)) return
-    if (tempMark.has(nodeName)) throw new Error(`Cycle detected involving ${nodeName}`)
+    if (tempMark.has(nodeName))
+      throw new Error(`Cycle detected involving ${nodeName}`)
 
     tempMark.add(nodeName)
 
     const node = graph.get(nodeName)
     if (node) node.edges.forEach(visit)
-    
+
     tempMark.delete(nodeName)
     visited.add(nodeName)
     sorted.push(nodeName)

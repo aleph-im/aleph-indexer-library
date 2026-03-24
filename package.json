@@ -64,10 +64,10 @@
     "luxon": "^2.4.0"
   },
   "engines": {
-    "node": ">=16.15.0"
+    "node": ">=22.0.0"
   },
   "lint-staged": {
-    "*.js": "eslint --cache --fix"
+    "*.{js,ts,tsx}": "eslint --cache --fix"
   },
   "workspaces": [
     "packages/aleph-holders",
