@@ -42,6 +42,8 @@ function loadConfig(): ChainsConfig {
   const merged: ChainsConfig = { ...defaultChainsConfig }
 
   for (const [chain, chainConfig] of Object.entries(fileConfig)) {
+    if (!chainConfig) continue
+
     if (merged[chain]) {
       merged[chain] = deepMerge(merged[chain], chainConfig)
     } else {
