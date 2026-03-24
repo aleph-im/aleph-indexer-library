@@ -3,18 +3,9 @@ export enum ProviderId {
   TRANSAK = 'TRANSAK',
 }
 
-export enum BlockchainId {
-  Ethereum = 'etherum',
-  EthereumTestnet = 'ethereum-sepolia',
-}
-
 export enum FiatId {
   EUR = 'EUR',
   USD = 'USD',
-}
-
-export enum TokenId {
-  USDC = 'USDC',
 }
 
 export enum PaymentStatus {
@@ -45,11 +36,11 @@ export type Payment = {
   id: string
   provider_id: ProviderId
   status: PaymentStatus
-  chain: BlockchainId
+  chain: string
   user_address: string
   contract_address: string
   in_amount: number
-  in_currency: FiatId | TokenId
+  in_currency: FiatId | string
   out_token: string
   config: PaymentConfig
   created_at: number

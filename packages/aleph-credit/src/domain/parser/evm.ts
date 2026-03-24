@@ -4,12 +4,12 @@ import {
   EventSignature,
   EVMEventType,
 } from '../../types/evm.js'
-import { BlockchainId, hexStringToUint256 } from '../../utils/index.js'
+import { hexStringToUint256 } from '../../utils/index.js'
 import { CommonEvent } from '../../types/common.js'
 
 export class EVMEventParser {
   parseEvent(
-    blockchain: BlockchainId,
+    blockchain: string,
     entity: EthereumParsedLog,
   ): ERC20TransferEvent | undefined {
     const eventSignature = entity.parsed?.signature
@@ -22,7 +22,7 @@ export class EVMEventParser {
   }
 
   protected parseERC20TransferEvent(
-    blockchain: BlockchainId,
+    blockchain: string,
     entity: EthereumParsedLog,
   ): ERC20TransferEvent {
     const parsedEvent = this.parseCommonScheme(
@@ -46,7 +46,7 @@ export class EVMEventParser {
   }
 
   protected parseCommonScheme(
-    blockchain: BlockchainId,
+    blockchain: string,
     entity: EthereumParsedLog,
     type: EVMEventType,
   ): CommonEvent {
