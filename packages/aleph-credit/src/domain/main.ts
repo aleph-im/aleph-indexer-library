@@ -34,7 +34,9 @@ export default class MainDomain extends IndexerMainDomain {
       const chainConfig = getChainConfig(blockchainId)
 
       // Index token contracts
-      for (const [, tokenConfig] of Object.entries(chainConfig.tokenContracts)) {
+      for (const [, tokenConfig] of Object.entries(
+        chainConfig.tokenContracts,
+      )) {
         accounts.push({
           blockchainId,
           account: tokenConfig.address,
@@ -42,7 +44,9 @@ export default class MainDomain extends IndexerMainDomain {
             logs: {
               params: {
                 pageLimit: 1000,
-                minBlockHeight: Number(config.INDEXER_MIN_BLOCK_HEIGHT || 24136053),
+                minBlockHeight: Number(
+                  config.INDEXER_MIN_BLOCK_HEIGHT || 24136053,
+                ),
               },
             },
           },
@@ -58,7 +62,9 @@ export default class MainDomain extends IndexerMainDomain {
             logs: {
               params: {
                 pageLimit: 1000,
-                minBlockHeight: Number(config.INDEXER_MIN_BLOCK_HEIGHT || 24136053),
+                minBlockHeight: Number(
+                  config.INDEXER_MIN_BLOCK_HEIGHT || 24136053,
+                ),
               },
             },
           },

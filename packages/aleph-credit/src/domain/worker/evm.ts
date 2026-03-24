@@ -95,10 +95,7 @@ export default class EVMWorkerDomain implements BlockchainWorkerI {
     const parsedTransferEvents: ERC20TransferEvent[] = []
 
     for (const entity of entities) {
-      const parsedEvent = this.parser.parseEvent(
-        blockchainId,
-        entity,
-      )
+      const parsedEvent = this.parser.parseEvent(blockchainId, entity)
       console.log('parsedEvent', parsedEvent)
       if (!parsedEvent) continue
 

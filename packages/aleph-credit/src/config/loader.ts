@@ -5,7 +5,10 @@ import { config as envConfig } from '@aleph-indexer/core'
 import { ChainsConfig, ChainConfig } from './schema.js'
 import { defaultChainsConfig } from './defaults.js'
 
-function deepMerge(target: ChainConfig, source: Partial<ChainConfig>): ChainConfig {
+function deepMerge(
+  target: ChainConfig,
+  source: Partial<ChainConfig>,
+): ChainConfig {
   const result = { ...target }
 
   if (source.tokenContracts) {
@@ -18,7 +21,10 @@ function deepMerge(target: ChainConfig, source: Partial<ChainConfig>): ChainConf
   }
 
   if (source.creditContract) {
-    result.creditContract = { ...target.creditContract, ...source.creditContract }
+    result.creditContract = {
+      ...target.creditContract,
+      ...source.creditContract,
+    }
   }
 
   if (source.providers) {
@@ -29,7 +35,8 @@ function deepMerge(target: ChainConfig, source: Partial<ChainConfig>): ChainConf
 }
 
 function loadFromFile(): Partial<ChainsConfig> {
-  const configPath = envConfig.INDEXER_CHAINS_CONFIG || path.resolve('config/chains.yaml')
+  const configPath =
+    envConfig.INDEXER_CHAINS_CONFIG || path.resolve('config/chains.yaml')
 
   if (!fs.existsSync(configPath)) return {}
 
@@ -42,8 +49,12 @@ function validateChainConfig(chain: string, config: ChainConfig): void {
     throw new Error(`Chain '${chain}': tokenContracts is required`)
   }
   for (const [token, tc] of Object.entries(config.tokenContracts)) {
-    if (!tc.address) throw new Error(`Chain '${chain}', token '${token}': address is required`)
-    if (tc.decimals === undefined) throw new Error(`Chain '${chain}', token '${token}': decimals is required`)
+    if (!tc.address)
+      throw new Error(`Chain '${chain}', token '${token}': address is required`)
+    if (tc.decimals === undefined)
+      throw new Error(
+        `Chain '${chain}', token '${token}': decimals is required`,
+      )
   }
   if (!config.creditContract?.address) {
     throw new Error(`Chain '${chain}': creditContract.address is required`)
