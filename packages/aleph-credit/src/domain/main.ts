@@ -1,7 +1,6 @@
 import fs, { CopyOptions } from 'node:fs'
 import path from 'node:path'
 import { promisify } from 'node:util'
-import { fileURLToPath } from 'node:url'
 import { config } from '@aleph-indexer/core'
 import {
   getBlockchainConfig,
@@ -12,11 +11,7 @@ import {
   CommonTransfer,
   CommonTransferQueryArgs,
 } from '../types/common.js'
-import {
-  BlockchainId,
-  blockchainTokenContractMap,
-  TokenId,
-} from '../utils/index.js'
+import { getChainConfig } from '../config/index.js'
 import { CommonTransfersQueryArgs } from '../types/common.js'
 
 export default class MainDomain extends IndexerMainDomain {
@@ -35,28 +30,35 @@ export default class MainDomain extends IndexerMainDomain {
 
     const accounts = []
 
-    for (const blockchainId of Object.values(BlockchainId)) {
-      if (!supportedBlockchains.includes(blockchainId)) continue
+    for (const blockchainId of supportedBlockchains) {
+      const chainConfig = getChainConfig(blockchainId)
 
-      const tokens = Object.keys(
-        blockchainTokenContractMap[blockchainId],
-      ) as TokenId[]
-
-      for (const tokenId of tokens) {
-        const account = blockchainTokenContractMap[blockchainId][tokenId]
-        if (!account)
-          throw new Error(
-            `${tokenId} token not supported in ${blockchainId} chain`,
-          )
-
+      // Index token contracts
+      for (const [, tokenConfig] of Object.entries(chainConfig.tokenContracts)) {
         accounts.push({
           blockchainId,
-          account,
+          account: tokenConfig.address,
           index: {
             logs: {
               params: {
                 pageLimit: 1000,
-                minBlockHeight: Number(config.INDEXER_MIN_BLOCK_HEIGHT || 24136053), // First block of 2026
+                minBlockHeight: Number(config.INDEXER_MIN_BLOCK_HEIGHT || 24136053),
+              },
+            },
+          },
+        })
+      }
+
+      // Index credit contract for native payments
+      if (chainConfig.creditContract.nativePayments) {
+        accounts.push({
+          blockchainId,
+          account: chainConfig.creditContract.address,
+          index: {
+            logs: {
+              params: {
+                pageLimit: 1000,
+                minBlockHeight: Number(config.INDEXER_MIN_BLOCK_HEIGHT || 24136053),
               },
             },
           },
@@ -67,12 +69,17 @@ export default class MainDomain extends IndexerMainDomain {
     await this.indexAccounts(accounts)
   }
 
+  private resolveTokenAddress(blockchain: string, token: string): string {
+    const chainConfig = getChainConfig(blockchain)
+    const tokenConfig = chainConfig.tokenContracts[token]
+    return tokenConfig ? tokenConfig.address : token
+  }
+
   async getTransfers(
     args: CommonTransfersQueryArgs,
   ): Promise<CommonTransfer[]> {
     const { blockchain, token } = args
-    args.token =
-      blockchainTokenContractMap[blockchain][token as TokenId] || token
+    args.token = this.resolveTokenAddress(blockchain, token)
 
     const response = await this.context.apiClient
       .useBlockchain(blockchain)
@@ -89,8 +96,7 @@ export default class MainDomain extends IndexerMainDomain {
     args: CommonTransferQueryArgs,
   ): Promise<CommonTransfer | undefined> {
     const { blockchain, token } = args
-    args.token =
-      blockchainTokenContractMap[blockchain][token as TokenId] || token
+    args.token = this.resolveTokenAddress(blockchain, token)
 
     const response = await this.context.apiClient
       .useBlockchain(blockchain)
@@ -105,8 +111,7 @@ export default class MainDomain extends IndexerMainDomain {
 
   async getPendingTransfers(args: CommonQueryArgs): Promise<CommonTransfer[]> {
     const { blockchain, token } = args
-    args.token =
-      blockchainTokenContractMap[blockchain][token as TokenId] || token
+    args.token = this.resolveTokenAddress(blockchain, token)
 
     const response = await this.context.apiClient
       .useBlockchain(blockchain)
@@ -123,12 +128,9 @@ export default class MainDomain extends IndexerMainDomain {
   protected async ensureParserAbis(): Promise<void> {
     const fsCopy = promisify<string, string, CopyOptions>(fs.cp)
 
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = path.dirname(__filename)
-
     const { dataPath, projectId } = this.context
 
-    const abiSrc = path.join(__dirname, '../utils/abis')
+    const abiSrc = path.resolve('config/abis')
     const abiDst = path.join(dataPath, '..', `${projectId}-parser-0`)
     await fsCopy(abiSrc, abiDst, { recursive: true })
   }
