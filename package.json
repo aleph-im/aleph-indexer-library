@@ -76,7 +76,8 @@
     "secp256k1": ">=4.0.4",
     "tough-cookie": ">=4.1.3",
     "brace-expansion": ">=1.1.12 <3",
-    "fast-xml-parser": ">=5.5.7"
+    "fast-xml-parser": ">=5.5.7",
+    "ws": ">=7.5.10"
   },
   "peerDependencies": {
     "luxon": "^2.4.0"
