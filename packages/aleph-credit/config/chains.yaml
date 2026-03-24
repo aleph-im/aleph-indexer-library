@@ -1,0 +1,27 @@
+# Chain configuration for the aleph-credit indexer.
+# Hardcoded defaults exist for 'ethereum' and 'ethereum-sepolia'.
+# Add entries here to override defaults or define new chains.
+# Chain keys must match the blockchain IDs used by the indexer framework.
+#
+# Example — override sepolia credit contract:
+#
+#   ethereum-sepolia:
+#     creditContract:
+#       address: "0xNewAddress..."
+#
+# Example — add a new chain:
+#
+#   arbitrum:
+#     tokenContracts:
+#       USDC:
+#         address: "0x..."
+#         decimals: 6
+#       ALEPH:
+#         address: "0x..."
+#         decimals: 18
+#     creditContract:
+#       address: "0x..."
+#       nativePayments: true
+#     providers:
+#       TRANSAK:
+#         - "0x..."
