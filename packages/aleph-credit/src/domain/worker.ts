@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { Utils } from '@aleph-indexer/core'
 import {
   IndexerDomainContext,
   IndexerWorkerDomain,
@@ -6,10 +7,7 @@ import {
   ParserContext,
   getBlockchainConfig,
 } from '@aleph-indexer/framework'
-import {
-  EthereumLogIndexerWorkerDomainI,
-  EthereumParsedLog,
-} from '@aleph-indexer/ethereum'
+import { EthereumParsedLog } from '@aleph-indexer/ethereum'
 import blockchainWorkerClass from './worker/index.js'
 import {
   BlockchainWorkerI,
@@ -19,10 +17,9 @@ import {
   CommonQueryArgs,
 } from '../types/common.js'
 
-export default class WorkerDomain
-  extends IndexerWorkerDomain
-  implements EthereumLogIndexerWorkerDomainI
-{
+export default class WorkerDomain extends IndexerWorkerDomain {
+  [method: string]: unknown
+
   constructor(
     protected context: IndexerDomainContext,
     protected blockchainWorker: Record<string, BlockchainWorkerI> = {},
@@ -38,44 +35,30 @@ export default class WorkerDomain
 
       const dataPath = path.join(context.dataPath, id)
       this.blockchainWorker[id] = new clazz({ ...context, dataPath })
+
+      const prefix = Utils.toCamelCase(id)
+
+      this[`${prefix}FilterLog`] = async (
+        context: ParserContext,
+        entity: EthereumParsedLog,
+      ): Promise<boolean> => {
+        const worker = this.blockchainWorker[context.blockchainId]
+        return worker.filterEntity(context, entity)
+      }
+
+      this[`${prefix}IndexLogs`] = async (
+        context: ParserContext,
+        entities: EthereumParsedLog[],
+      ): Promise<void> => {
+        const worker = this.blockchainWorker[context.blockchainId]
+        return worker.indexEntities(context, entities)
+      }
     }
   }
 
   async onNewAccount(config: AccountIndexerRequestArgs): Promise<void> {
     const worker = this.blockchainWorker[config.blockchainId]
     return worker.onNewAccount(config)
-  }
-
-  async ethereumFilterLog(
-    context: ParserContext,
-    entity: EthereumParsedLog,
-  ): Promise<boolean> {
-    const worker = this.blockchainWorker[context.blockchainId]
-    return worker.filterEntity(context, entity)
-  }
-
-  async ethereumIndexLogs(
-    context: ParserContext,
-    entities: EthereumParsedLog[],
-  ): Promise<void> {
-    const worker = this.blockchainWorker[context.blockchainId]
-    return worker.indexEntities(context, entities)
-  }
-
-  async ethereumSepoliaFilterLog(
-    context: ParserContext,
-    entity: EthereumParsedLog,
-  ): Promise<boolean> {
-    const worker = this.blockchainWorker[context.blockchainId]
-    return worker.filterEntity(context, entity)
-  }
-
-  async ethereumSepoliaIndexLogs(
-    context: ParserContext,
-    entities: EthereumParsedLog[],
-  ): Promise<void> {
-    const worker = this.blockchainWorker[context.blockchainId]
-    return worker.indexEntities(context, entities)
   }
 
   // API methods
