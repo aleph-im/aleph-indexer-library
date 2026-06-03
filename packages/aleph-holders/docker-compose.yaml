@@ -21,4 +21,5 @@ services:
     logging:
       driver: "json-file"
       options:
-        max-size: "10g" # max logs size
+        max-size: "1g" # rotate each log file at 1GB
+        max-file: "4" # keep 4 files max -> 4GB hard cap per container, oldest truncated
